@@ -71,7 +71,7 @@
                                     {% if user.profile.image %}
                                         <img src="{{ user.profile.image.url }}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
                                     {% else %}
-                                        <img src="/static/IMAGES/default.png" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                        <img src="{% static 'IMG/default.png' %}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
                                     {% endif %}
                                     <div class="d-none d-xl-block lh-sm">
                                         <span class="d-block text-white-50" style="font-size: 11px;">Hello, {{ user.username }}</span>
