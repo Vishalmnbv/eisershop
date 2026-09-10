@@ -371,7 +371,7 @@ class LoginView(View):
                 html_content = render_to_string("emails/login_success.html",context)
                 email = EmailMultiAlternatives(
                     subject="Login Successful - EiserShop",
-                    body=(f"Hello {user.username}, ""you have successfully logged in."),from_email=settings.DEFAULT_FROM_EMAIL,to=[user.email],)
+                    body=(f"Hello {user.username}, " "you have successfully logged in."),from_email=settings.DEFAULT_FROM_EMAIL,to=[user.email],)
                 email.attach_alternative(html_content,"text/html")
                 # Logo 
                 logo_path = os.path.join(
@@ -386,14 +386,14 @@ class LoginView(View):
                         logo.add_header(
                             "Content-ID",
                             "<header_logo>"
-                    )
-                    logo.add_header(
-                        "Content-Disposition",
-                        "inline",
-                        filename="logo.png",
-                    )
-                    email.attach(logo)
-                email.send(fail_silently=False)
+                        )
+                        logo.add_header(
+                            "Content-Disposition",
+                            "inline",
+                            filename="logo.png",
+                        )
+                        email.attach(logo)
+                email.send(fail_silently=True)
             except Exception as e:
                 print("Login email error:",str(e))
                 traceback.print_exc()
