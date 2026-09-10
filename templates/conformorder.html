@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load indian_formatting %}
+{% block title %}
+<title>eiser - ConfomerOrder</title>
+{% endblock title %}
+{% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-active:hover {color: red !important;text-decoration: underline !important;}
+    </style>
+    <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container py-3">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb bg-white px-3 py-2 rounded mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
+                <li class="breadcrumb-item breadcrumb-active text-secondary" style="max-width: 480px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45 }}</li>
+                <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
+                <li class="breadcrumb-item"><a href="/checkout/" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Checkout</a></li>
+                <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-circle-check me-1"></i>ConfomerOrder</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container py-1 mb-3">
+        <div class="card premium-card mb-4 p-2 border">
+            <div class="card-body">
+                <div class="row align-items-center g-3">
+                    <div class="col-md-6">
+                        <div class="text-muted small"><i class="fa-regular fa-calendar-days me-2"></i>Ordered on {{ order.date|date:"d M Y, h:i A" }}</div>
+                    </div>
+                    <div class="col-md-6 text-md-end">
+                        <span class="small text-muted d-block mb-1">Grand Total</span>
+                        <h2 class="fw-bold text-success mb-2">₹{{ order.calculated_total|format_indian_currency }}</h2>
+                        {% if order.orderstatus == "Pending" %}
+                            <span class="badge bg-warning text-dark status-badge p-2"><i class="fa-solid fa-circle-check me-1"></i>Order Confirmed</span>
+                        {% elif order.orderstatus == "Processing" %}
+                            <span class="badge bg-info text-dark status-badge p-2"><i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing</span>
+                        {% elif order.orderstatus == "Shipped" %}
+                            <span class="badge bg-primary text-white status-badge p-2"><i class="fa-solid fa-truck me-1"></i>Shipped</span>
+                        {% elif order.orderstatus == "Delivered" %}
+                            <span class="badge bg-success text-white status-badge p-2"><i class="fa-solid fa-circle-check me-1"></i>Delivered</span>
+                        {% elif order.orderstatus == "Cancelled" %}
+                            <span class="badge bg-danger text-white status-badge p-2"><i class="fa-solid fa-circle-xmark me-1"></i>Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% for message in messages %}
+            <div class="container-fluid p-0">
+                <div id="msg" class="alert {{ message.tags }} alert-dismissible" role="alert" >
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+        <div class="card premium-card mb-4 p-3 border">
+            <div class="card-body">
+                <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-route text-primary me-2"></i>Order Shipment Journey</h5>
+                <div class="position-relative py-3">
+                    <div class="progress position-absolute top-50 start-0 translate-middle-y" style="height: 6px; left: 12.5% !important; width: 75%; z-index: 1; border-radius: 10px;">
+                        <div class="progress-bar bg-success" style="width: 
+                            {% if order.orderstatus == 'Pending' %}0%
+                            {% elif order.orderstatus == 'Processing' %}33.33%
+                            {% elif order.orderstatus == 'Shipped' %}66.66%
+                            {% elif order.orderstatus == 'Delivered' %}100%
+                            {% else %}0%{% endif %}; transition: width 0.4s ease;">
+                        </div>
+                    </div>
+                   <div class="row justify-content-between position-relative" style="z-index: 2;">
+                        <div class="col-3 text-center">
+                            <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Ordered
+                                <br>
+                                <small class="text-muted fw-normal" style="font-size: 11px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y" }}</small>
+                            </div>
+                        </div>
+                        <div class="col-3 text-center">
+                            {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Processing
+                                    <br>
+                                    <small class="text-muted fw-normal" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.processing_at|date:"d M Y" }}</small>
+                                </div>
+                            {% else %}
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Processing</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-3 text-center">
+                            {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Shipped
+                                    <br>
+                                    <small class="text-muted fw-normal" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i> {{ order.shipped_at|date:"d M Y" }}</small>
+                                </div>
+                            {% else %}
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Shipped</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-3 text-center">
+                            {% if order.orderstatus == 'Delivered' %}
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Delivered</div>
+                                <small class="text-muted d-block" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i> {{ order.delivered_at|date:"d M Y" }}</small>
+                            {% else %}
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Delivered</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-warning mt-4 mb-0 text-center">
+                    <i class="fa-solid fa-circle-info me-2"></i>
+                    <strong>This is your Order ConfomerOrder page.</strong><br>
+                    Your order will be placed after clicking the <strong>"Place Order"</strong> button.
+                </div>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-8">
+                <div class="card premium-card mb-4 border">
+                    <div class="card-body py-4">
+                        <div class="row g-3 text-center text-sm-start">
+                            <div class="col-sm-6 col-md-3 border-end">
+                                <span class="text-muted small d-block mb-1">Order ID</span>
+                                <span class="fw-bold text-dark font-monospace">#{{ order.amazon_order_id }}</span>
+                            </div>
+                            <div class="col-sm-6 col-md-3 border-end">
+                                <span class="text-muted small d-block mb-1">Payment Method</span>
+                                <span class="fw-bold text-success d-flex align-items-center gap-2">
+                                    <span style="font-size:13px;">{{ order.paymentmethod }}</span>
+                                    {% if order.payment_status_display == "Paid" or order.paymentmethod == "UPI" or order.paymentmethod == "upi" %}
+                                        <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.62rem;">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Paid
+                                        </span>
+                                    {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
+                                        <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size:0.62rem;">
+                                            <i class="fa-solid fa-ban me-1"></i> Cancelled
+                                        </span>
+                                    {% else %}
+                                        <span class="badge rounded-1 px-2 py-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8; font-size:0.62rem;">
+                                            <i class="fa-regular fa-clock me-1"></i> Pending
+                                        </span>
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="col-sm-6 col-md-3 border-end">
+                                {% if order.orderstatus == "Delivered" %}
+                                    <span class="text-muted small d-block mb-1">Delivered On</span>
+                                    <span class="fw-bold text-success"><i class="fa-solid fa-circle-check me-1"></i>{{ order.date|date:"d M Y" }}</span>
+                                {% else %}
+                                <span class="text-muted small d-block mb-1">Expected Delivery</span>
+                                <span class="fw-bold text-primary"><i class="fa-solid fa-truck-fast me-1"></i>{{ expected_delivery|date:"d M Y" }}</span>
+                            {% endif %}
+                            </div>
+                            <div class="col-sm-6 col-md-3">
+                                <span class="text-muted small d-block mb-1">Shipping To</span>
+                                <span class="fw-bold text-dark text-truncate d-block">{{ order.firstname }} {{ order.username }} {{ order.lastname }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card premium-card mb-4 border">
+                    <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
+                        <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-basket-shopping text-warning me-2"></i>Items in your order</h5>
+                        <span class="badge bg-dark px-3 py-2 rounded-pill">{{ cart_items|length }} Item</span>
+                    </div>
+                    <div class="card-body px-4 pb-4">
+                        {% for i in cart_items %}
+                            <div class="py-4 {% if not forloop.last %}border-bottom{% endif %}">
+                                <div class="row align-items-center">
+                                    <div class="col-md-2 col-4 text-center">
+                                        <img src="{{ i.productview_id.productimage1 }}" alt="{{ i.product_id.producttitle }}" class="img-fluid p-2 product-img {% if i.status == 'Cancelled' %}opacity-50{% endif %}" style="height:180px;width:100px;object-fit:contain;">
+                                    </div>
+                                    <div class="col-md-7 col-8">
+                                        <h8 class="fw-bold mb-2">{{ i.productview_id.producttitle }}</h8>
+                                        <div class="d-flex flex-wrap gap-3 mb-2">
+                                            <span><strong>Qty:</strong> {{ i.quantity }}</span>
+                                            {% if i.selected_size and i.selected_size|lower != "standard" and i.selected_size|lower != "none" %}
+                                                <span><strong>Size:</strong> {{ i.selected_size }}</span>
+                                            {% endif %}                                   
+                                            {% if i.productview_id.productcolor1 %}
+                                                <span><strong>Color:</strong> {{ i.productview_id.productcolor1 }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="small text-muted mb-3">Sold by: <strong class="text-dark">Eiser Shop</strong></div>
+                                        {% if not is_checkout %}
+                                            {% if order.orderstatus == "Pending" or order.orderstatus == "Processing" %}
+                                                <a href="{% url 'cancel_product' i.orderitemid %}" class="btn btn-danger btn-sm rounded-pill"><i class="fa-solid fa-xmark me-1"></i>Cancel Product</a>
+                                            {% elif order.orderstatus == "Cancelled" %}
+                                                <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>
+                                            {% endif %}
+                                        {% endif %}
+                                    </div>
+                                    <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                                        <h5 class="fw-bold text-success mb-0">₹{{ i.calculated_unit_price|format_indian_currency }}</h5>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div>
+                    <div class="card premium-card mb-3 border">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h5 class="fw-bold text-dark mb-0">Order Summary</h5>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div class="d-flex justify-content-between mb-2">
+                                <span class="text-muted">Subtotal</span>
+                                <span class="fw-semibold text-dark">₹{{ subtotal|format_indian_currency }}</span>
+                            </div>
+                            {% if discount %}
+                                <div class="d-flex justify-content-between mb-2 fw-bold">
+                                    <span class="text-success">Coupon ({{ coupon_code }})</span>
+                                    <span class="fw-bold text-success">- ₹{{ discount|format_indian_currency }}</span>
+                                </div>
+                            {% else %}
+                                <div class="d-flex justify-content-between mb-2 fw-bold">
+                                    <span class="fw-semibold text-dark">No Coupon Apply</span>
+                                </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between mb-3">
+                                <span class="text-muted">Delivery Charges</span>
+                                <span class="fw-semibold text-dark">₹{{ order.deliverycharges|format_indian_currency }}</span>
+                            </div>
+                            <hr class="text-muted opacity-25">
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <h5 class="fw-bold text-dark mb-0">Total Amount</h5>
+                                <h3 class="fw-extrabold text-success mb-0">₹{{ order.calculated_total|default:order.total|format_indian_currency }}</h3>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card premium-card mb-3 border">
+                        <div class="card-header bg-white border-0 pt-4 px-4">
+                            <h5 class="fw-bold text-dark mb-0">Delivery Address</h5>
+                        </div>
+                        <div class="card-body px-4 pb-4">
+                            <div class="d-flex align-items-start gap-3">
+                                <div class="p-2 bg-light text-danger rounded-3" style="background-color: #fce8e6;">
+                                    <i class="fa-solid fa-location-dot fs-4"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-1">{{ order.firstname }} {{ order.username }} {{ order.lastname }}</h6>
+                                    <p class="text-muted small mb-2 lh-base">{{ order.address }} <br></p> 
+                                    <i class="fa-solid fa-phone me-1"></i>{{ order.number }}                                 
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% if is_checkout %}
+                        <form action="{% url 'place_order' %}" method="POST" class="d-grid gap-3 mt-3">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark py-2 shadow-sm">
+                                <i class="fa-solid fa-lock me-2"></i>Place Order
+                                <span class="float-end">₹{{ order.total|format_indian_currency }}</span>
+                            </button>
+                            <a href="{% url 'home' %}" class="btn btn-dark btn-lg rounded-pill py-2 fw-semibold">
+                                <i class="fa-solid fa-arrow-left me-2"></i>Back to Checkout
+                            </a>
+                        </form>
+                    {% else %}
+                        <div class="d-grid gap-3 mt-3">                        
+                            <a href="{% url 'download_bill' order.orderid %}" class="btn btn-warning btn-lg  py-2 fw-semibold">
+                                <i class="fa-solid fa-file-arrow-down me-2"></i>Download Bill
+                            </a>
+                            <a href="{% url 'my_orders' %}" class="btn btn-dark btn-lg py-2 fw-semibold">
+                                <i class="fa-solid fa-box me-2"></i>Back to My Orders
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if home_banner %}
+        <div class="container mb-5 mt-5">
+            <div class="card border rounded-3  mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid"style="max-height:120px;object-fit:contain;"alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2">
+                            <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
+                                <span class="text-danger fw-bold small" style="font-size: 15px;">Limited time deal</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if recently_viewed_products %}
+        <div class="container bg-white py-3 py-md-4 my-4 border-top border-bottom">
+            <div class="container-fluid px-2 px-md-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-baseline mb-3 gap-1 pb-2">
+                    <h4 class="fw-bold mb-0 text-dark fs-6 fs-md-5">Your browsing history</h4>
+                    <a href="{% url 'browsing_history' %}" class="text-decoration-none text-primary fw-normal" style="font-size: 12px;">View or edit your browsing history</a>
+                </div>
+                <div class="position-relative px-1 px-md-3">
+                    <div class="swiper amazonBrowsingSwiper">
+                        <div class="swiper-wrapper">
+                            {% for product in recently_viewed_products %}
+                                <div class="swiper-slide" style="width: 180px;">
+                                    <div class="card h-100 border-0 p-2 position-relative bg-white">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none d-block">
+                                            <div class="p-2 bg-white text-center d-flex align-items-center justify-content-center hover-card" style="height: 130px;">
+                                                <img src="{{ product.productimage1.url|default:product.productimage1 }}" alt="{{ product.producttitle }}" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                            </div>
+                                        </a>                              
+                                        <div class="card-body p-0 d-flex flex-column">                                    
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                                <p class="mb-1 text-truncate-2 small fw-normal lh-sm" style="font-size: 13px; height: 32px; color: #0f1111;">
+                                                    {{ product.producttitle|truncatechars:40  }}
+                                                </p>
+                                            </a>                                    
+                                            <div class="mt-auto pt-1">
+                                                <div class="d-flex align-items-baseline gap-1 flex-wrap">
+                                                    <span class="fw-medium text-dark" style="font-size: 14px;">₹{{ product.productprice|intcomma }}</span>
+                                                    {% if product.productmrpprice and product.productmrpprice > product.productprice %}
+                                                        <span class="text-muted text-decoration-line-through" style="font-size: 10px;">M.R.P: ₹{{ product.productmrpprice|intcomma }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                    <small class="text-danger d-block" style="font-size: 10px;">({{ product.productdiscountrate }}% off)</small>
+                                                {% endif %}                                            
+                                                {% if delivery_date %}
+                                                    <div class="mt-1" style="font-size: 10px;">
+                                                        <span class="text-muted">FREE Delivery </span>
+                                                        <span class="fw-bold text-dark">{{ delivery_date|date:"D, M d" }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>                             
+                                            <form method="post" action="{% url 'add_to_cart' product.productviewid %}" class="mt-2">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="selected_size" value="{{ product.productsize1 }}">
+                                                <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill text-dark border-0 py-1" style="background-color: #ffd814; font-size: 11px;" {% if product.stock and product.stock <= 0 %}disabled{% endif %}>
+                                                    Add to Cart
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock body %}

@@ -1,0 +1,876 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+{% load humanize %}
+{% load indian_formatting %}
+<title>{{productview.producttitle}}</title>
+{% endblock title %}
+{% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-active:hover {color: red !important;text-decoration: underline !important;}
+        .similarSwiper{padding:15px 40px 20px;}
+        .similarSwiper .swiper-slide{height:auto;}
+        .similarSwiper .card{border-radius:12px;transition:.3s;}
+        .similar-next,.similar-prev{color:#000;}
+        .similar-next::after,.similar-prev::after{font-size:22px;font-weight:bold;}
+        .variant-slider{scrollbar-width:none;-ms-overflow-style:none;}
+        .variant-slider::-webkit-scrollbar{display:none;}
+        .similar-slider::-webkit-scrollbar{display:none;}
+        .variant-item .border.active-card {border-color:red !important;}
+        @media(max-width:576px){ .variant-slider{flex-wrap:nowrap;}.variant-item{width:110px;}}
+        @media(min-width:577px){.variant-slider{display:grid !important;grid-template-columns:repeat(5,1fr);overflow:hidden;}.variant-item{width:auto;}}
+    </style>
+    <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    {% if category_featured_product %}
+        <div class="container my-2">
+            <a href="{% url 'productview' category_featured_product.category_id_id category_featured_product.productviewid %}" class="text-decoration-none">
+                <div class="card p-2">
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">                
+                        <div class="d-flex align-items-center gap-3">
+                            <img src="{% if category_featured_product.productimage1.url %}{{ category_featured_product.productimage1.url }}{% else %}{{ category_featured_product.productimage1 }}{% endif %}" 
+                                alt="{{ category_featured_product.producttitle }}" class="p-1" style="width: 55px; height: 55px; object-fit: contain;">
+                            <div>                          
+                                <p class="mb-0 text-dark fw-semibold text-truncate" style="max-width: 500px; font-size: 13px;">
+                                    {% if category_featured_product.productbrand %}
+                                        <span class="fw-bold text-primary me-1">{{ category_featured_product.productbrand }}</span>
+                                    {% endif %}
+                                    {{ category_featured_product.producttitle|truncatechars:50 }}
+                                </p>
+                            </div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 me-2">
+                            {% if category_featured_product.display_discount and category_featured_product.display_discount != '0' %}
+                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">
+                                    {{ category_featured_product.productdiscountrate }}% off
+                                </span>
+                            {% endif %}
+                            <span class="text-danger fw-bold small" style="font-size: 11px;">Limited time deal</span>
+                            <i class="fa-solid fa-chevron-right text-muted fs-6 ms-1"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+    {% endif %}
+    <div class="container py-2">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
+                {% if request.GET.ref_page %}
+                    <li class="breadcrumb-item"><a href="{% url 'collection' categories.categoryid %}?page={{ request.GET.ref_page }}" class="text-decoration-none text-secondary"><i class="fa-solid fa-file-lines me-1"></i>Page {{ request.GET.ref_page }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active breadcrumb-active text-secondary" style="max-width: 900px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45}}</li>
+            </ol>
+        </nav>
+        {% for message in messages %}
+            <div class="container-fluid p-0">
+                <div id="msg" class="alert {{ message.tags }} alert-dismissible" role="alert">
+                    {{ message }}
+                </div>
+            </div>
+        {% endfor %}
+        <div class="card border-0 rounded-4 overflow-hidden mb-5 bg-white">
+            <div class="row">
+                <div class="col-lg-6 d-flex flex-column py-4">
+                    <div class="rounded-4 d-flex align-items-center justify-content-center mb-3 border overflow-hidden position-relative"style="height:550px;">
+                        <img id="mainImage"src="{{ productview.productimage1 }}" alt="{{ productview.productimage1 }}"class="w-100 h-100"style="object-fit: contain; object-position: center;">                    
+                    </div>
+                    <div class="d-flex justify-content-center flex-wrap gap-2 thumbnail-gallery">
+                        <img src="{{ productview.productimage1 }}"alt="{{ productview.productcolor1 }}"class="rounded border thumb-img img-thumbnail active-thumb"style="width: 72px; height: 72px; object-fit: contain; cursor: pointer; padding: 0;"onmouseenter="updateMainImage(this)"onclick="updateMainImage(this)">
+                        <img src="{{ productview.productimage2 }}"alt="{{ productview.productcolor2 }}"class="rounded border thumb-img img-thumbnail"style="width: 72px; height: 72px; object-fit: contain; cursor: pointer; padding: 0;"onmouseenter="updateMainImage(this)"onclick="updateMainImage(this)">
+                        <img src="{{ productview.productimage3 }}"alt="{{ productview.productcolor3 }}"class="rounded border thumb-img img-thumbnail"style="width: 72px; height: 72px; object-fit: contain; cursor: pointer; padding: 0;"onmouseenter="updateMainImage(this)"onclick="updateMainImage(this)">
+                        <img src="{{ productview.productimage4 }}"alt="{{ productview.productcolor4 }}"class="rounded border thumb-img img-thumbnail"style="width: 72px; height: 72px; object-fit: contain; cursor: pointer; padding: 0;"onmouseenter="updateMainImage(this)"onclick="updateMainImage(this)">
+                        <img src="{{ productview.productimage5 }}"alt="{{ productview.productcolor5 }}"class="rounded border thumb-img img-thumbnail"style="width: 72px; height: 72px; object-fit: contain; cursor: pointer; padding: 0;"onmouseenter="updateMainImage(this)"onclick="updateMainImage(this)">
+                    </div>
+                </div>
+                <div class="col-lg-6 p-4 p-md-5 d-flex flex-column justify-content-between h-100">
+                    <div>                  
+                        <h3 class="fw-bold text-dark lh-base mb-3 fs-6 fs-md-3">
+                            {{ productview.producttitle }}
+                            {% with selected_size=request.GET.size|default:productview.productsize selected_color=request.GET.productcolor1|default:productview.productcolor1 %}
+                                {% if selected_size and selected_size|lower != "none" or selected_color and selected_color|lower != "none" %}
+                                    - ({% if selected_size and selected_size|lower != "none" %}{{ selected_size }}{% endif %}{% if selected_size and selected_size|lower != "none" and selected_color and selected_color|lower != "none" %}, {% endif %}{% if selected_color and selected_color|lower != "none" %}{{ selected_color }}{% endif %})
+                                {% endif %}
+                            {% endwith %}
+                        </h3>
+                        <div class="mb-3">
+                            <div class="d-flex align-items-center">
+                                <i class="fa-solid fa-truck-fast text-success me-2 fs-6"></i>
+                                <span class="text-dark">
+                                    <span class="fw-bold text-success">FREE Delivery</span>
+                                    <strong class="ms-1">{{ delivery_date|date:"l, j F" }}</strong>
+                                </span>
+                            </div>
+                            {% if last_order %}
+                                <div class="d-flex align-items-start mt-2">
+                                    <i class="fa-solid fa-location-dot text-secondary mt-1 me-2"></i>
+                                    <div class="text-dark">
+                                        <span class="text-muted">Deliver to:</span>
+                                        <span class="fw-semibold text-dark ms-1">{{ last_order.address }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        <div class="row g-2 my-3">
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3  text-center h-100 d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fa-solid fa-shield-halved text-success fs-4 mb-1"></i>
+                                    <span class="fw-bold text-dark lh-sm small d-block">100% Original</span>
+                                    <small class="text-muted text-nowrap" style="font-size: 0.75rem;">Guaranteed Quality</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3 text-center h-100 d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fa-solid fa-rotate-left text-primary fs-4 mb-1"></i>
+                                    <span class="fw-bold text-dark lh-sm small d-block">7 Days Return</span>
+                                    <small class="text-muted text-nowrap" style="font-size: 0.75rem;">Hassle Free</small>
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <div class="p-2 border rounded-3  text-center h-100 d-flex flex-column align-items-center justify-content-center">
+                                    <i class="fa-solid fa-hand-holding-dollar text-warning fs-4 mb-1"></i>
+                                    <span class="fw-bold text-dark lh-sm small d-block">COD Available</span>
+                                    <small class="text-muted text-nowrap" style="font-size: 0.75rem;">Pay on Delivery</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-1">
+                        <span class="text-success fw-bold"><i class="fa-solid fa-palette me-2"></i>{{ same_product_count }} Colors Available</span>
+                    </div>
+                    <div class="stock-box my-3">
+                        {% if productview.stock > 5 %}
+                            <div class="text-success fw-bold mb-1">
+                                <i class="fa-solid fa-check me-1"></i>In Stock
+                            </div>
+                        {% elif productview.stock > 0 %}
+                            <div class="text-danger fw-bold mb-1">
+                                <i class="fa-solid fa-fire me-1"></i>Only {{ productview.stock }} left in stock - order soon.
+                            </div>
+                        {% else %}
+                            <div class="text-danger fw-bold mb-1">
+                                <i class="fa-solid fa-xmark me-1"></i>Currently unavailable.
+                            </div>
+                        {% endif %}
+                        {% if productview.sold_count > 0 %}
+                            <div class="text-muted small mt-1">
+                                <i class="fa-solid fa-bag-shopping me-1 text-secondary"></i>
+                                <span class="fw-semibold text-dark">{{ productview.sold_count }}+ bought</span> in past month
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="d-flex align-items-center mb-2 text-warning">
+                        <span class="fw-bold text-dark me-2">{{ productview.rating }}</span>
+                        {% for i in productview.full_stars_range %}
+                            <i class="fa-solid fa-star text-warning"></i>
+                        {% endfor %}
+                        {% for i in productview.half_stars_range %}
+                            <i class="fa-solid fa-star-half-stroke text-warning"></i>
+                        {% endfor %}
+                        {% for i in productview.empty_stars_range %}
+                            <i class="fa-regular fa-star text-warning"></i>
+                        {% endfor %}
+                    </div>
+                    <hr class="text-muted opacity-25">  
+                        {% if variant_unavailable or not stock_available %}
+                            <div class="my-3 p-3 bg-light rounded-3 border-1 text-start">
+                                <h4 class="fw-bold text-danger m-0"><i class="fa-solid fa-triangle-exclamation me-1"></i>Currently Unavailable</h4>                            
+                            </div>
+                        {% else %}
+                            <div class="d-flex align-items-center gap-2 my-3 p-3 rounded-3" style="background-color: #f8f9fa;">
+                                <span class="fs-2 fw-bold text-dark">₹{{ current_price|format_indian_currency }}</span>
+                                {% if current_discount and current_discount != '0' %}
+                                    <span class="text-muted text-decoration-line-through fs-6">M.R.P.: ₹{{ current_mrp|format_indian_currency }}</span>
+                                    <span class="fw-bold text-success fs-6">({{ current_discount }}% OFF)</span>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                            <div class="row g-3 mb-4">
+                            {% if sizes_list %}
+                                <div class="col-sm-6">
+                                    <div class="p-3 rounded-3 bg-light border-1 text-center h-100 d-flex flex-column justify-content-center">                                
+                                        <small class="text-muted d-block text-uppercase fw-bold mb-2" style="letter-spacing: 0.08em; font-size: 0.65rem;">
+                                            Available Sizes
+                                        </small>
+                                        <div class="d-flex flex-row flex-wrap align-items-center justify-content-center gap-1">
+                                            {% for size in sizes_list %}
+                                                <div class="m-0 p-0">
+                                                    <a href="?size={{ size|urlencode }}" class="btn btn-sm {% if selected_size == size %}btn-dark shadow-sm{% else %}btn-outline-secondary border-secondary-subtle bg-white text-dark{% endif %} px-2.5 py-1 rounded-2"style="font-size: 0.78rem; font-weight: 500; white-space: nowrap; text-decoration: none; transition: all 0.2s ease;">
+                                                        {{ size }}
+                                                    </a>
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endif %}
+                            <div class="{% if sizes_list %}col-sm-6{% else %}col-12{% endif %}">
+                                <div class="p-3 rounded-3 bg-light border-1 text-center h-100 d-flex flex-column justify-content-center">                               
+                                    <small class="text-muted d-block text-uppercase fw-bold mb-1" style="letter-spacing: 0.08em; font-size: 0.65rem;">
+                                        Color Aspect
+                                    </small>
+                                    <span id="colorAspectValue" class="fw-bold text-dark fs-6 text-capitalize">
+                                        {{ productview.productcolor1 }}
+                                    </span>
+                                </div>
+                            </div>
+                            </div>
+                        {% if page_obj %}                                   
+                        {% if not variant_unavailable and stock_available %}
+                            <div class="variant-slider-wrapper mb-3">
+                                <div class="variant-slider d-flex gap-2 overflow-auto">
+                                    {% for item in page_obj %}
+                                        <div class="variant-item flex-shrink-0 variant-card-item" data-color="{{ item.productcolor1|default:''|lower }}">
+                                            <a href="/productview/{{ categories.categoryid }}/{{ item.productviewid }}?page={{ page_obj.number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}" class="text-decoration-none text-dark d-block">                                                                                    
+                                                <div class="border rounded-3 h-100 product-card-box {% if forloop.first %}active-card{% endif %}" onmouseenter="previewVariantImage('{{ item.productimage1.url|default:item.productimage1 }}', '{{ item.productcolor1 }}')" onmouseleave="resetDefaultImage()">                                                    
+                                                    <div class="p-2 text-center rounded-top-3">                                                    
+                                                        <img src="{{ item.productimage1.url|default:item.productimage1 }}" class="img-fluid" style="height:80px; width:100%; object-fit:contain;" alt="{{ item.producttitle }}">
+                                                    </div>                                                                                        
+                                                    <div class="card-body p-1 text-center rounded-bottom-3 d-flex flex-column justify-content-center align-items-center" style="min-height:50px;">
+                                                        <span class="fw-bold text-dark" style="font-size:18px;">
+                                                            ₹{{ item.display_price|format_indian_currency }}
+                                                        </span>
+                                                        {% if item.display_discount and item.display_discount != '0' %}
+                                                            <span class="small text-muted text-decoration-line-through" style="font-size:12px;">
+                                                                ₹{{ item.display_mrp|format_indian_currency }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        {% endif %}
+                        {% if page_obj.has_other_pages %}
+                            <nav aria-label="Page navigation" class="mb-4">
+                                <ul class="pagination pagination-sm justify-content-center align-items-center flex-wrap gap-1">
+                                    {% if page_obj.has_previous %}
+                                        <li class="page-item"><a class="page-link border-1 shadow-none px-2" href="?page=1{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}"><i class="fa-solid fa-angles-left"></i></a></li>
+                                        <li class="page-item"><a class="page-link  border-1 shadow-none px-2" href="?page={{ page_obj.previous_page_number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}"><i class="fa-solid fa-angle-left"></i></a></li>
+                                    {% endif %}                             
+                                    {% for num in page_obj.paginator.page_range %}
+                                        {% if num == page_obj.number %}
+                                            <li class="page-item active"><span class="page-link border-1 shadow-none px-2 fw-bold">{{ num }}</span></li>
+                                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                                            <li class="page-item"><a class="page-link  border-1 shadow-none px-2" href="?page={{ num }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}">{{ num }}</a></li>
+                                        {% endif %}
+                                    {% endfor %}                        
+                                    {% if page_obj.has_next %}
+                                        <li class="page-item"><a class="page-link  border-1 shadow-none px-2" href="?page={{ page_obj.next_page_number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}"><i class="fa-solid fa-angle-right"></i></a></li>
+                                        <li class="page-item"><a class="page-link  border-1 shadow-none px-2" href="?page={{ page_obj.paginator.num_pages }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}"><i class="fa-solid fa-angles-right"></i></a></li>
+                                    {% endif %}
+                                </ul>
+                            </nav>
+                        {% endif %}
+                    {% endif %}
+                    <div class="accordion accordion-flush mb-4 border-top border-bottom" id="productAccordion">
+                        <div class="accordion-item bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold shadow-none px-0 text-dark bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#collapseAbout">
+                                    Product Details
+                                </button>
+                            </h2>
+                            <div id="collapseAbout" class="accordion-collapse collapse" data-bs-parent="#productAccordion">
+                                <div class="accordion-body px-0 text-secondary">
+                                    <ul class="small mb-0 ps-3">
+                                        <li class="mb-1">{{ productview.producttophighlights1 }}</li>
+                                        <li class="mb-1">{{ productview.producttophighlights2 }}</li>
+                                        <li class="mb-1">{{ productview.producttophighlights3 }}</li>
+                                        <li class="mb-1">{{ productview.producttophighlights4 }}</li>
+                                        <li class="mb-1">{{ productview.producttophighlights5 }}</li>
+                                        <li class="mb-1">{{ productview.producttophighlights6 }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold shadow-none px-0 text-dark bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#collapseStyle">
+                                    About This Item
+                                </button>
+                            </h2>
+                            <div id="collapseStyle" class="accordion-collapse collapse" data-bs-parent="#productAccordion">
+                                <div class="accordion-body px-0 text-secondary">
+                                    <ul class="small mb-0 ps-3">
+                                        <li class="mb-1">{{ productview.productaboutitem1 }}</li>
+                                        <li class="mb-1">{{ productview.productaboutitem2 }}</li>
+                                        <li class="mb-1">{{ productview.productaboutitem3 }}</li>
+                                        <li class="mb-1">{{ productview.productaboutitem4 }}</li>
+                                        <li class="mb-1">{{ productview.productaboutitem5 }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item bg-transparent">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold shadow-none px-0 text-dark bg-transparent" type="button" data-bs-toggle="collapse" data-bs-target="#collapseHighlights">
+                                    Top Highlights
+                                </button>
+                            </h2>
+                            <div id="collapseHighlights" class="accordion-collapse collapse" data-bs-parent="#productAccordion">
+                                <div class="accordion-body px-0 text-secondary">
+                                    <ul class="small mb-0 ps-3">
+                                        <li>{{ productview.productitemdetail1 }}</li>
+                                        <li>{{ productview.productitemdetail2 }}</li>
+                                        <li>{{ productview.productitemdetail3 }}</li>
+                                        <li>{{ productview.productitemdetail4 }}</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <form method="post">
+                        {% csrf_token %}
+                        <input type="hidden" name="selected_size" id="real_selected_size" value="{% if selected_size and selected_size != 'none' %}{{ selected_size }}{% else %}Free Size{% endif %}">
+                        {% if productview.productsize or productview.productsize1 or productview.productsize2 or productview.productsize3 %}
+                            <div>
+                                <div>
+                                    {% if selected_size and selected_size|lower != 'none' %}
+                                        <div class="mb-2">
+                                            <span class="text-muted fw-normal">Size: </span>
+                                            <span id="selected-size-label" class="fw-bold">{{ selected_size }}</span>
+                                        </div>
+                                    {% endif %}                            
+                                    <div class="d-flex flex-wrap gap-2 size-selector-group my-2">
+                                        {% if productview.productsize and '85' not in productview.productsize and productview.productsize|lower != 'none' %}
+                                            <a href="?size={{ productview.productsize|urlencode }}" class="btn size-btn rounded-3 {% if selected_size == productview.productsize or request.GET.size == productview.productsize %}btn-dark{% else %}btn-outline-dark{% endif %}" 
+                                            style="border:2px dashed black" onmouseenter="previewSize('{{ productview.productsize }}')" onmouseleave="resetSize()">
+                                                {{ productview.productsize }}
+                                            </a>
+                                        {% endif %}
+                                        {% if productview.productsize1 and '85' not in productview.productsize1 and productview.productsize1|lower != 'none' %}
+                                            <a href="?size={{ productview.productsize1|urlencode }}" class="btn size-btn rounded-3 {% if selected_size == productview.productsize1 or request.GET.size == productview.productsize1 %}btn-dark{% else %}btn-outline-dark{% endif %}" 
+                                            style="border:2px dashed black"onmouseenter="previewSize('{{ productview.productsize1 }}')" onmouseleave="resetSize()">
+                                                {{ productview.productsize1 }}
+                                            </a>
+                                        {% endif %}
+                                        {% if productview.productsize2 and '85' not in productview.productsize2 and productview.productsize2|lower != 'none' %}
+                                            <a href="?size={{ productview.productsize2|urlencode }}" class="btn size-btn rounded-3 {% if selected_size == productview.productsize2 or request.GET.size == productview.productsize2 %}btn-dark{% else %}btn-outline-dark{% endif %}" 
+                                            style="border:2px dashed black"onmouseenter="previewSize('{{ productview.productsize2 }}')" onmouseleave="resetSize()">
+                                                {{ productview.productsize2 }}
+                                            </a>
+                                        {% endif %}
+                                        {% if productview.productsize3 and '85' not in productview.productsize3 and productview.productsize3|lower != 'none' %}
+                                            <a href="?size={{ productview.productsize3|urlencode }}" class="btn size-btn rounded-3 {% if selected_size == productview.productsize3 or request.GET.size == productview.productsize3 %}btn-dark{% else %}btn-outline-dark{% endif %}" 
+                                            style="border:2px dashed black"onmouseenter="previewSize('{{ productview.productsize3 }}')" onmouseleave="resetSize()">
+                                                {{ productview.productsize3 }}
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="mt-4">
+                            {% if not variant_unavailable and stock_available %}
+                                <div class="d-flex flex-row gap-2 mb-2 w-100">                             
+                                    <button type="submit" formaction="{% url 'add_to_cart' productview.productviewid %}" class="btn btn-warning px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-cart-shopping me-2"></i>Add to Cart
+                                    </button>                            
+                                    <button type="submit" formaction="{% url 'add_to_cart' productview.productviewid %}?buy_now=true" class="btn btn-orange text-white  px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center" style="background-color: #ff6000;">
+                                        <i class="fa-solid fa-bolt me-2"></i>Buy Now
+                                    </button>
+                                    <button type="submit" formaction="{% url 'add_wishlist' productview.productviewid %}" class="btn btn-danger px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center">
+                                        <i class="fa-solid fa-heart me-2"></i>Wishlist
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                <div class="row g-2 justify-content-center p-4 border-top mx-0">
+                    {% if productview.productimage6 %}
+                        <div class="col-12 col-md-10 col-lg-9 text-center">
+                            <img src="{{ productview.productimage6 }}" class="img-fluid p-2 mb-1" style="max-height: 500px; width: 100%; object-fit: contain;" alt="{{ productview.producttitle }}">
+                        </div>
+                    {% endif %}
+                    {% if productview.productimage7 %}
+                        <div class="col-12 col-md-10 col-lg-9 text-center">
+                            <img src="{{ productview.productimage7 }}" class="img-fluid p-2 mb-1" style="max-height: 500px; width: 100%; object-fit: contain;" alt="{{ productview.producttitle }}">
+                        </div>
+                    {% endif %}
+                    {% if productview.productimage8 %}
+                        <div class="col-12 col-md-10 col-lg-9 text-center">
+                            <img src="{{ productview.productimage8 }}" class="img-fluid p-2 mb-1" style="max-height: 500px; width: 100%; object-fit: contain;" alt="{{ productview.producttitle }}">
+                        </div>
+                    {% endif %}
+                    {% if productview.productimage9 %}
+                        <div class="col-12 col-md-10 col-lg-9 text-center">
+                            <img src="{{ productview.productimage9 }}" class="img-fluid p-2 mb-1" style="max-height: 500px; width: 100%; object-fit: contain;" alt="{{ productview.producttitle }}">
+                        </div>
+                    {% endif %}
+                    {% if productview.productimage10 %}
+                        <div class="col-12 col-md-10 col-lg-9 text-center">
+                            <img src="{{ productview.productimage10 }}" class="img-fluid p-2 mb-1" style="max-height: 500px; width: 100%; object-fit: contain;" alt="{{ productview.producttitle }}">
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if categories.categoryname not in 'Mobile, Tablet, Headphone, Suitcase, Shoes, Mobile Cover' %}
+        <div class="container my-4">
+            <div class="border-top pt-3 mb-4"><h4 class="fw-bold text-dark mb-0">Styling ideas</h4></div>
+            <div class="row g-4 align-items-center">
+                <div class="col-12 col-md-4 col-lg-3">
+                    <div class="card border rounded-3 overflow-hidden h-100">
+                        <a href="/productview/{{ categories.categoryid }}/{{ productview.productviewid }}">
+                            <img src="{{ productview.productimage1 }}" alt="{{ productview.producttitle }}" class="img-fluid w-100 object-fit-contain" style="height: 380px;">
+                        </a>
+                    </div>
+                </div>
+                <div class="col-12 col-md-8 col-lg-9 position-relative px-4">
+                    <button class="btn btn-light rounded-circle border shadow-sm position-absolute top-50 start-0 translate-middle-y z-3 p-0 d-flex align-items-center justify-content-center" 
+                        type="button" id="btnPrevStyling" onclick="switchOutfit(-1)" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-chevron-left text-dark"></i>
+                    </button>
+                    <div class="w-100 position-relative">
+                        {% for outfit in styling_ideas %}
+                            <div class="outfit-set row g-3 {% if not forloop.first %}d-none{% endif %}" id="outfitSet{{ forloop.index0 }}">
+                                {% for item in outfit.products %}
+                                    <div class="col-12 col-sm-4">
+                                        <div class="card h-100 border rounded-3 transition-all">
+                                            <a href="/productview/{{ item.category_id }}/{{ item.product_id }}" class="text-decoration-none text-dark h-100 d-flex flex-column">
+                                                <div class="rounded-top overflow-hidden" style="height: 190px;">
+                                                    <img src="{{ item.image }}" alt="{{ item.title }}" class="w-100 h-100 object-fit-contain">
+                                                </div>
+                                                <div class="card-body p-2 d-flex flex-column justify-content-between">
+                                                    <div>
+                                                        <div class="fw-semibold text-truncate small text-dark mb-1" title="{{ item.brand|default:item.title }}">
+                                                            {{ item.brand|default:item.title|truncatechars:18 }}
+                                                        </div>                               
+                                                        <div class="d-flex align-items-center gap-1 mb-1">
+                                                            <span class="text-warning small me-1">
+                                                                {% for i in item.full_stars_range %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                                                {% for i in item.half_stars_range %}<i class="fa-solid fa-star-half-stroke"></i>{% endfor %}
+                                                                {% for i in item.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
+                                                            </span>
+                                                            <span class="text-secondary extra-small" style="font-size: 0.8rem;">{{ item.rating }}</span>
+                                                        </div>
+                                                        <div class="d-flex align-items-center gap-2">
+                                                            <span class="fw-bold text-dark fs-6">₹{{ item.price|format_indian_currency }}</span>
+                                                            {% if item.discount and item.discount != "0" %}
+                                                                <span class="text-decoration-line-through text-muted small">₹{{ item.mrp|format_indian_currency }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                    {% if item.color_count > 1 %}
+                                                        <div class="text-primary mt-2" style="font-size: 0.75rem;">+{{ item.color_count|add:"-1" }} colours/patterns</div>
+                                                    {% endif %}
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <button class="btn btn-light rounded-circle border shadow-sm position-absolute top-50 end-0 translate-middle-y z-3 p-0 d-flex align-items-center justify-content-center" 
+                        type="button" id="btnNextStyling" onclick="switchOutfit(1)" style="width: 40px; height: 40px;">
+                        <i class="fa-solid fa-chevron-right text-dark"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if similar_products %}
+        <div class="container my-3">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-0"><i class="fa-solid fa-layer-group text-primary me-2"></i>Similar Products</h3>
+                <div>
+                    <button class="btn btn-light rounded-circle me-2 shadow-none" onclick="scrollSimilarSlider(-270)"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button class="btn btn-light rounded-circle shadow-none" onclick="scrollSimilarSlider(270)"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="slider-wrapper position-relative">
+                <div class="d-flex overflow-auto similar-slider pb-2" id="similarSlider" style="scroll-behavior:smooth; gap:15px; scrollbar-width:none; -ms-overflow-style:none;">
+                    {% for product in similar_products %}
+                        <div class="card flex-shrink-0 border-1" style="width:250px;">
+                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}{% if selected_size %}?size={{ selected_size|urlencode }}{% endif %}" class="text-decoration-none text-dark">
+                                <div class="d-flex align-items-center justify-content-center p-2" style="height:200px;">
+                                    <img src="{% if product.productimage1.url %}{{ product.productimage1.url }}{% else %}{{ product.productimage1 }}{% endif %}" class="img-fluid" style="max-height:180px;object-fit:contain;" alt="{{ product.producttitle }}">
+                                </div>
+                                <div class="card-body d-flex flex-column p-3">
+                                    <h6 class="fw-bold text-truncate mb-1">{{ product.producttitle }}</h6>                                                 
+                                    {% if product.color_variants %}
+                                        <div class="d-flex align-items-center my-1 gap-1">
+                                            {% for color in product.color_variants|slice:":5" %}
+                                                <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                    <span class="{% if color.id == product.productviewid %} {% endif %} {% if color.unavailable %} {% endif %}" 
+                                                        style="width:16px; height:16px; border-radius:50%; border:1px solid #ccc; display:inline-block; background:{{ color.color_code }}; position:relative; "title="{{ color.name }}">
+                                                    </span>
+                                                </a>
+                                            {% endfor %}
+                                            {% if product.color_variants|length > 5 %}
+                                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="ms-1 text-decoration-none small text-muted" 
+                                                style="font-size: 11px;"title="{{ product.color_variants|length|add:'-5' }} more color options">
+                                                +{{ product.color_variants|length|add:"-5" }}
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}                        
+                                    <div class="d-flex align-items-center mb-2 text-warning small">
+                                        <span class="fw-bold me-1 text-dark">{{ product.rating }}</span>
+                                        {% for i in product.full_stars_range %}
+                                            <i class="fa-solid fa-star"></i>
+                                        {% endfor %}
+                                        {% for i in product.half_stars_range %}
+                                            <i class="fa-solid fa-star-half-stroke"></i>
+                                        {% endfor %}
+                                        {% for i in product.empty_stars_range %}
+                                            <i class="fa-regular fa-star"></i>
+                                        {% endfor %}
+                                    </div>                                                    
+                                    <div class="mt-auto mb-3">
+                                        {% if selected_size or product.display_size %}
+                                            <div class="mb-1">
+                                                <span class="badge bg-light text-dark border fw-normal" style="font-size: 0.75rem;">
+                                                    <span class="fw-semibold text-muted">Size:</span> 
+                                                    {% if product.display_size %}{{ product.display_size }}{% else %}{{ selected_size }}{% endif %}
+                                                </span>
+                                            </div>
+                                        {% endif %}                                
+                                        {% if product.is_unavailable %}
+                                            <div class="text-danger fw-bold small my-1">
+                                                <i class="fa-solid fa-triangle-exclamation me-1"></i>Currently Unavailable
+                                            </div>
+                                        {% else %}
+                                            <div class="d-flex align-items-center gap-1 flex-wrap">
+                                                <span class="fw-bold text-dark fs-6">
+                                                    ₹{% if product.display_price %}{{ product.display_price|format_indian_currency }}{% else %}{{ product.productprice|format_indian_currency }}{% endif %}
+                                                </span>
+                                                {% if product.productdiscountrate and product.productdiscountrate != '0' or product.display_discount and product.display_discount != '0' %}
+                                                    <span class="small text-muted text-decoration-line-through ms-1">
+                                                        M.R.P: ₹{% if product.display_mrp %}{{ product.display_mrp|format_indian_currency }}{% else %}{{ product.productmrpprice|format_indian_currency }}{% endif %}
+                                                    </span>
+                                                    <span class="small text-success fw-semibold" style="font-size: 10px;">
+                                                        ({% if product.display_discount %}{{ product.display_discount }}{% else %}{{ product.productdiscountrate }}{% endif %}% OFF)
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                    </div>                                                  
+                                    <a href="" class="btn btn-warning btn-sm rounded-pill w-100">
+                                        <i class="fa-solid fa-eye me-1"></i>View Product
+                                    </a>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>  
+    {% endif %}
+    {% if home_banner %}
+        <div class="container my-3">
+            <div class="card border rounded-3 mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid" style="max-height:220px;object-fit:contain;" alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2 mb-3">
+                            <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="small text-success">({{ home_banner.productdiscountrate }}% OFF)</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <div class="container mb-3">
+        <div class="row justify-content-center">
+            <div class="col-lg-12">
+                <div class="card border-0 rounded-4">
+                    <div class="card-body">
+                        <h4 class="fw-bold mb-4">Customer Reviews</h4>
+                        {% for r in reviews %}
+                            <div class="rounded-4 p-3 mb-3 bg-light">
+                                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                                    <a href="{% url 'profile' r.user.id productview.category_id.categoryid productview.productviewid %}" class="d-flex text-decoration-none text-dark align-items-center">
+                                        {% if r.user.profile.image %}
+                                            <img src="{{ r.user.profile.image.url }}" class="rounded-circle border me-3" style="width:48px; height:48px; object-fit:contain;">
+                                        {% else %}
+                                            <img src="{% static 'IMG/default.png' %}" class="rounded-circle border me-3" style="width:48px; height:48px; object-fit:contain;">
+                                        {% endif %}
+                                        <div>
+                                            <h6 class="fw-bold mb-0">{{ r.user.username }}</h6>
+                                            {% if r.verified_purchase %}
+                                                <div class="text-success small fw-semibold mb-1">
+                                                    <i class="fa-solid fa-circle-check me-1"></i>Verified Purchase
+                                                </div>
+                                            {% endif %}
+                                            <small class="text-muted">Reviewed in {{ r.country }} • {{ r.created_at }}</small>
+                                        </div>
+                                    </a>
+                                    <div class="text-warning fs-6">
+                                        {% for i in "12345"|make_list %}
+                                            {% if forloop.counter <= r.rating %}
+                                                <i class="fa-solid fa-star"></i>
+                                            {% else %}
+                                                <i class="fa-regular fa-star"></i>
+                                            {% endif %}
+                                        {% endfor %}
+                                        <span class="fw-bold text-dark small ms-1">{{ r.rating }}/5</span>
+                                    </div>
+                                </div>
+                                <hr class="text-muted opacity-25 my-3">
+                                <p class="small text-secondary mb-2">
+                                    <span class="text-dark me-1">Size: {{ r.size }}</span> |
+                                    <span class="text-dark">Color: {{ r.color }}</span>
+                                </p>
+                                <p class="mb-3 text-dark-emphasis">{{ r.review }}</p>
+                                {% if r.image %}
+                                    <div class="mb-3">
+                                        <img src="{{ r.image.url }}" class="img-fluid rounded border" style="max-width:120px; max-height:120px; object-fit:cover;">
+                                    </div>
+                                {% endif %}
+                                <div class="text-end">
+                                    <form method="post" action="{% url 'delete_review' r.reviewid %}">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-danger rounded-pill px-3">
+                                            <i class="fa-solid fa-trash me-1"></i>Delete
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        {% empty %}
+                            <div class="alert alert-light border text-center py-4 text-muted">No reviews yet. Be the first to write one!</div>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% if all_reviews_count > 3 %}
+                    <a href="{% url 'customerreview' categories.categoryid productview.productviewid %}" class="review-link text-decoration-none text-dark">
+                        <div class="card review-card border rounded-4 mb-4">
+                            <div class="card-body text-center p-3">
+                                <h5 class="mb-0 fw-semibold">See more reviews ({{ all_reviews_count }})<i class="fa-solid fa-angle-right ms-1"></i></h5>
+                            </div>
+                        </div>
+                    </a>
+                {% endif %}
+                <div class="card border rounded-4 ">
+                    <div class="card-header bg-white border-bottom border-light p-4 rounded-top-4">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                            <div class="d-flex align-items-center">
+                                {% if user.is_authenticated %}
+                                    <a href="{% url 'profile' user.id productview.category_id.categoryid productview.productviewid %}" class="d-flex align-items-center text-decoration-none text-dark">
+                                        {% if user.profile.image %}
+                                            <img src="{{ user.profile.image.url }}" class="rounded-circle border me-3" style="width:50px; height:50px; object-fit:contain;">
+                                        {% else %}
+                                            <img src="/static/IMG/default.png" class="rounded-circle border me-3" style="width:50px; height:50px; object-fit:contain;">
+                                        {% endif %}
+                                        <div>
+                                            <h5 class="fw-bold mb-0">Write a Review</h5>
+                                            <small class="text-muted">Posting as {{ user.username }}</small>
+                                        </div>
+                                    </a>
+                                {% else %}
+                                    <div class="d-flex align-items-center">
+                                        <img src="/static/IMAGES/default.png" class="rounded-circle border me-3" style="width:50px;height:50px;object-fit:contain;">
+                                        <div>
+                                            <h5 class="fw-bold mb-0">Write a Review</h5>
+                                            <small class="text-muted">Please <a href="{% url 'login' %}">Login</a> to write a review</small>
+                                        </div>      
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body p-4">
+                        <form method="POST" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            <div class="mb-4">
+                                <label class="form-label fw-bold d-block">Overall Rating</label>
+                                <div class="fs-2 text-warning d-inline-flex gap-1 raw-rating-container" style="cursor: pointer;">
+                                    <i class="fa-solid fa-star rating-star" data-value="1"></i>
+                                    <i class="fa-solid fa-star rating-star" data-value="2"></i>
+                                    <i class="fa-solid fa-star rating-star" data-value="3"></i>
+                                    <i class="fa-solid fa-star rating-star" data-value="4"></i>
+                                    <i class="fa-solid fa-star rating-star" data-value="5"></i>
+                                </div>
+                                <input type="hidden" name="rating" id="rating" value="5">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold">Review Description</label>
+                                <textarea class="form-control shadow-none border-secondary-subtle" rows="4" name="review" id="Review Description" placeholder="Share your experience with this item..." required onclick="myfunction1()"></textarea>
+                            </div>
+                            <div class="row g-3 mb-4">
+                                <div class="col-sm-6 col-md-4">
+                                    <label class="form-label fw-bold small text-secondary">Size</label>
+                                    <input type="text" class="form-control shadow-none" name="size" id="size" placeholder="e.g., S, M, L, XL" required onclick="myfunction2()">
+                                </div>
+                                <div class="col-sm-6 col-md-4">
+                                    <label class="form-label fw-bold small text-secondary">Color Option</label>
+                                    <input type="text" class="form-control shadow-none" name="color" id="color" placeholder="e.g., Black, Blue" required onclick="myfunction3()" >
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold small text-secondary">Country</label>
+                                    <input type="text" name="country" id="country" class="form-control shadow-none" placeholder="e.g., India"  onclick="myfunction4()" >
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label fw-bold small text-secondary">Upload Dynamic Media Attachment</label>
+                                    <input type="file" class="form-control shadow-none" id="imageInput" name="image"  accept="image/*" onclick="myfunction5()">
+                                    <div class="mt-3">
+                                        <img id="previewImage" src="" class="img-fluid rounded border d-none" style="max-width:180px; max-height:180px; object-fit:contain;">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-end">
+                                <button type="submit" class="btn btn-warning rounded-pill px-5 py-2.5 fw-bold text-uppercase shadow-sm" style="letter-spacing:0.05em">
+                                    <i class="fa-solid fa-pen-to-square me-2"></i>Submit Review
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- similarproducts Section Js -->
+    <script>
+    const similarSlider = document.getElementById("similarSlider");
+    function scrollSimilarSlider(value) {
+        if (similarSlider) {
+            similarSlider.scrollBy({
+                left: value,
+                behavior: "smooth"
+            });
+        }
+    }
+    </script>
+    <!-- Styling ideas Section Js -->
+    <script>
+    let currentOutfitIndex = 0;
+    function switchOutfit(direction) {
+        const outfitSets = document.querySelectorAll('.outfit-set');
+        if (outfitSets.length === 0) return;
+        outfitSets[currentOutfitIndex].classList.add('d-none');
+        currentOutfitIndex += direction;
+        if (currentOutfitIndex < 0) {
+            currentOutfitIndex = outfitSets.length - 1;
+        } else if (currentOutfitIndex >= outfitSets.length) {
+            currentOutfitIndex = 0;
+        }
+        outfitSets[currentOutfitIndex].classList.remove('d-none');
+    }
+    </script>
+    <!-- onmouseenter & onclick Events Section js-->
+    <script>
+    const defaultImageSrc = "{{ productview.productimage1 }}";
+    const defaultColor = "{{ productview.productcolor1 }}";
+    const defaultSize = "{% if request.GET.size %}{{ request.GET.size }}{% elif selected_size %}{{ selected_size }}{% else %}{{ productview.productsize }}{% endif %}";
+    function updateMainImage(element) {
+        document.getElementById('mainImage').src = element.src;
+        document.querySelectorAll('.thumb-img').forEach(img => {
+            img.classList.remove('border-danger', 'active-thumb');
+        });
+        element.classList.add('border-danger', 'active-thumb');
+    }
+    function previewVariantImage(imageSrc, colorText) {
+        if (imageSrc) {
+            document.getElementById('mainImage').src = imageSrc;
+        }
+        if (colorText && typeof colorText === 'string') {
+            const colorElement = document.getElementById('colorAspectValue');
+            if (colorElement) {
+                colorElement.innerText = colorText;
+            }
+        }
+    }
+    function resetDefaultImage() {
+        const activeThumb = document.querySelector('.thumb-img.active-thumb');
+        if (activeThumb) {
+            document.getElementById('mainImage').src = activeThumb.src;
+        } else {
+            document.getElementById('mainImage').src = defaultImageSrc;
+        }
+        const colorElement = document.getElementById('colorAspectValue');
+        if (colorElement) {
+            colorElement.innerText = defaultColor;
+        }
+    }
+    function previewSize(sizeText) {
+        const sizeLabel = document.getElementById('selected-size-label');
+        if (sizeLabel && sizeText) {
+            sizeLabel.innerText = sizeText;
+        }
+    }
+    function resetSize() {
+        const sizeLabel = document.getElementById('selected-size-label');
+        if (sizeLabel) {
+            sizeLabel.innerText = defaultSize;
+        }
+    }
+    </script>
+{% endblock body %}
+
+
+

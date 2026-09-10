@@ -1,0 +1,127 @@
+{% load indian_formatting %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice - {{ order.amazon_order_id }}</title>
+    <style>
+        body {font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;color: #111;line-height: 1.4;margin: 0;padding: 20px;font-size: 12px;}
+        .invoice-container {max-width: 800px;margin: auto;border: 1px solid #ddd;padding: 20px;}
+        .amazon-header {width: 100%;border-bottom: 2px solid #232f3e;padding-bottom: 10px;margin-bottom: 15px;}
+        .company-logo {max-width: 90px;height: auto;}
+        .invoice-title-box {text-align: right;}
+        .details-table {width: 100%;border-collapse: collapse;margin-bottom: 15px;}
+        .details-table td {padding: 6px;vertical-align: top;border: 1px solid #ddd;width: 50%;}
+        .items-table {width: 100%;border-collapse: collapse;margin-bottom: 15px;}
+        .items-table th, .items-table td {border: 1px solid #ddd;padding: 8px;text-align: left;vertical-align: middle;}
+        .items-table th {background-color: #232f3e;color: #ffffff;font-weight: bold;}
+        .product-img {width: 40px;height: 40px;object-fit: cover;border-radius: 2px;border: 1px solid #ccc;}
+        .totals-table {width: 300px;float: right;border-collapse: collapse;}
+        .totals-table td {padding: 6px;border: 1px solid #ddd;}
+        .totals-table tr td:first-child {font-weight: bold;background-color: #f9f9f9;}
+    </style>
+</head>
+<body>
+    <div class="invoice-container">
+        <table class="amazon-header">
+            <tr>
+                <td>
+                    <img src="/static/IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png" class="company-logo">
+                    <div style="font-size: 10px; color: #555; margin-top: 2px;">Fulfilled by EShopper Online</div>
+                </td>
+                <td class="invoice-title-box">
+                    <span style="font-size: 16px; font-weight: bold; color: #232f3e;">Tax Invoice / Cash Memo</span><br>
+                    <span style="font-size: 11px; color: #555;">Order ID: <strong>{{ order.amazon_order_id }}</strong></span><br>
+                    <span style="font-size: 11px; color: #555;">Order Date: {{ order.date }}</span>
+                </td>
+            </tr>
+        </table>
+        <table class="details-table">
+            <tr>
+                <td>
+                    <strong>Sold By:</strong><br>
+                    Eisershop Retail Net<br>
+                    Ahmedabad, Gujarat, 382330<br>
+                    IN
+                </td>
+                <td>
+                    <strong>Shipping Address:</strong><br>
+                    {{ order.firstname }} {{ order.username }} {{ order.lastname }}<br>
+                    {{ order.address }}<br>
+                    Phone: {{ order.number }}<br>
+                    Email: {{ order.email }}
+                </td>
+            </tr>
+        </table>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width: 10%; text-align: center;">Image</th>
+                    <th style="width: 55%;">Product Description</th>
+                    <th style="width: 12%; text-align: center;">Size</th>
+                    <th style="width: 13%; text-align: center;">Color</th>
+                    <th style="width: 10%; text-align: center;">Qty</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.orderitem_set.all %}
+                <tr>
+                    <td style="text-align: center;">
+                        {% if item.productview_id.productimage1 %}
+                            <img src="{{ item.productview_id.productimage1 }}" class="product-img">
+                        {% endif %}
+                    </td>
+                    <td><strong>{{ item.productview_id.producttitle }}</strong></td>
+                    <td style="text-align: center;">{% if item.selected_size %}{{ item.selected_size }}{% else %}N/A{% endif %}</td>
+                    <td style="text-align: center;">{{ item.productview_id.productcolor1 }}</td>
+                    <td style="text-align: center;">{{ item.quantity }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <table style="width: 100%; margin-top: 10px;">
+            <tr>
+                <td style="vertical-align: top; width: 50%;">
+                   <div style="font-size: 11px; color: #444; border: 1px solid #ddd; padding: 8px; background: #fafafa;">
+                        <strong>Payment Information:</strong><br>
+                        Payment Method: {{ order.paymentmethod }}<br>
+                        Payment Status: 
+                        {% if order.payment_status_display == "Paid" or order.paymentmethod == "UPI" or order.paymentmethod == "upi" %}
+                            <span style="color: #007600; font-weight: bold;">Paid</span>
+                        {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
+                            <span style="color: #b12704; font-weight: bold;">Cancelled</span>
+                        {% else %}
+                            <span style="color: #856404; font-weight: bold;">Pending</span>
+                        {% endif %}
+                    </div>
+                </td>
+                <td style="vertical-align: top; width: 50%;">
+                    <table class="totals-table">
+                        <tr>
+                            <td>Subtotal:</td>
+                            <td style="text-align: right;">₹. {{ order.subtotal|format_indian_currency }}</td>
+                        </tr>
+                        {% if order.coupon_discount %}
+                        <tr>
+                            <td>Coupon Discount:</td>
+                            <td style="text-align: right; color: #007600;">- ₹. {{ order.coupon_discount|format_indian_currency }}</td>
+                        </tr>
+                        {% endif %}
+                        <tr>
+                            <td>Delivery Charges:</td>
+                            <td style="text-align: right;">₹. {{ order.deliverycharges|format_indian_currency }}</td>
+                        </tr>
+                        <tr>
+                            <td style="font-size: 13px; color: #b12704;"><strong>Grand Total:</strong></td>
+                            <td style="text-align: right; font-size: 13px; color: #b12704; font-weight: bold;">₹. {{ order.total|format_indian_currency }}</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+        <div style="margin-top: 30px; border-top: 1px solid #ddd; padding-top: 10px; text-align: center; font-size: 10px; color: #7f8c8d;">
+            This is a computer-generated invoice and does not require a physical signature. Returns are subject to EShopper policy.
+        </div>
+    </div>
+</body>
+</html>

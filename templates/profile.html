@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load indian_formatting %}
+{% block title %}
+<title>eiser - Profile</title>
+{% endblock title %}
+{% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-active:hover {color: red !important;text-decoration: underline !important;}
+    </style>
+   <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb small mb-0">
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
+                {% if productview %}
+                    <li class="breadcrumb-item" style="max-width: 400px;"><a href="{% url 'productview' productview.category_id.categoryid productview.productviewid %}" class="text-decoration-none text-secondary"><i class="fa-solid fa-box me-1"></i>{{ productview.producttitle|truncatechars:45 }}</a></li>
+                {% endif %}
+                <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-user me-1"></i>Profile</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mb-5">
+        <h4 class="fw-bold mb-4">My Reviews</h4>
+        {% for review in reviews %}
+            <div class="card  border-1 mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                            {% if review.user.profile.image %}
+                                <img src="{{ review.user.profile.image.url }}" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
+                            {% else %}
+                                <img src="/static/IMG/default.png" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
+                            {% endif %}
+                        <div>
+                            <h6 class="mb-0">{{ review.user.username }}</h6>
+                            <small class="text-muted">Reviewed in {{ review.country }} {{ review.created_at }}</small><br>
+                            <small class="text-muted">{{ review.user.email  }}</small>
+                        </div>
+                    </div>
+                    <div class="row align-items-center">
+                        <div class="col-md-1 text-center">
+                            {% if review.image %}
+                                <img src="{{ review.image.url }}" class="img-fluid rounded" style="height:100px; width:110px;">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <div class="mb-2 text-warning">
+                                {% for i in "12345"|make_list %}
+                                    {% if forloop.counter <= review.rating %}
+                                        <i class="fa-solid fa-star"></i>
+                                    {% else %}
+                                        <i class="fa-regular fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                                <span class="text-dark ms-2">{{ review.rating }}/5</span>
+                            </div>
+                            <p class="text-muted mb-2">
+                                <strong>Size:</strong> {{ review.size }}
+                                <span class="mx-1">|</span>
+                                <strong>Color:</strong> {{ review.color }}
+                            </p>
+                            <p class="mb-0">{{ review.review }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="alert alert-info">You have not submitted any reviews yet.</div>
+        {% endfor %}
+    </div>
+    {% if home_banner %}
+        <div class="container mb-5 mt-5">
+            <div class="card border rounded-3  mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid"style="max-height:120px;object-fit:contain;"alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2">
+                            <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
+                                <span class="text-danger fw-bold small" style="font-size: 15px;">Limited time deal</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if recently_viewed_products %}
+        <div class="container bg-white py-3 py-md-4 my-4 border-top border-bottom">
+            <div class="container-fluid px-2 px-md-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-baseline mb-3 gap-1 pb-2">
+                    <h4 class="fw-bold mb-0 text-dark fs-6 fs-md-5">Your browsing history</h4>
+                    <a href="{% url 'browsing_history' %}" class="text-decoration-none text-primary fw-normal" style="font-size: 12px;">View or edit your browsing history</a>
+                </div>
+                <div class="position-relative px-1 px-md-3">
+                    <div class="swiper amazonBrowsingSwiper">
+                        <div class="swiper-wrapper">
+                            {% for product in recently_viewed_products %}
+                                <div class="swiper-slide" style="width: 180px;">
+                                    <div class="card h-100 border-0 p-2 position-relative bg-white">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none d-block">
+                                            <div class="p-2 bg-white text-center d-flex align-items-center justify-content-center hover-card" style="height: 130px;">
+                                                <img src="{{ product.productimage1.url|default:product.productimage1 }}" alt="{{ product.producttitle }}" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                            </div>
+                                        </a>                              
+                                        <div class="card-body p-0 d-flex flex-column">                                    
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                                <p class="mb-1 text-truncate-2 small fw-normal lh-sm" style="font-size: 13px; height: 32px; color: #0f1111;">
+                                                    {{ product.producttitle|truncatechars:40  }}
+                                                </p>
+                                            </a>                                    
+                                            <div class="mt-auto pt-1">
+                                                <div class="d-flex align-items-baseline gap-1 flex-wrap">
+                                                    <span class="fw-medium text-dark" style="font-size: 14px;">₹{{ product.productprice|intcomma }}</span>
+                                                    {% if product.productmrpprice and product.productmrpprice > product.productprice %}
+                                                        <span class="text-muted text-decoration-line-through" style="font-size: 10px;">M.R.P: ₹{{ product.productmrpprice|intcomma }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                    <small class="text-danger d-block" style="font-size: 10px;">({{ product.productdiscountrate }}% off)</small>
+                                                {% endif %}                                            
+                                                {% if delivery_date %}
+                                                    <div class="mt-1" style="font-size: 10px;">
+                                                        <span class="text-muted">FREE Delivery </span>
+                                                        <span class="fw-bold text-dark">{{ delivery_date|date:"D, M d" }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>                             
+                                            <form method="post" action="{% url 'add_to_cart' product.productviewid %}" class="mt-2">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="selected_size" value="{{ product.productsize1 }}">                                              
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock body %}

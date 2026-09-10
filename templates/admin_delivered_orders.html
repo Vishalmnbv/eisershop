@@ -1,0 +1,279 @@
+{% load humanize %}
+{% load indian_formatting %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delivered Order Page</title>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome  -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/admin/dashboard/" aria-label="Admin Dashboard">
+                <img src="/static/IMAGES/logo.jfif" alt="Logo" style="height: 50px; width: 90px;">
+                <span class="ms-2 badge bg-warning text-dark fs-6">Admin Panel</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav" aria-controls="adminNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNav">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-end w-100 gap-2 mt-2 mt-lg-0">
+                    <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 mt-2 mt-lg-0">
+                        {% if user.is_authenticated and user.is_staff %}
+                            <div class="nav-item dropdown">
+                                <button class="btn dropdown-toggle p-1 shadow-none border-0 d-flex align-items-center text-white text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if user.profile.image %}
+                                        <img src="{{ user.profile.image.url }}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="/static/IMAGES/default.png" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="d-none d-xl-block lh-sm">
+                                        <span class="d-block text-white-50" style="font-size: 11px;">Administrator</span>
+                                        <span class="text-white fw-bold" style="font-size: 13px;">{{ user.username }}</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-0 p-3" style="width: 240px;">
+                                    <li>
+                                        <div class="d-flex align-items-center pb-2 mb-2 border-bottom">
+                                            {% if user.profile.image %}
+                                                <img src="{{ user.profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="/static/IMAGES/default.png" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div class="overflow-hidden">
+                                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ user.first_name|default:user.username }}</h6>
+                                                <small class="text-muted" style="font-size: 11px;">System Admin</small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded" href="/admin/"><i class="fa-solid fa-gauge text-secondary"></i><span>Django Admin</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded" href="/"><i class="fa-solid fa-store text-secondary"></i><span>Go to Store</span></a></li>
+                                    <li><hr class="dropdown-divider my-2"></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded text-danger fw-semibold" href="/logout/"><i class="fa-solid fa-right-from-bracket"></i><span>Sign Out</span></a></li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid px-4 py-4" style="background-color: #f3f3f3; min-height: 100vh;">
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-3 bg-white rounded border-top border">
+            <div>
+                <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f1111;">
+                    <i class="fa-solid fa-boxes-stacked text-warning"></i> Manage Orders & Fulfillment
+                </h4>
+                <p class="text-muted small mb-0">Track completed customer purchases and successfully delivered shipments.</p>
+            </div>
+            <div>
+                <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-dark btn-sm rounded-1 fw-bold shadow-sm px-3" style="background-color: #febd69; border-color: #a88734; color: #111;">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
+                </a>
+            </div>
+        </div>
+        <div class="card border-1 rounded-2 mb-4">
+            <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between" style="background-color: #232f3e; color: #fff;">
+                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
+                    <i class="fa-solid fa-list-check text-warning"></i> Delivered Orders
+                </h5>
+                <span class="badge text-dark fw-bold" style="background-color: #febd69;">{{ orders|length }} Delivered</span>
+            </div>
+            <div class="card-body p-4">
+                {% for order in orders %}
+                    <div class="card mb-4 border rounded-2 overflow-hidden bg-white">
+                        <div class="card-header py-3 px-4 border-bottom" style="background-color: #f8f9fa;">
+                            <div class="row align-items-center gy-2" style="font-size: 0.8rem;">                                
+                                <div class="col-6 col-md-2">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">ORDER DATE</span>
+                                    <span class="fw-bold text-dark">
+                                        <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y" }}
+                                    </span>
+                                </div>                              
+                                      
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">PAYMENT</span>
+                                    <div class="fw-semibold text-dark d-flex align-items-center flex-wrap gap-1" style="font-size:0.8rem;">
+                                        <span>{{ order.paymentmethod }}</span>                         
+                                        {% if order.orderstatus == "Cancelled" or order.payment_status_display == "Cancelled" %}
+                                            <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-ban me-1"></i> Cancelled
+                                            </span>
+                                        {% elif order.paymentmethod|upper == 'COD' or 'CASH' in order.paymentmethod|upper %}
+                                            <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-circle-check me-1"></i> Paid
+                                            </span>
+                                        {% elif order.payment_status_display == "Paid" or order.payment_status == "Paid" %}
+                                            <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-circle-check me-1"></i> Paid Online
+                                            </span>
+                                        {% else %}
+                                            <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-circle-xmark me-1"></i> Unpaid
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                </div>                                                         
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">CUSTOMER</span>
+                                    <a href="{% url 'admin_customer_detail' order.user_id.id %}" class="d-flex align-items-center gap-2 text-decoration-none" title="{{ order.firstname }} {{ order.lastname|default:order.username }}">
+                                        <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; background-color: #232f3e !important;">
+                                            {{ order.username|default:order.firstname|slice:":1"|upper }}
+                                        </div>
+                                        <span class="fw-bold text-dark text-uppercase text-truncate" style="max-width: 190px; font-size: 0.8rem;">
+                                            {{ order.username }} 
+                                        </span>
+                                    </a>
+                                </div>                           
+                                <div class="col-12 col-md-2 text-md-end">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">ORDER ID</span>
+                                    <a href="" class="fw-bold font-monospace text-decoration-none text-info">
+                                        #{{ order.amazon_order_id }}
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% for item in order.orderitem_set.all %}
+                                <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-3">                                                                       
+                                    <div class="d-flex align-items-center me-3">
+                                        <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="flex-shrink-0 me-3">
+                                            <div class="p-1 bg-white">
+                                                <img src="{{ item.productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain" alt="{{ item.productview_id.producttitle }}">
+                                            </div>
+                                        </a>
+                                        <div>
+                                            <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="fw-bold text-decoration-none d-block mb-1 text-truncate" style="color: darkblue; max-width: 500px; font-size: 0.85rem;" title="{{ item.productview_id.producttitle }}">
+                                                {{ item.productview_id.producttitle }}
+                                            </a>
+                                            <div class="text-muted small" style="font-size: 0.75rem;">
+                                                <span class="me-3">
+                                                    <strong>Price:</strong> 
+                                                    ₹{% if item.calculated_unit_price %}{{ item.calculated_unit_price|format_indian_currency }}{% else %}{{ item.productview_id.productprice|format_indian_currency }}{% endif %}
+                                                    <span class="mx-1">|</span>
+                                                </span>
+                                                <span class="me-3">
+                                                    <strong>Qty:</strong> {{ item.quantity }}
+                                                    <span class="mx-1">|</span>
+                                                </span>
+                                                {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
+                                                    <span class="me-3">
+                                                        <strong>Size:</strong> <span class="badge bg-light text-dark border">{{ item.selected_size }}</span>
+                                                        <span class="mx-1">|</span>
+                                                    </span>
+                                                {% elif item.size and item.size|lower != "standard" and item.size|lower != "none" %}
+                                                    <span class="me-3">
+                                                        <strong>Size:</strong> <span class="badge bg-light text-dark border">{{ item.size }}</span>
+                                                        <span class="mx-1">|</span>
+                                                    </span>
+                                                {% endif %}
+                                                {% if item.productview_id.productcolor1 %}
+                                                    <span class="me-3">
+                                                        <strong>Color:</strong> {{ item.productview_id.productcolor1 }}
+                                                    </span>
+                                                {% endif %}                       
+                                            </div>      
+                                        </div>
+                                    </div>                                                                                                                                    
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-1 px-3 py-2 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.75rem;">
+                                            <i class="fa-solid fa-circle-check me-1"></i> Delivered
+                                        </span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="p-3 text-center text-muted">No products found for this order.</div>
+                            {% endfor %}
+                            <div class="p-3 px-4 bg-light border-top">
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Subtotal</span>
+                                    <span>₹{{ order.calculated_subtotal|format_indian_currency }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Coupon 
+                                        {% if order.coupon_code_display %}
+                                            ({{ order.coupon_code_display }})
+                                        {% else %}
+                                            (No Coupon)
+                                        {% endif %}
+                                    </span>
+                                    <span class="text-success">
+                                        - ₹{{ order.coupon_discount_display|format_indian_currency }}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Delivery Charges</span>
+                                    <span>₹{{ order.delivery_charge_display|format_indian_currency }}</span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.9rem;">
+                                    <span>Total</span>
+                                    <span>₹{{ order.calculated_total|format_indian_currency }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5">
+                        <div class="py-4">
+                            <div class="avatar-lg bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 75px; height: 75px; color: #ff9900;">
+                                <i class="fa-solid fa-box-open fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">No Delivered Orders</h5>
+                            <p class="text-muted small mb-0">There are currently no delivered orders available to display.</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <footer class="bg-dark text-light mt-3">
+        <div class="container-fluid">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/admin/" aria-label="Admin Dashboard">
+                        <img src="/static/IMAGES/logo.jfif" alt="Logo" style="height: 50px; width: 90px;">
+                        <span class="ms-2 badge bg-warning text-dark fs-6">Admin Panel</span>
+                    </a>
+                    <p class="text-secondary mt-2">Secure management portal for Eiser. Oversee inventory, track customer orders, and manage store data efficiently.</p>
+                </div>
+                <div class="col-lg-3 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Management</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/admin/" class="text-secondary text-decoration-none">Django Admin</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Orders</a></li>
+                        <li><a href="#" class="text-secondary text-decoration-none">Customers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-secondary text-decoration-none">Go to Store</a></li>
+                        <li class="mb-2"><a href="/editprofile/" class="text-secondary text-decoration-none">My Profile</a></li>
+                        <li><a href="/logout/" class="text-danger text-decoration-none">Sign Out</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-12">
+                    <h6 class="fw-bold text-uppercase mb-3">System Status</h6>
+                    <p class="text-secondary mb-2" style="font-size: 13px;"><i class="fa-solid fa-circle text-success me-1"></i> System Online & Secure</p>
+                    <small class="text-muted">Logged in as: {{ user.username }}</small>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <small class="text-secondary">© 2026 Eiser Admin Portal. All Rights Reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+    

@@ -1,0 +1,285 @@
+{% load humanize %}
+{% load indian_formatting %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Page</title>
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome  -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/admin/dashboard/" aria-label="Admin Dashboard">
+                <img src="/static/IMAGES/logo.jfif" alt="Logo" style="height: 50px; width: 90px;">
+                <span class="ms-2 badge bg-warning text-dark fs-6">Admin Panel</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#adminNav" aria-controls="adminNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="adminNav">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-end w-100 gap-2 mt-2 mt-lg-0">
+                    <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 mt-2 mt-lg-0">
+                        {% if user.is_authenticated and user.is_staff %}
+                            <div class="nav-item dropdown">
+                                <button class="btn dropdown-toggle p-1 shadow-none border-0 d-flex align-items-center text-white text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if user.profile.image %}
+                                        <img src="{{ user.profile.image.url }}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="/static/IMAGES/default.png" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="d-none d-xl-block lh-sm">
+                                        <span class="d-block text-white-50" style="font-size: 11px;">Administrator</span>
+                                        <span class="text-white fw-bold" style="font-size: 13px;">{{ user.username }}</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-0 p-3" style="width: 240px;">
+                                    <li>
+                                        <div class="d-flex align-items-center pb-2 mb-2 border-bottom">
+                                            {% if user.profile.image %}
+                                                <img src="{{ user.profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="/static/IMAGES/default.png" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div class="overflow-hidden">
+                                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ user.first_name|default:user.username }}</h6>
+                                                <small class="text-muted" style="font-size: 11px;">System Admin</small>
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded" href="/admin/"><i class="fa-solid fa-gauge text-secondary"></i><span>Django Admin</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded" href="/"><i class="fa-solid fa-store text-secondary"></i><span>Go to Store</span></a></li>
+                                    <li><hr class="dropdown-divider my-2"></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded text-danger fw-semibold" href="/logout/"><i class="fa-solid fa-right-from-bracket"></i><span>Sign Out</span></a></li>
+                                </ul>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid px-4 py-4" style="background-color: #eaeded; min-height: 100vh;">
+        <div class="card border-0 rounded-2 shadow-sm overflow-hidden mb-3">
+            <div class="card-body py-3 px-4 bg-white">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3">
+                    <div>
+                        <h3 class="fw-bold text-dark mb-1 d-flex align-items-center" style="font-size: 1.2rem; font-family: 'Amazon Ember', Arial, sans-serif;">
+                            <i class="fa-solid fa-star me-2" style="color: #ff9900;"></i>Customer Feedback & Reviews
+                        </h3>
+                        <p class="text-muted mb-0" style="font-size: 0.8rem;">Monitor, analyze, and manage customer product ratings and reviews.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="d-flex align-items-center px-3 py-2 rounded-2" style="background-color: #fef8f2; border: 1px solid #fcd299;">
+                            <span class="text-muted fw-bold me-2" style="font-size: 0.7rem; letter-spacing: 0.5px;">TOTAL FEEDBACK</span>
+                            <span class="fw-bold" style="color: #b12704; font-size: 0.95rem;">{{ reviews|length }}</span>
+                        </div>
+                        <a href="{% url 'admin_dashboard' %}" class="btn btn-sm rounded-2 fw-semibold shadow-sm d-flex align-items-center gap-1" style="background: linear-gradient(to bottom,#f8dfa5,#f0c14b); border: 1px solid #a88734; color: #111; font-size: 0.78rem;">
+                            <i class="fa-solid fa-arrow-left"></i> Dashboard
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card border-1 rounded-2  overflow-hidden">
+            <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between" style="background-color: #232f3e; color: #fff;">
+                <h5 class="mb-0 fw-bold d-flex align-items-center" style="font-size: 0.95rem;">
+                    <i class="fa-solid fa-comments me-2" style="color: #febd69;"></i>Performance Reports - Customer Reviews
+                </h5>
+                <span class="badge px-3 py-1.5" style="background-color: #37475a; color: #fff; border: 1px solid #526477; font-size: 0.72rem; font-weight: 500;">
+                    {{ reviews|length }} Records Found
+                </span>
+            </div>
+            <div class="card-body p-0 ">
+                <div class="table-responsive">
+                    <table class="table  align-middle mb-0" style="border-color: #e7e9ec;">        
+                        <thead style="background-color: #f2f2f2; color: #0f1111; border-bottom: 2px solid #d5d9d9;">
+                            <tr>
+                                <th class="py-3 px-4" style="min-width: 280px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Product Details</th>
+                                <th class="py-3 px-3" style="min-width: 200px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Customer Info</th>
+                                <th class="py-3 px-3" style="min-width: 130px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Rating</th>
+                                <th class="py-3 px-3" style="min-width: 280px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Review Content</th>
+                                <th class="py-3 px-3" style="min-width: 110px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Date</th>
+                                <th class="py-3 px-4 text-center" style="min-width: 100px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;">Actions</th>
+                            </tr>
+                        </thead>        
+                        <tbody>
+                            {% for review in reviews %}
+                                <tr style="border-bottom: 1px solid #e7e9ec;">     
+                                    <td class="py-3 px-4">
+                                        <div class="d-flex align-items-center">
+                                            <a href="{% url 'productview' review.product.category_id.categoryid review.product.productviewid %}?ref_page={{ page_obj.number }}" class="flex-shrink-0">
+                                                <div class="me-3 flex-shrink-0 p-1" style="width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;">
+                                                    <img src="{{ review.product.productimage1 }}" class="img-fluid object-fit-contain" style="max-height: 100%; max-width: 100%;" alt="Product Image">
+                                                </div>
+                                            </a>
+                                            <div>
+                                                <h6 class="fw-bold text-dark mb-1 text-truncate" style="font-size: 0.83rem; max-width: 260px;" title="{{ review.product.producttitle }}">
+                                                    {{ review.product.producttitle }}
+                                                </h6>        
+                                                <div class="d-flex flex-wrap align-items-center gap-1 text-muted" style="font-size: 0.7rem;">
+                                                    {% if review.size and review.size|lower != "standard" and review.size|lower != "none" %}
+                                                        <span class="px-1.5 py-0.5 text-dark"><strong>Size:</strong> {{ review.size }}</span>
+                                                        <span class="mx-1">|</span>
+                                                    {% endif %}
+                                                    {% if review.color %}
+                                                        <span class="px-1.5 py-0.5 text-dark"><strong>Color:</strong> {{ review.color }}</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>     
+                                    <td class="py-3 px-3">
+                                        <div class="d-flex align-items-center">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0 me-2 shadow-sm" style="width: 34px; height: 34px; background-color: #febd69; color: #111; font-size: 0.8rem;">  
+                                                {% if review.user %}
+                                                    {{ review.user.username|slice:":1"|upper }}
+                                                {% else %}
+                                                    {{ order.firstname|default:review.firstname|slice:":1"|upper }}
+                                                {% endif %}
+                                            </div>
+                                            <div style="min-width: 0;">       
+                                                {% if review.user and review.product %}
+                                                    <a href="{% url 'profile' review.user.id review.product.category_id.categoryid review.product.productviewid %}" class="fw-bold text-dark text-truncate d-block text-decoration-none" style="max-width: 150px; font-size: 0.78rem;">  
+                                                        {{ review.user.username }}
+                                                    </a>
+                                                {% else %}
+                                                    <div class="fw-bold text-dark text-truncate" style="max-width: 150px; font-size: 0.78rem;">
+                                                        {{ review.username }}
+                                                    </div>
+                                                {% endif %}       
+                                                <div class="text-muted text-truncate" style="max-width: 150px; font-size: 0.67rem;">
+                                                    <i class="fa-regular fa-envelope me-1"></i>{{ review.user.email|default:"N/A" }}
+                                                </div>       
+                                                {% if review.country %}
+                                                    <div class="text-secondary text-truncate" style="max-width: 150px; font-size: 0.67rem;">
+                                                        <i class="fa-solid fa-globe me-1"></i>{{ review.country }}
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>     
+                                    <td class="py-3 px-3">
+                                        <div class="d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                            {% for i in "12345" %}
+                                                {% if forloop.counter <= review.rating %}
+                                                    <i class="fa-solid fa-star" style="color: #ff9900;"></i>
+                                                {% else %}
+                                                    <i class="fa-regular fa-star" style="color: #ccc;"></i>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <div class="fw-bold text-dark mt-1" style="font-size: 0.7rem;">
+                                            {{ review.rating }} out of 5 stars
+                                        </div>
+                                    </td>     
+                                    <td class="py-3 px-3">
+                                        <div style="max-width: 280px;">
+                                            <p class="mb-1 text-dark" style="font-size: 0.78rem; line-height: 1.4;">
+                                                {{ review.review|truncatechars:70 }}
+                                            </p>
+                                            {% if review.image %}
+                                                <div class="mt-2">
+                                                    <a href="{{ review.image.url }}" target="_blank" title="View Attachment" class="d-inline-block p-1">
+                                                        <img src="{{ review.image.url }}" width="40" height="40" class="object-fit-contain rounded" alt="Review Image">
+                                                    </a>
+                                                </div>
+                                            {% endif %}
+                                        </div>
+                                    </td>     
+                                    <td class="py-3 px-3">
+                                        <div class="text-muted" style="font-size: 0.73rem;">
+                                            <i class="fa-regular fa-calendar me-1 text-secondary"></i>
+                                            {{ review.created_at|date:"d M Y" }}
+                                        </div>
+                                    </td>
+                                    <td class="py-3 px-4 text-center">
+                                        <div class="d-flex align-items-center justify-content-center gap-2">            
+                                            <a href="{% url 'productview' review.product.category_id.categoryid review.product.productviewid %}" 
+                                            class="btn btn-sm d-flex align-items-center justify-content-center rounded-2"
+                                            style="width: 30px; height: 30px; background-color: #f0f2f2; color: #007185; border: 1px solid #d5d9d9;" 
+                                            title="View Product">
+                                                <i class="fa-solid fa-eye" style="font-size: 0.7rem;"></i>
+                                            </a>            
+                                            <form action="{% url 'delete_review' review.reviewid %}" method="POST" class="d-inline">
+                                                {% csrf_token %}
+                                                <button type="submit" 
+                                                        class="btn btn-sm d-flex align-items-center justify-content-center rounded-2 border-0 shadow-none"
+                                                        style="width: 30px; height: 30px; background-color: #fdf3f2; color: #cc0c39; border: 1px solid #f1b0b7 !important;"
+                                                        onclick="return confirm('Are you sure you want to delete this customer review?');" 
+                                                        title="Delete Review">
+                                                    <i class="fa-solid fa-trash" style="font-size: 0.7rem;"></i>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" class="text-center py-5">
+                                        <div class="py-4">
+                                            <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 64px; height: 64px; background-color: #f7f7f7; color: #ff9900; border: 1px solid #ddd;">
+                                                <i class="fa-solid fa-star-half-stroke fa-xl"></i>
+                                            </div>
+                                            <h5 class="fw-bold text-dark mb-1" style="font-size: 0.95rem;">No Feedback Available</h5>
+                                            <p class="text-muted small mb-0">No customer reviews have been recorded for your store yet.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer class="bg-dark text-light mt-3">
+        <div class="container-fluid">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/admin/" aria-label="Admin Dashboard">
+                        <img src="/static/IMAGES/logo.jfif" alt="Logo" style="height: 50px; width: 90px;">
+                        <span class="ms-2 badge bg-warning text-dark fs-6">Admin Panel</span>
+                    </a>
+                    <p class="text-secondary mt-2">Secure management portal for Eiser. Oversee inventory, track customer orders, and manage store data efficiently.</p>
+                </div>
+                <div class="col-lg-3 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Management</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/admin/" class="text-secondary text-decoration-none">Django Admin</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Products</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Orders</a></li>
+                        <li><a href="#" class="text-secondary text-decoration-none">Customers</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/" class="text-secondary text-decoration-none">Go to Store</a></li>
+                        <li class="mb-2"><a href="/editprofile/" class="text-secondary text-decoration-none">My Profile</a></li>
+                        <li><a href="/logout/" class="text-danger text-decoration-none">Sign Out</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 col-md-12">
+                    <h6 class="fw-bold text-uppercase mb-3">System Status</h6>
+                    <p class="text-secondary mb-2" style="font-size: 13px;"><i class="fa-solid fa-circle text-success me-1"></i> System Online & Secure</p>
+                    <small class="text-muted">Logged in as: {{ user.username }}</small>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <small class="text-secondary">© 2026 Eiser Admin Portal. All Rights Reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
+    

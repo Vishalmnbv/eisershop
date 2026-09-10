@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}
+<title>Return Order</title>
+{% endblock %}
+{% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-active:hover {color: red !important;text-decoration: underline !important;}
+    </style>
+    <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb small mb-0">
+                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary "><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'my_orders' %}" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Your Orders</a></li>
+                        <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-rotate-left me-1"></i>Return Order</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+    </div>
+    <div class="container mb-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-7 col-md-9">
+                <div class="card border-1 rounded-3" style="border-color: #d5d9d9;">
+                    <div class="card-header bg-white py-3 border-bottom" style="border-color: #e7e7e7;">
+                        <h4 class="mb-0 fw-bold text-dark" style="font-size: 1.25rem;">
+                            <i class="fa-solid fa-rotate-left me-2 text-warning"></i>Return Item
+                        </h4>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="p-3 mb-4 rounded-3" style="background-color: #f7f8f8; border: 1px solid #d5d9d9;">
+                            <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style="border-color: #e7e7e7;">
+                                <div>
+                                    <span class="text-muted small">Order ID:</span>
+                                    <span class="fw-bold font-monospace ms-1 text-dark">#{{ order.amazon_order_id }}</span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
+                                        {{ order.orderstatus }}
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="row align-items-center g-3 pt-1">
+                                <div class="col-3 col-sm-2 text-center">
+                                    <img src="{{ order_item.productview_id.productimage1 }}" class="img-fluid rounded border bg-white p-1" style="max-height: 75px; object-fit: contain;">
+                                </div>
+                                <div class="col-9 col-sm-7">
+                                    <h6 class="fw-semibold text-dark mb-1 text-truncate" style="font-size: 0.9rem;" title="{{ order_item.productview_id.producttitle }}">
+                                        {{ order_item.productview_id.producttitle }}
+                                    </h6>
+                                    <div class="text-muted small" style="font-size: 0.8rem;">
+                                        <span>Qty: <strong>{{ order_item.quantity }}</strong></span>
+                                        {% if order_item.selected_size and order_item.selected_size|lower != "standard" and order_item.selected_size|lower != "none" %}
+                                            <span class="mx-1">|</span>
+                                            <span>Size: <strong>{{ order_item.selected_size }}</strong></span>
+                                        {% endif %}
+                                        <span class="mx-1">|</span>
+                                        <span>Color: <strong>{{ order_item.productview_id.productcolor1 }}</strong></span>
+                                    </div>
+                                </div>
+                                <div class="col-12 col-sm-3 text-sm-end">
+                                    <span class="fw-bold fs-5 text-dark">₹{{ order_item.productview_id.productprice|format_indian_currency }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <form method="post">
+                            {% csrf_token %}                        
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-dark mb-1">Select Quantity to Return</label>
+                                <select class="form-select shadow-none" name="return_quantity" required style="border-color: #888c8c; font-size: 0.875rem;">
+                                    {% for i in "x"|ljust:order_item.quantity %}
+                                        <option value="{{ forloop.counter }}" {% if forloop.last %}selected{% endif %}>
+                                            {{ forloop.counter }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>                         
+                            <div class="mb-3">
+                                <label class="form-label fw-bold small text-dark mb-1">Why are you returning this?</label>
+                                <select class="form-select shadow-none" name="reason" required style="border-color: #888c8c; font-size: 0.875rem;">
+                                    <option value="" selected disabled>-- Choose a reason --</option>
+                                    <option value="Wrong Product Received">Wrong Product Received</option>
+                                    <option value="Damaged Product">Damaged Product</option>
+                                    <option value="Defective Product">Defective Product</option>                
+                                    <option value="Size Issue">Size Issue</option>                            
+                                    <option value="Quality Not Good">Quality Not Good</option>
+                                    <option value="Product Not Needed">Product Not Needed</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label fw-bold small text-dark mb-1">Comments <span class="text-muted fw-normal">(optional)</span></label>
+                                <textarea class="form-control shadow-none" rows="3" name="comments" placeholder="Provide additional details..." style="border-color: #888c8c; font-size: 0.875rem;"></textarea>
+                            </div>                        
+                            <div class="pt-2">
+                                <button type="submit" class="btn w-100 fw-semibold rounded-pill py-2" style="background-color: #ffd814; border: 1px solid #fcd200; color: #0F1111; font-size: 0.9rem;">
+                                    <i class="fa-solid fa-rotate-left me-2"></i>Submit Return Request
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock body %}

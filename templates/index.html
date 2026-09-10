@@ -1,0 +1,840 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load indian_formatting %}
+{% block title %}
+<title>eiser - Home</title>
+{% endblock title %}
+{% block body %}
+    <style>
+        .recommendedSwiper{padding:15px 40px;}
+        .recommendedSwiper .swiper-slide{height:auto;}
+        .recommendedSwiper .card{border-radius:15px;transition:.3s;}
+        .amazon-coupon{display:flex;background:#fff;border:2px dashed #f0c14b;border-radius:15px;overflow:hidden;}
+        .coupon-left{width:110px;background:#ff9900;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+        .coupon-left .discount{font-size:34px;font-weight:700;line-height:1;}
+        .coupon-right{flex:1;padding:20px;}
+        .coupon-code{background:#232f3e;color:#fff;padding:10px 20px;border-radius:6px;font-weight:700;letter-spacing:1px;}
+        .coupon-countdown{background:#ea3b4d;color:#fff;padding:7px 16px;border-radius:20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:2px;}
+        .coupon-countdown span{font-weight:700;}
+        .amazon-coupon{display:flex;background:#fff;border:2px dashed #ff9900;border-radius:15px;overflow:hidden;transition:.3s;height:100%;}
+        .coupon-left{width:95px;background:#ff9900;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;}
+        .discount{font-size:22px;font-weight:bold;}
+        .coupon-left small{font-size:15px;font-weight:600;}
+        .coupon-right{flex:1;padding:18px;}
+        .coupon-code{background:#232f3e;color:#fff;padding:8px 18px;border-radius:6px;font-weight:700;letter-spacing:1px;}
+        .amazon-coupon .btn{border-radius:6px;font-weight:600;}
+        .amazon-coupon .product-image-container {width: 100%;height: 105px;display: flex;align-items: center;justify-content: center; border: 1px solid #eee;border-radius: 6px;overflow: hidden;margin: 8px 0;}
+        .amazon-coupon .product-image-container img {max-height: 95px;max-width: 100%;object-fit: contain;mix-blend-mode: multiply;}
+        .top-brands{background:#fff;}
+        .brand-card{background:#fff;border:1px solid #e6e6e6;border-radius:15px;text-align:center;padding:25px 15px;transition:.3s;cursor:pointer;}
+        .brand-card img{width:90px;height:90px;object-fit:contain;margin-bottom:15px;}
+        .brand-card h6{font-weight:700;margin-bottom:0;}
+        .brandSwiper{padding:10px 35px;}
+        .brandSwiper .swiper-button-next,.brandSwiper .swiper-button-prev{color:#000;width:42px;height:42px;border-radius:50%;background:#fff;}
+        .brandSwiper .swiper-button-next::after,.brandSwiper .swiper-button-prev::after{font-size:16px;}
+        .brandSlider .custom-nav-btn {width: 40px !important;height: 40px !important;background-color: #ffffff !important;border-radius: 50% !important;;border: 1px solid #e0e0e0 !important;transition: all 0.2s ease-in-out;}
+        .brandSlider .custom-nav-btn::after {font-size: 14px !important;font-weight: bold !important;color: #444444 !important;}
+        .brandSlider .custom-nav-btn:hover {background-color: #f8f9fa !important;}
+        .brandSlider .swiper-button-disabled {opacity: 0.3 !important;cursor: not-allowed;}
+    </style>
+    <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container-fluid p-0 mb-5">
+        <div class="row g-0">
+            <div class="col-12">
+                <div id="heroCarousel" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
+                        <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                    </div>
+                    <div class="carousel-inner">
+                        <div class="carousel-item active">
+                            <img src="/static/IMAGES/carousel-1.jpg" class="d-block w-100" alt="Fashionable Dress Banner" style="height:600px; object-fit:cover;">
+                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+                            <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+                                <h4 class="text-uppercase">10% Off Your First Order</h4>
+                                <h1 class="display-3 fw-bold">Fashionable Dress</h1>
+                            </div>
+                        </div>
+                        <div class="carousel-item">
+                            <img src="/static/IMAGES/carousel-2.jpg" class="d-block w-100 object-fit-cover" alt="Reasonable Price Banner" style="height:600px;">
+                            <div class="position-absolute top-0 start-0 w-100 h-100 bg-dark opacity-50"></div>
+                            <div class="carousel-caption d-flex flex-column justify-content-center h-100">
+                                <h4 class="text-uppercase">Limited Time Offer</h4>
+                                <h1 class="display-3 fw-bold">Reasonable Price</h1>
+                            </div>
+                        </div>
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> 
+    {% if search_history %}
+        <div class="container mt-4">
+            <div class="card border-1 rounded-4">
+                <div class="card-header bg-white border-bottom d-flex justify-content-between align-items-center py-3 rounded-top-4">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center me-3" style="width:45px;height:45px;">
+                            <i class="fa-solid fa-clock-rotate-left text-warning fs-5"></i>
+                        </div>
+                        <div>
+                            <h5 class="mb-0 fw-bold">Recent Searches</h5>
+                            <small class="text-muted">Continue where you left off</small>
+                        </div>
+                    </div>
+                    <form method="post" action="{% url 'home' %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+                            <i class="fa-solid fa-trash me-1"></i>Clear
+                        </button>
+                    </form>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if user.is_authenticated %}
+                            {% for item in search_history %}
+                                <a href="{% url 'search' %}?q={{ item.keyword|urlencode }}" class="btn btn-light border rounded-pill px-3 py-2">
+                                    <i class="fa-solid fa-clock text-secondary me-2"></i>{{ item.keyword }}
+                                </a>
+                            {% endfor %}
+                            {% else %}
+                            {% for item in search_history %}
+                                <a href="{% url 'search' %}?q={{ item|urlencode }}" class="btn btn-light border rounded-pill px-3 py-2">
+                                    <i class="fa-solid fa-clock text-secondary me-2"></i>{{ item }}
+                                </a>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <section class="my-4 position-relative">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="fw-bold m-0">Best deals on Brands</h5>
+                <div>
+                    <button type="button" class="btn btn-light rounded-circle me-2 shadow-none" onclick="scrollBrandSlider(-270)" aria-label="Previous brands"><i class="fa-solid fa-chevron-left"></i></button>
+                    <button type="button" class="btn btn-light rounded-circle shadow-none" onclick="scrollBrandSlider(270)"aria-label="Next brands"><i class="fa-solid fa-chevron-right"></i></button>
+                </div>
+            </div>
+            <div class="slider-wrapper position-relative">
+                <div class="d-flex overflow-auto brand-slider pb-2"id="brandSlider"style="scroll-behavior:smooth;gap:15px;scrollbar-width:none;-ms-overflow-style:none;">
+                    {% for brand in featured_brands %}
+                        <div class="card flex-shrink-0 border-1 brand-card"style="width:200px;">
+                            <a href="{% url 'collection' brand.category_id %}?brand={{ brand.search_query|urlencode }}" class="text-decoration-none text-dark">
+                                <div class="card h-75 border-0 text-center p-2">
+                                    <div class="d-flex align-items-center justify-content-center mb-2" style="height: 90px;">
+                                        {% if brand.image %}
+                                            <img src="{{ brand.image }}" class="img-fluid" style="max-height: 110px; object-fit: contain;"  alt="{{ brand.name }}" onerror="this.style.display='none';">
+                                        {% endif %}
+                                    </div>
+                                    <div class="mt-auto">
+                                        <span class="fw-bold text-dark text-truncate d-block small" title="{{ brand.name }}">{{ brand.name }}</span>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="coupon-area my-5">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
+                <h2 class="fw-bold mb-2 mb-md-0">Best Coupons</h2>
+            </div>
+            <div class="row g-2">
+                {% for coupon in coupons %}
+                    <div class="col-lg-4 col-md-6">
+                        <div class="amazon-coupon">
+                            <div class="coupon-left">
+                                <span class="discount">{{ coupon.discount }}%</span><small>OFF</small>
+                            </div>
+                            <div class="coupon-right">
+                                <h5 class="fw-bold">{{ coupon.code }}</h5>
+                                <p class="mb-2">
+                                    <i class="fas fa-check-circle text-success me-1"></i>
+                                    {{ coupon.discount }}% Instant Discount
+                                </p>
+                                <p class="mb-2">
+                                    <i class="fas fa-shopping-bag text-primary me-1"></i>
+                                    Minimum Order ₹{{ coupon.minimum_amount }}
+                                </p>
+                                <div class="product-image-container mb-2">
+                                    <img src="{{ coupon.productimage1 }}" alt="Product Image" class="img-fluid rounded" style="max-height: 120px; object-fit: contain;">
+                                </div>
+                                {% if coupon.category %}
+                                    <p class="mb-2">
+                                        <i class="fas fa-tag text-warning me-1"></i>
+                                        {{ coupon.category.categoryname }}
+                                    </p>
+                                {% endif %}
+                                <span class="badge bg-danger mb-3">Limited Time Offer</span>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="coupon-code">{{ coupon.code }}</div>
+                                    {% if coupon.category %}
+                                        <a href="{% url 'collection' coupon.category.categoryid %}"class="btn btn-warning fw-bold">
+                                            <i class="fas fa-chevron-right ms-2 me-1"></i>Shop Now
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'collection' 1 %}"class="btn btn-warning fw-bold">
+                                            <i class="fas fa-chevron-right ms-2 me-1"></i>
+                                            Shop Now
+                                        </a>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="col-12 text-center"><h4>No Coupons Available</h4></div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% if home_banner %}
+        <div class="container my-3">
+            <div class="card border rounded-3  mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid"style="max-height:220px;object-fit:contain;"alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2">
+                            <span class="fw-bold text-dark" style="font-size: 18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="small text-success">({{ home_banner.productdiscountrate }}% OFF)</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if new_arrivals %}
+    <section id="arrivingSection" class="container my-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+            <div class="d-flex align-items-center gap-3">
+                <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Just Arrived</h3>
+            </div>
+        </div>
+        <div class="position-relative">
+            <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollArrivingSlider(-320)" aria-label="Previous"
+                style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                ‹
+            </button>
+            <div id="arrivingSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+                {% for product in new_arrivals %}
+                    <div class="flex-shrink-0" style="width: 250px;">
+                        <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">   
+                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                    <i class="fa-regular fa-heart text-danger"></i>
+                                </button>
+                            </form>
+                            <div class="text-center mb-3 pt-2">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
+                                    {% if product.productimage1 %}
+                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">
+                                    {% endif %}
+                                </a>
+                            </div>
+                            <div class="card-body d-flex flex-column justify-content-between p-0">
+                                <div class="text-left">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                        <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>  
+                                    </a>                              
+                                    {% if product.color_variants %}
+                                        <div class="d-flex align-items-center mb-1 gap-1">
+                                            {% for color in product.color_variants|slice:":5" %}
+                                                <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                    <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
+                                                        title="{{ color.name }}">
+                                                    </span>
+                                                </a>
+                                            {% endfor %}
+                                            {% if product.color_variants|length > 5 %}
+                                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
+                                                    title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
+                                                </a>
+                                            {% endif %}
+                                        </div>
+                                    {% endif %}
+                                    <div class="d-flex align-items-center mb-2">
+                                        <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
+                                        <div class="text-warning small" style="font-size: 12px;">
+                                            {% for star in product.full_stars_range %}
+                                                <i class="fa-solid fa-star"></i>
+                                            {% endfor %}
+                                            {% for star in product.half_stars_range %}
+                                                <i class="fa-solid fa-star-half-stroke"></i>
+                                            {% endfor %}
+                                            {% for star in product.empty_stars_range %}
+                                                <i class="fa-regular fa-star"></i>
+                                            {% endfor %}
+                                        </div>
+                                    </div>
+                                    <div class="mb-3 d-flex align-items-baseline gap-2">
+                                        <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
+                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                            <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                            <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
+                                        {% endif %}
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="text-dark">
+                                            <span class="text-success">FREE Delivery</span>
+                                            <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                    <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+            <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollArrivingSlider(320)" aria-label="Next"
+                style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                ›
+            </button>
+        </div>
+    </section>
+    {% endif %}
+    {% if recommended_products %}
+        <section class="container my-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <h3 class="font-weight-bold text-dark mb-0 mr-2"><i class="fa fa-thumbs-up text-primary mr-2 me-1"></i>Recommended For You</h3>
+                </div>
+            </div>
+            <div class="position-relative">
+                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollRecommendedSlider(-320)" 
+                    aria-label="Previous" style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ‹
+                </button>
+                <div id="recommendedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+                    {% for product in recommended_products %}
+                        <div class="flex-shrink-0" style="width: 250px;">
+                            <div class="card h-100 border-1 rounded-lg text-center p-3 position-relative">
+                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                        <i class="fa-regular fa-heart text-danger"></i>
+                                    </button>
+                                </form>
+                                <div class="text-center mb-3 pt-2">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
+                                        {% if product.productimage1 %}
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                            
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-0">
+                                    <div class="text-left">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
+                                        </a>                                
+                                        {% if product.color_variants %}
+                                            <div class="d-flex align-items-center mb-1 gap-1">
+                                                {% for color in product.color_variants|slice:":5" %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px;height:18px;border-radius:50%;display:inline-block;background:{{ color.color_code }};border:1px solid #ccc;"
+                                                            title="{{ color.name }}">
+                                                        </span>
+                                                    </a>
+                                                {% endfor %}
+                                                {% if product.color_variants|length > 5 %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
+                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
+                                            <div class="text-warning small" style="font-size: 12px;">
+                                                {% for star in product.full_stars_range %}
+                                                    <i class="fa-solid fa-star"></i>
+                                                {% endfor %}
+                                                {% for star in product.half_stars_range %}
+                                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                                {% endfor %}
+                                                {% for star in product.empty_stars_range %}
+                                                    <i class="fa-regular fa-star"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 d-flex align-items-baseline gap-2">
+                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
+                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-dark">
+                                                <span class="text-success">FREE Delivery</span>
+                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollRecommendedSlider(320)" 
+                    aria-label="Next" style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ›
+                </button>
+            </div>
+        </section>
+    {% endif %}
+    {% if deals_of_the_day %}
+        <section id="dealsSection" class="container my-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Deals Of The Day</h3>
+                </div>
+                <div class="d-flex align-items-center bg-danger text-white px-3 py-1">
+                    <i class="fa-solid fa-clock me-2"></i>
+                    <span class="small me-2 fw-semibold">Ends in:</span>
+                    <span id="dealTimer" class="fw-bold tracking-wide" style="font-family: monospace; font-size: 15px;">00h 00m 00s</span>
+                </div>
+            </div>
+            <div class="position-relative">
+                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollSlider(-320)"  aria-label="Previous"
+                    style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ‹
+                </button>
+                <div id="amazonSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+                    {% for product in deals_of_the_day %}
+                        <div class="flex-shrink-0" style="width: 250px;">
+                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">  
+                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                        <i class="fa-regular fa-heart text-danger"></i>
+                                    </button>
+                                </form>
+                                <div class="text-center mb-3 pt-2">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
+                                        {% if product.productimage1 %}
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                            
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-0">
+                                    <div class="text-left">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
+                                        </a>                                  
+                                        {% if product.color_variants %}
+                                            <div class="d-flex align-items-center mb-1 gap-1">
+                                                {% for color in product.color_variants|slice:":5" %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
+                                                            title="{{ color.name }}">
+                                                        </span>
+                                                    </a>
+                                                {% endfor %}
+                                                {% if product.color_variants|length > 5 %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
+                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}     
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
+                                            <div class="text-warning small" style="font-size: 12px;">
+                                                {% for star in product.full_stars_range %}
+                                                    <i class="fa-solid fa-star"></i>
+                                                {% endfor %}
+                                                {% for star in product.half_stars_range %}
+                                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                                {% endfor %}
+                                                {% for star in product.empty_stars_range %}
+                                                    <i class="fa-regular fa-star"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 d-flex align-items-baseline gap-2">
+                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
+                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-dark">
+                                                <span class="text-success">FREE Delivery</span>
+                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollSlider(320)" aria-label="Next"
+                    style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ›
+                </button>
+            </div>
+        </section>
+    {% endif %}
+    {% if top_rated_products %}
+        <section class="container my-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <h3 class="font-weight-bold text-dark mb-0 mr-2"><i class="fa fa-star text-warning mr-2"></i>Top Rated Products</h3>
+                </div>
+            </div>
+            <div class="position-relative">
+                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollTopRatedSlider(-320)" 
+                    aria-label="Previous" style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ‹
+                </button>
+                <div id="topRatedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+                    {% for product in top_rated_products %}
+                        <div class="flex-shrink-0" style="width: 250px;">
+                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">
+                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                        <i class="fa-regular fa-heart text-danger"></i>
+                                    </button>
+                                </form>
+                                <div class="text-center mb-3 pt-2">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
+                                        {% if product.productimage1 %}
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                                
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-0">
+                                    <div class="text-left">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45  }}</h6>
+                                        </a>                       
+                                        {% if product.color_variants %}
+                                            <div class="d-flex align-items-center mb-1 gap-1">
+                                                {% for color in product.color_variants|slice:":5" %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px;height:18px;border-radius:50%;display:inline-block;background:{{ color.color_code }};border:1px solid #ccc;"
+                                                            title="{{ color.name }}">
+                                                        </span>
+                                                    </a>
+                                                {% endfor %}
+                                                {% if product.color_variants|length > 5 %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
+                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
+                                            <div class="text-warning small" style="font-size: 12px;">
+                                                {% for star in product.full_stars_range %}
+                                                    <i class="fa-solid fa-star"></i>
+                                                {% endfor %}
+                                                {% for star in product.half_stars_range %}
+                                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                                {% endfor %}
+                                                {% for star in product.empty_stars_range %}
+                                                    <i class="fa-regular fa-star"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 d-flex align-items-baseline gap-2">
+                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
+                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-dark">
+                                                <span class="text-success">FREE Delivery</span>
+                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye mr-2 me-1"></i>View Product
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollTopRatedSlider(320)" 
+                    aria-label="Next" style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
+                    ›
+                </button>
+            </div>
+        </section>
+    {% endif %}
+    <div class="container-fluid">
+        <div class="row g-2">
+            <div class="col-6 col-md-6 col-lg-3">
+                <div class="card h-100 text-center border-secondry">
+                    <div class="card-body py-4">
+                        <i class="fas fa-check fs-1 text-warning mb-3"></i>
+                        <h5 class="fw-bold">Quality Product</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3">
+                <div class="card h-100 text-center border-secondry">
+                    <div class="card-body py-4">
+                        <i class="fas fa-shipping-fast fs-1 text-warning mb-3"></i>
+                        <h5 class="fw-bold">Free Shipping</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3">
+                <div class="card h-100 text-center border-secondry">
+                    <div class="card-body py-4">
+                        <i class="fas fa-exchange-alt fs-1 text-warning mb-3"></i>
+                        <h5 class="fw-bold">7-Day Return</h5>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-6 col-lg-3">
+                <div class="card h-100 text-center border-secondry">
+                    <div class="card-body py-4">
+                        <i class="fas fa-phone-volume fs-1 text-warning mb-3"></i>
+                        <h5 class="fw-bold">24/7 Support</h5>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid pt-3">
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="bg-custom-light banner-height d-flex align-items-center justify-content-between position-relative overflow-hidden px-4">
+                    <div class="h-100 d-flex align-items-end">
+                        <img src="/static/IMAGES/offer-1.png"alt="Spring Model"class="banner-img">
+                    </div>
+                    <div class="text-end py-4">
+                        <h6 class="text-pink-custom fw-bold text-uppercase mb-2"style="letter-spacing: 1px; font-size: 13px;">20% OFF THE ALL ORDER</h6>
+                        <h2 class="fw-bold text-dark mb-3"style="font-size: 32px;">Spring Collection</h2>
+                        <a href="{% url 'collection' 1 %}"class="btn btn-dark btn-sm">Shop Now</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="bg-custom-light banner-height d-flex align-items-center justify-content-between position-relative overflow-hidden px-4">
+                    <div class="text-start py-4">
+                        <h6 class="text-pink-custom fw-bold text-uppercase mb-2"style="letter-spacing: 1px; font-size: 13px;">20% OFF THE ALL ORDER</h6>
+                        <h2 class="fw-bold text-dark mb-3"style="font-size: 32px;">Winter Collection</h2>
+                        <a href="{% url 'collection' 19 %}"class="btn btn-dark btn-sm">Shop Now</a>
+                    </div>
+                    <div class="h-100 d-flex align-items-end">
+                        <img src="/static/IMAGES/offer-2.png"alt="Winter Model"class="banner-img">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="container-fluid my-5">
+        <div class="bg-dark text-white text-center p-5 rounded">
+            <h2>Subscribe For Latest Offers</h2>
+            <p>Get updates on new arrivals and special offers.</p>
+            <form class="row justify-content-center">
+                <div class="col-md-4"><input type="email" class="form-control"placeholder="Enter your email"></div>
+                <div class="col-auto"><button type="submit" class="btn btn-warning">Subscribe</button></div>
+            </form>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Top Brands js -->
+    <script>
+    function scrollBrandSlider(amount) {
+        const slider = document.getElementById("brandSlider");
+        if (slider) {
+            slider.scrollBy({
+                left: amount,
+                behavior: "smooth"
+            });
+        }
+        }
+    </script>
+    <!-- New Arrivals Section js -->
+    <script>
+    const arrivingSlider = document.getElementById('arrivingSlider');
+    function scrollArrivingSlider(distance) {
+        if (arrivingSlider) {
+            arrivingSlider.scrollBy({
+                left: distance,
+                behavior: 'smooth'
+            });
+        }
+        }
+    </script>
+    <!-- Recommended For You Section js -->
+    <script>
+    const recommendedSlider = document.getElementById("recommendedSlider");
+    function scrollRecommendedSlider(value) {
+        if (recommendedSlider) {
+            recommendedSlider.scrollBy({
+                left: value,
+                behavior: "smooth"
+            });
+        }
+        }
+    </script>
+    <!-- Deals Of The Day Section js -->
+    <script>
+    const slider = document.getElementById("amazonSlider");
+    function scrollSlider(value) {
+        if (slider) {
+            slider.scrollBy({
+                left: value,
+                behavior: "smooth"
+            });
+        }
+        }
+    </script>
+    <!-- Deals Of The Day Section timer js -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            let dealEndTime = new Date();
+            dealEndTime.setHours(23, 59, 59, 999);
+            function updateTimer() {
+                let now = new Date().getTime();
+                let distance = dealEndTime.getTime() - now;
+                if (distance < 0) {
+                    document.getElementById("dealTimer").innerHTML = "EXPIRED";
+                    return;
+                }
+                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                hours = hours < 10 ? "0" + hours : hours;
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+                document.getElementById("dealTimer").innerHTML = hours + "h " + minutes + "m " + seconds + "s";
+            }
+            updateTimer();
+            setInterval(updateTimer, 1000);
+        });
+    </script>
+    <!-- Top Rated Products Section js -->
+    <script>
+    const topRatedSlider = document.getElementById("topRatedSlider");
+    function scrollTopRatedSlider(amount) {
+        if (topRatedSlider) {
+            topRatedSlider.scrollBy({
+                left: amount,
+                behavior: "smooth"
+            });
+        }
+        }
+    </script>
+    <!-- Recently Viewed Items js-->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        new Swiper(".recentProductsSwiper", {
+            slidesPerView: "auto",
+            spaceBetween: 15,
+            freeMode: true,
+            navigation: {
+                nextEl: ".recent-next",
+                prevEl: ".recent-prev",
+            },
+        });
+        });
+    </script>
+{% endblock body %}
+

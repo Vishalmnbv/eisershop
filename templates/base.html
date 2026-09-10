@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block title %}
+    {% endblock title %}
+    <link rel="icon" type="image/png" href="/static/IMAGES/favicon.png">
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome  -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet">
+    <!-- 1. SWIPER CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Jqury Link -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- SWIPER JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <style>
+        #searchSuggestions{position:absolute;top:48px;left:0;width:100%;background:#fff;z-index:99999;display:none;max-height:400px;overflow-y:auto;}
+        #searchSuggestions a{display:block;}
+        .back-to-top{display:none;background:#37475A;color:#fff;text-align:center;padding:15px 0;font-size:14px;font-weight:500;cursor:pointer;}
+        .bg-custom-light {background-color: #EDF1FF !important;}
+        .text-pink-custom {color: #D19C97 !important;}
+        .btn-custom-outline {border: 1px solid #D19C97;color: #D19C97;background-color: transparent;padding: 8px 20px;font-size: 14px;border-radius: 0px;transition: all 0.3s ease;}
+        .btn-custom-outline:hover {background-color: #D19C97;color: #ffffff;}
+        .banner-height {height: 300px;}
+        .banner-img {height: 100%;object-fit: cover;object-position: top;}
+        .btn-amazon-signin {background-color: #ffd814 !important;border-color: #fcd200 !important;min-width: 230px;font-size: 13px;transition: all 0.2s ease-in-out;}
+        .btn-amazon-signin:hover {background-color: #f7ca00 !important;border-color: #f2c200 !important;}
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark py-3 sticky-top">
+        <div class="container-fluid">
+            <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/" aria-label="eiser">
+                <img src="/static/IMAGES/logo.jfif" alt="" style="height: 50px; width: 90px;">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" aria-controls="mainNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <div class="d-flex flex-column flex-lg-row align-items-lg-center justify-content-between w-100 gap-2 mt-2 mt-lg-0">
+                    <form class="d-flex w-100 position-relative me-lg-3" method="GET" action="{% url 'search' %}">
+                        <div class="input-group input-group-sm input-group-lg-normal w-100">
+                            <input type="search" id="searchBox" name="q" class="form-control border-0 shadow-none px-3" placeholder="Search products, brands and more..." autocomplete="off">
+                            <button class="btn btn-warning px-3 px-lg-4 fw-semibold" type="submit">
+                                <i class="fa-solid fa-magnifying-glass d-lg-none"></i><span class="d-none d-lg-inline">Search</span>
+                            </button>
+                        </div>
+                        <div id="searchSuggestions" class="position-absolute start-0 w-100 bg-white border rounded-bottom shadow-lg" style="display: none; z-index: 9999; top: 100%; max-height: 400px; overflow-y: auto;"></div>
+                    </form>
+                    <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 mt-2 mt-lg-0">
+                        <div class="d-flex align-items-center gap-3 me-1">
+                            <a href="{% url 'cart' %}" class="nav-link text-white position-relative p-0 d-flex align-items-center me-2" aria-label="Shopping Cart">
+                                <i class="fa-solid fa-cart-shopping fs-5"></i>
+                                <span class="badge bg-warning text-dark position-absolute top-0 start-100 translate-middle rounded-circle border border-dark border-1 px-1" style="font-size: 9px; min-width: 16px; min-height: 16px;">
+                                    {{ cartcount|default:"0" }}
+                                </span>
+                            </a>
+                        </div>
+                        {% if user.is_authenticated %}
+                            <div class="nav-item dropdown">
+                                <button class="btn dropdown-toggle p-1 shadow-none border-0 d-flex align-items-center text-white text-start" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                    {% if user.profile.image %}
+                                        <img src="{{ user.profile.image.url }}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% else %}
+                                        <img src="/static/IMAGES/default.png" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                    {% endif %}
+                                    <div class="d-none d-xl-block lh-sm">
+                                        <span class="d-block text-white-50" style="font-size: 11px;">Hello, {{ user.username }}</span>
+                                        <span class="text-white fw-bold" style="font-size: 13px;">Account & Lists</span>
+                                    </div>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-0 p-3" style="width: 260px;">
+                                    <li>
+                                        <div class="d-flex align-items-center pb-2 mb-2 border-bottom">
+                                            {% if user.profile.image %}
+                                                <img src="{{ user.profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% else %}
+                                                <img src="/static/IMAGES/default.png" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                            {% endif %}
+                                            <div class="overflow-hidden">
+                                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ user.first_name }} {{ user.username }} {{ user.last_name }}</h6>                                            
+                                            </div>
+                                        </div>
+                                    </li>
+                                    <li><a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 rounded" href="{% url 'my_orders' %}"><span class="d-flex align-items-center gap-2"><i class="fa-solid fa-box text-secondary"></i>Your Orders</span><span class="badge bg-secondary text-white rounded-pill" style="font-size: 10px;">{{ order_count|default:"0" }}</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center justify-content-between py-1.5 rounded" href="{% url 'wishlist' %}"><span class="d-flex align-items-center gap-2"><i class="fa-solid fa-heart text-secondary"></i>Your Wishlist</span><span class="badge bg-secondary text-white rounded-pill" style="font-size: 10px;">{{ wishlist_count|default:"0" }}</span></a></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded" href="/editprofile/"><i class="fa-solid fa-user-pen text-secondary"></i><span>Edit Profile</span></a></li>
+                                    <li><hr class="dropdown-divider my-2"></li>
+                                    <li><a class="dropdown-item d-flex align-items-center gap-2 py-1.5 rounded text-danger fw-semibold" href="/logout/"><i class="fa-solid fa-right-from-bracket"></i><span>log out</span></a></li>
+                                </ul>
+                            </div>
+                        {% else %}
+                            <div class="d-flex align-items-center gap-2">
+                                <a class="btn btn-warning btn-sm fw-bold rounded-pill px-3 py-1 shadow-sm d-flex align-items-center gap-1 text-dark" href="/login/"><i class="fa-solid fa-right-to-bracket"></i> Login</a>
+                                <a class="btn btn-warning btn-sm fw-bold rounded-pill px-3 py-1 shadow-sm d-flex align-items-center gap-1 text-dark" href="/register/"><i class="fa-solid fa-user-plus"></i> Register</a>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+    {% if messages and request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'wishlist' and request.resolver_match.url_name != 'conformorder' and request.resolver_match.url_name != 'productview' and request.resolver_match.url_name != 'my_orders' and request.resolver_match.url_name != 'browsing_history' %}
+        <div class="container">
+            {% for message in messages %}
+                {% with tag=message.tags|default:'info' %}
+                    <div id="msg" class="alert alert-{% if 'success' in tag %}success{% elif 'danger' in tag or 'error' in tag %}danger{% elif 'warning' in tag %}warning{% else %}info{% endif %}
+                        alert-dismissible fade show rounded-3 shadow-sm mb-0" role="alert">{{ message }}
+                    </div>
+                {% endwith %}
+            {% endfor %}
+        </div>
+    {% endif %}
+    {% block body %}
+    {% endblock body %}
+    {% if request.resolver_match.url_name != "login" and request.resolver_match.url_name != "register" and request.resolver_match.url_name != "browsing_history" %}
+        {% if not user.is_authenticated %}
+            <div class="container-fluid bg-white py-4 my-4 border-top border-bottom">
+                <div class="row justify-content-center text-center">
+                    <div class="col-12 col-md-8 col-lg-6">
+                        <h5 class="fw-bold text-dark mb-3 fs-6">See personalized recommendations</h5>
+                        <a href="{% url 'login' %}" class="btn btn-warning rounded-pill px-5 py-2 fw-semibold shadow-sm text-dark" style="min-width:230px;">Sign in</a>
+                        <div class="mt-2">
+                            <span class="text-secondary">New customer?</span>
+                            <a href="{% url 'register' %}" class="text-primary text-decoration-underline ms-1">Start here.</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% elif browsing_list %}
+            <div class="container bg-white py-3 py-md-4 my-4 border-top border-bottom">
+                <div class="container-fluid px-2 px-md-4">
+                    <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-baseline mb-3 gap-1">
+                        <h4 class="fw-bold mb-0 text-dark fs-6 fs-md-5">Your browsing history</h4>
+                        <a href="{% url 'browsing_history' %}" class="text-decoration-none text-primary fw-normal" style="font-size: 12px;">View or edit your browsing history</a>
+                    </div>
+                    <div class="position-relative px-1 px-md-3">
+                        <div class="swiper amazonBrowsingSwiper">
+                            <div class="swiper-wrapper">
+                                {% for item in browsing_list %}
+                                    <div class="swiper-slide" style="width: 120px;">
+                                        <a href="{% url 'productview' item.category_id item.product_id %}" class="text-decoration-none d-block">
+                                            <div class="p-2 bg-white  text-center d-flex align-items-center justify-content-center hover-card" style="height: 110px;">
+                                                <img src="{{ item.image }}" alt="Recently Viewed" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                            </div>
+                                        </a>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+    <div id="backToTopBar" class="back-to-top">Back to top</div>
+    <footer class="bg-dark text-light mt-3">
+        <div class="container-fluid">
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <a class="navbar-brand text-dark fw-bold fst-italic d-flex align-items-center" href="/" aria-label="eiser">
+                        <img src="/static/IMAGES/logo.jfif" alt="" style="height: 50px; width: 90px;">
+                    </a>
+                    <p class="text-secondary">Discover quality products at the best prices. Shop with confidence and enjoy a seamless online shopping experience.</p>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Quick Links</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">About Us</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Blogs</a></li>
+                        <li class="mb-2"><a href="#" class="text-secondary text-decoration-none">Contact</a></li>
+                        <li><a href="#" class="text-secondary text-decoration-none">FAQ</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-3 col-6">
+                    <h6 class="fw-bold text-uppercase mb-3">Account</h6>
+                    <ul class="list-unstyled">
+                        <li class="mb-2"><a href="/editprofile/" class="text-secondary text-decoration-none">My Account</a></li>
+                        <li class="mb-2"><a href="/myorders/" class="text-secondary text-decoration-none">Orders</a></li>
+                        <li class="mb-2"><a href="/checkout/" class="text-secondary text-decoration-none">Checkout</a></li>
+                        <li><a href="/wishlist/" class="text-secondary text-decoration-none">Wishlist</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-12">
+                    <h6 class="fw-bold text-uppercase mb-3">Newsletter</h6>
+                    <form class="input-group mb-4">
+                        <input type="email" class="form-control shadow-none" placeholder="Enter your email">
+                        <button class="btn btn-warning" type="submit">Subscribe</button>
+                    </form>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-light fs-5"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-light fs-5"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light fs-5"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light fs-5"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="text-light fs-5"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="row">
+                <div class="col-md-6 text-center text-md-start">
+                    <small class="text-secondary">© 2025 Eiser. All Rights Reserved.</small>
+                </div>
+            </div>
+        </div>
+    </footer>
+    <script src="/static/JAVASCRITES/messages.js"></script>
+    <script src="/static/JAVASCRITES/register.js"></script>
+    <script src="/static/JAVASCRITES/login.js"></script>
+    <script src="/static/JAVASCRITES/forgetpassword.js"></script>
+    <script src="/static/JAVASCRITES/editprofile.js"></script>
+    <script src="/static/JAVASCRITES/reviewimage.js"></script>
+    <script src="/static/JAVASCRITES/starrating.js"></script>
+    <script src="/static/JAVASCRITES/payment.js"></script>
+    <script src="/static/JAVASCRITES/size.js"></script>
+    <!-- Back to top js -->
+    <script>
+    const backBar = document.getElementById("backToTopBar");
+    window.addEventListener("scroll", function () {
+        if (window.scrollY > 100) {
+            backBar.style.display = "block";
+        } else {
+            backBar.style.display = "none";
+        }
+    });
+    backBar.addEventListener("click", function () {
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth"
+        });
+    });
+    </script>
+    <!--- searchSuggestions js --->
+    <script>
+    const searchBox = document.getElementById("searchBox");
+    const suggestions = document.getElementById("searchSuggestions");
+    let searchDebounceTimer = null;
+    if (searchBox && suggestions) {
+        searchBox.addEventListener("input", function () {
+            const query = this.value.trim();
+            clearTimeout(searchDebounceTimer);
+            if (query.length < 1) {
+                suggestions.innerHTML = "";
+                suggestions.style.display = "none";
+                return;
+            }
+            searchDebounceTimer = setTimeout(() => {
+                fetch(`/live-search/?q=${encodeURIComponent(query)}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(
+                            "Live search request failed"
+                        );
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const brands = data.brands || [];
+                    if (brands.length === 0) {
+                        suggestions.innerHTML = "";
+                        suggestions.style.display = "none";
+                        return;
+                    }
+                    let html = "";
+                    brands.forEach(item => {
+                        const title = item.title || "";
+                        const count = item.count || 0;
+                        const url = item.url || "#";
+                        html += `
+                        <a href="${url}" class="text-decoration-none text-dark d-block search-item-hover p-2 border-bottom">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="text-dark" style="font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; padding-right:15px; flex:1; "title="${title}">${title}</span>
+                                <span class="badge bg-light text-secondary border fw-normal ms-3" style="font-size:0.75rem; white-space:nowrap;">${count} Items</span>
+                            </div>
+                        </a>`;
+                    });
+                    suggestions.innerHTML = html;
+                    suggestions.style.display = "block";
+                })
+                .catch(error => {console.error("Search fetch error:",error);
+                suggestions.innerHTML = "";
+                suggestions.style.display = "none";
+            });
+        }, 300);
+    });
+    document.addEventListener("click", function (event) {
+        if (
+            !searchBox.contains(event.target)
+            &&
+            !suggestions.contains(event.target)
+        ) {
+            suggestions.style.display = "none";
+        }
+    });
+}
+    </script>
+    <!--- message js --->
+    <script>
+        setTimeout(function() {
+            let msgAlert = document.getElementById('msg');
+            if (msgAlert) {
+                let bsAlert = new bootstrap.Alert(msgAlert);
+                bsAlert.close();
+            }
+        }, 3000); 
+    </script>
+    <!-- Your browsing history js -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        new Swiper(".amazonBrowsingSwiper", {
+            slidesPerView: "auto",
+            spaceBetween: 12,
+            freeMode: true,
+            grabCursor: true,
+            navigation: {
+                nextEl: ".swiper-button-next",
+                prevEl: ".swiper-button-prev",
+            },
+        });
+        });
+    </script>
+</body>
+</html>

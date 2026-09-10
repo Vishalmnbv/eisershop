@@ -1,0 +1,95 @@
+{% load humanize %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Order Cancelled</title>
+</head>
+    <body style="margin:0;padding:0;background:#f3f4f6;font-family:Arial,Helvetica,sans-serif;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background:#f3f4f6;padding:30px 0;">
+            <tr>
+                <td align="center">
+                    <table width="650" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:10px;overflow:hidden;">
+                        <tr>
+                            <td bgcolor="#131921" style="padding:22px;text-align:center;">
+                                <img src="cid:logo" width="180" alt="Eiser Shop" style="display:block;margin:auto;border:0;">
+                                <p style="color:#ffffff;margin-top:10px;font-size:15px;">❌ Order Cancellation Confirmation</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding:35px;">
+                                <h2 style="margin-top:0;color:#222;">Hello {{ user.username }},</h2>
+                                <p style="font-size:16px;color:#555;line-height:28px;">Your product cancellation request has been successfully processed.</p>
+                                <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:25px;background:#fff4f4;border-left:5px solid #dc3545;">
+                                    <tr>
+                                        <td style="padding:18px;">
+                                            <h3 style="margin:0;color:#dc3545;">❌ Product Cancelled Successfully</h3>
+                                            <p style="color:#555;">The following product has been removed from your order.</p>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <table width="100%" cellpadding="10" cellspacing="0" style="margin-top:30px;border:1px solid #eeeeee;border-radius:8px;">
+                                    <tr bgcolor="#fafafa">
+                                        <td width="35%"><strong>Order ID</strong></td>
+                                        <td>#{{ order.amazon_order_id }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Product Image</strong></td>
+                                        <td><img src="cid:product" width="120" alt="Product Image" style="border:1px solid #ddd; border-radius:8px; padding:5px; display:block;"></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Product</strong></td>
+                                        <td>{{ product_name }}</td>
+                                    </tr>
+                                    <tr bgcolor="#fafafa">
+                                        <td><strong>Quantity</strong></td>
+                                        <td>{{ quantity }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Cancelled Amount</strong></td>
+                                        <td style="color:#dc3545;font-weight:bold;">₹{{ price|format_indian_currency }}</td>
+                                    </tr>
+                                    <tr bgcolor="#fafafa">
+                                        <td><strong>Cancellation Date</strong></td>
+                                        <td>{{ cancel_date }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Payment Method</strong></td>
+                                        <td>{{ order.paymentmethod }}</td>
+                                    </tr>
+                                </table>
+                                <table width="100%" cellpadding="10" cellspacing="0" style="margin-top:30px;background:#f8fff8;border:1px solid #d6f5d6;">
+                                    <tr>
+                                        <td width="45%"><strong>Refund Amount</strong></td>
+                                        <td style="color:#198754;font-size:18px;font-weight:bold;">₹ {{ refund_amount|format_indian_currency }}</td>
+                                    </tr>
+                                    <tr bgcolor="#ffffff">
+                                        <td><strong>Remaining Order Total</strong></td>
+                                        <td>₹ {{ remaining_total|format_indian_currency }}</td>
+                                    </tr>
+                                </table>
+                                <table width="100%" cellpadding="0" cellspacing="0">
+                                    <tr>
+                                        <td align="center" style="padding:40px 0;">
+                                            <a href="http://127.0.0.1:8000{% url 'conformorder' order.orderid %}" style="background:#ff9900; color:white;
+                                                text-decoration:none; padding:15px 28px; border-radius:6px; font-weight:bold; display:inline-block;">Track Order
+                                            </a>
+                                            <a href="http://127.0.0.1:8000/" style="background:#232f3e; color:white;text-decoration:none;
+                                                padding:15px 28px;border-radius:6px;font-weight:bold;display:inline-block;margin-left:10px;">Continue Shopping
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <p style="font-size:14px;color:#777;line-height:26px;">If you cancelled this product by mistake, you can place a new order anytime from EiserShop.</p>
+                                <p style="font-size:14px;color:#777;">Thank you for shopping with Eiser Shop ❤️</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td bgcolor="#131921" style="padding:22px;text-align:center;color:#cccccc;font-size:14px;">© {% now "Y" %} EiserShop. All Rights Reserved.</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </body>
+</html>

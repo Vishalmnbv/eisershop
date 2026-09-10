@@ -1,0 +1,305 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load indian_formatting %}
+{% block title %}
+<title>eiser - Viewbill</title>
+{% endblock title %}
+{% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-active:hover {color: red !important;text-decoration: underline !important;}
+    </style>
+    <div class="container-fluid p-0">
+        <nav class="navbar navbar-dark bg-dark px-3">
+            <div class="d-flex align-items-center w-100">
+                <a class="navbar-brand fw-bold mb-0" data-bs-toggle="offcanvas" href="#offcanvasMenu" role="button" aria-controls="offcanvasMenu">
+                    <i class="fa-solid fa-bars me-2"></i>All
+                </a>
+            </div>
+        </nav>
+    </div>
+    <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasMenu" aria-labelledby="offcanvasMenuLabel">
+        <div class="offcanvas-header bg-dark text-white">
+            <h5 class="offcanvas-title fw-bold" id="offcanvasMenuLabel">
+                <i class="fa-solid fa-circle-user text-warning me-2"></i>
+                {% if user.is_authenticated %}
+                    Hello, {{ user.username }}
+                {% else %}
+                    Hello, Sign In
+                {% endif %}
+            </h5>
+            <button type="button" class="btn-close btn-close-white shadow-none"data-bs-dismiss="offcanvas"aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div class="p-3 border-bottom">
+                {% if user.is_authenticated %}
+                    <div class="d-grid mb-2"><a href="/logout/" class="btn btn-danger rounded-pill fw-bold"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></div>
+                {% else %}
+                    <div class="d-grid gap-2">
+                        <a href="/login/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-right-to-bracket me-2"></i>Sign In</a>
+                        <a href="/register/" class="btn btn-warning rounded-pill fw-bold"><i class="fa-solid fa-user-plus me-2"></i>Create Account</a>
+                    </div>
+                {% endif %}
+            </div>
+            <ul class="nav flex-column">
+                {% for category in category %}
+                    <li class="nav-item"><a href="/collection/{{ category.categoryid }}" class="nav-link text-dark fw-semibold py-3 border-bottom"><i class="fa-solid fa-tag me-2 text-danger"></i>{{ category.categoryname }}</a></li>
+                {% empty %}
+                    <div class="text-warning ms-3">No categories found</div>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    <div class="container py-4">
+        <nav aria-label="breadcrumb" class="mb-4">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'home' %}" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
+                <li class="breadcrumb-item"><a href="/checkout/" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Checkout</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'conformorder' order.orderid %}" class="text-decoration-none text-secondary"><i class="fa-solid fa-circle-check me-1"></i>Confirm Order</a></li>
+                <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-file-pdf me-1"></i>Viewbill</li>
+            </ol>
+        </nav>
+    </div>
+    <div class="container mb-5">
+        <div class="card border rounded-4">
+            <div class="card-header bg-success text-white py-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0"><i class="fa-solid fa-file-invoice me-2"></i>Invoice</h3>
+                    <span class="badge bg-light text-success fs-6"><i class="fa-solid fa-circle-check me-1"></i>{{ order.orderstatus }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <small class="text-muted">Order ID</small>
+                        <h6 class="fw-bold font-monospace">#{{ order.amazon_order_id }}</h6>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Order Date</small>
+                        <h6 class="fw-bold">{{ order.date|date:"d M Y" }}</h6>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Payment Method</small>
+                        <h6 class="fw-bold d-flex align-items-center flex-wrap gap-2">
+                            <span>{{ order.paymentmethod }}</span>
+                            
+                            {% if order.payment_status_display == "Paid" or order.paymentmethod == "UPI" or order.paymentmethod == "upi" %}
+                                <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.62rem;">
+                                    <i class="fa-solid fa-circle-check me-1"></i> Paid
+                                </span>
+                            {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
+                                <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle px-2 py-1" style="font-size:0.62rem;">
+                                    <i class="fa-solid fa-ban me-1"></i> Cancelled
+                                </span>
+                            {% else %}
+                                <span class="badge rounded-1 px-2 py-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8; font-size:0.62rem;">
+                                    <i class="fa-regular fa-clock me-1"></i> Pending
+                                </span>
+                            {% endif %}
+                        </h6>
+                    </div>
+                    <div class="col-md-3">
+                        <small class="text-muted">Order Status</small>
+                        <h6>
+                            {% if order.orderstatus == "Pending" %}
+                                <span class="badge bg-warning text-dark px-3 py-1.5 p-2"><i class="fa-regular fa-clock me-1"></i>Pending</span>
+                            {% elif order.orderstatus == "Processing" %}
+                                <span class="badge bg-info text-dark px-3 py-1.5  p-2"><i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing</span>
+                            {% elif order.orderstatus == "Shipped" %}
+                                <span class="badge bg-primary px-3 py-1.5 p-2"><i class="fa-solid fa-truck me-1"></i>Shipped</span>
+                            {% elif order.orderstatus == "Delivered" %}
+                                <span class="badge bg-success px-3 py-1.5 p-2"><i class="fa-solid fa-circle-check me-1"></i>Delivered</span>
+                            {% elif order.orderstatus == "Cancelled" %}
+                                <span class="badge bg-danger px-3 py-1.5 p-2"><i class="fa-solid fa-circle-xmark me-1"></i>Cancelled</span>
+                            {% else %}
+                                <span class="badge bg-info">{{ order.orderstatus }}</span>
+                            {% endif %}
+                        </h6>
+                    </div>
+                </div>
+                <hr>
+                <h5 class="fw-bold mb-3"><i class="fa-solid fa-user me-2 text-success"></i>Customer Details</h5>
+                <p class="mb-4">
+                    <strong>
+                        {{ order.firstname }}
+                        {{ order.username }}
+                        {{ order.lastname }}
+                    </strong>
+                    <br>
+                    <i class="fa-solid fa-location-dot me-1"></i>{{ order.address }}
+                    <br>
+                    <i class="fa-solid fa-phone me-1"></i>{{ order.number }}
+                </p>
+                <hr>
+                <div class="table-responsive">
+                    <table class="table align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Image</th>
+                                <th class="text-center">Product</th>
+                                <th class="text-center">Qty</th>
+                                <th class="text-end">Price</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for i in orderitems %}
+                                <tr>
+                                    <td width="90">
+                                        <img src="{{ i.productview_id.productimage1 }}" class="img-fluid p-2" style="height:100px;width:100px;object-fit:contain;">
+                                    </td>
+                                    <td>
+                                        <h6 class="fw-bold mb-1">{{ i.productview_id.producttitle }}</h6>
+                                        <div class="small text-muted">
+                                            {% if i.selected_size and i.selected_size|lower != "standard" and i.selected_size|lower != "none" %}
+                                                <div><strong>Size :</strong> {{ i.selected_size }}</div>
+                                            {% endif %}
+                                            <div><strong>Color :</strong> {{ i.productview_id.productcolor1 }}</div>
+                                        </div>
+                                    </td>
+                                    <td class="text-center">{{ i.quantity }}</td>
+                                    <td class="text-end fw-bold text-success text-nowrap">
+                                        ₹ {% if i.calculated_unit_price %}{{ i.calculated_unit_price|format_indian_currency }}{% else %}{{ i.productview_id.productprice|format_indian_currency }}{% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <hr>
+                <div class="row justify-content-end">
+                    <div class="col-md-4">
+                        <table class="table table-borderless">
+                            <tr>
+                                <td>Subtotal</td>
+                                <td class="text-end">₹ {{ order.subtotal|format_indian_currency }}</td>
+                            </tr>
+                            {% if order.coupon %}
+                                <tr>
+                                    <td>Coupon<span class="text-success fw-bold"> {{ order.coupon.code }}</span></td>
+                                    <td class="text-end text-success">- ₹ {{ order.coupon_discount|format_indian_currency }}</td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td class="text-end text-dark">No Coupon Apply</td>
+                                </tr>
+                            {% endif %}
+                            <tr>
+                                <td>Delivery Charges</td>
+                                <td class="text-end">₹ {{ order.deliverycharges|format_indian_currency }}</td>
+                            </tr>
+                            <tr class="border-top">
+                                <th>Total</th>
+                                <th class="text-end text-success fs-5">₹ {{ order.calculated_total|default:order.total|format_indian_currency }}</th>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% url 'my_orders' %}" class="btn btn-dark rounded-pill px-4"><i class="fa-solid fa-box me-2"></i>My Orders</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% if home_banner %}
+        <div class="container mb-5 mt-5">
+            <div class="card border rounded-3  mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid"style="max-height:120px;object-fit:contain;"alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2">
+                            <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
+                                <span class="text-danger fw-bold small" style="font-size: 15px;">Limited time deal</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if recently_viewed_products %}
+        <div class="container bg-white py-3 py-md-4 my-4 border-top border-bottom">
+            <div class="container-fluid px-2 px-md-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-baseline mb-3 gap-1 pb-2">
+                    <h4 class="fw-bold mb-0 text-dark fs-6 fs-md-5">Your browsing history</h4>
+                    <a href="{% url 'browsing_history' %}" class="text-decoration-none text-primary fw-normal" style="font-size: 12px;">View or edit your browsing history</a>
+                </div>
+                <div class="position-relative px-1 px-md-3">
+                    <div class="swiper amazonBrowsingSwiper">
+                        <div class="swiper-wrapper">
+                            {% for product in recently_viewed_products %}
+                                <div class="swiper-slide" style="width: 180px;">
+                                    <div class="card h-100 border-0 p-2 position-relative bg-white">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none d-block">
+                                            <div class="p-2 bg-white text-center d-flex align-items-center justify-content-center hover-card" style="height: 130px;">
+                                                <img src="{{ product.productimage1.url|default:product.productimage1 }}" alt="{{ product.producttitle }}" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                            </div>
+                                        </a>                              
+                                        <div class="card-body p-0 d-flex flex-column">                                    
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                                <p class="mb-1 text-truncate-2 small fw-normal lh-sm" style="font-size: 13px; height: 32px; color: #0f1111;">
+                                                    {{ product.producttitle|truncatechars:40  }}
+                                                </p>
+                                            </a>                                    
+                                            <div class="mt-auto pt-1">
+                                                <div class="d-flex align-items-baseline gap-1 flex-wrap">
+                                                    <span class="fw-medium text-dark" style="font-size: 14px;">₹{{ product.productprice|intcomma }}</span>
+                                                    {% if product.productmrpprice and product.productmrpprice > product.productprice %}
+                                                        <span class="text-muted text-decoration-line-through" style="font-size: 10px;">M.R.P: ₹{{ product.productmrpprice|intcomma }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                    <small class="text-danger d-block" style="font-size: 10px;">({{ product.productdiscountrate }}% off)</small>
+                                                {% endif %}                                            
+                                                {% if delivery_date %}
+                                                    <div class="mt-1" style="font-size: 10px;">
+                                                        <span class="text-muted">FREE Delivery </span>
+                                                        <span class="fw-bold text-dark">{{ delivery_date|date:"D, M d" }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>                             
+                                            <form method="post" action="{% url 'add_to_cart' product.productviewid %}" class="mt-2">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="selected_size" value="{{ product.productsize1 }}">
+                                                <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill text-dark border-0 py-1" style="background-color: #ffd814; font-size: 11px;" {% if product.stock and product.stock <= 0 %}disabled{% endif %}>
+                                                    Add to Cart
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+{% endblock %}

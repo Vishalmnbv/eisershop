@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}
+<title>Pickup Agents</title>
+{% endblock title %}
+{% block body %}
+    <div class="container-fluid py-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold"><i class="fa-solid fa-truck text-primary me-2"></i>Pickup Agents</h2>
+            <a href="{% url 'admin_dashboard' %}" class="btn btn-dark rounded-pill"><i class="fa-solid fa-arrow-left me-1"></i>Dashboard</a>
+        </div>
+        <div class="card mb-4">
+            <div class="card-body">
+                <input type="text" id="searchAgent" class="form-control shadow-none" placeholder="Search Pickup Agent">
+            </div>
+        </div>
+        <div class="card border-1">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Agent ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="agentTable">
+                        {% for agent in agents %}
+                            <tr>
+                                <td><strong>{{ agent.agentid }}</strong></td>
+                                <td>{{ agent.user.username }}</td>
+                                <td>{{ agent.user.email }}</td>
+                                <td>{{ agent.phone }}</td>
+                                <td>
+                                    {% if agent.is_active %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <div class="text-center py-5">
+                                <i class="fa-solid fa-truck text-primary me-2 fa-4x"></i>
+                                <h4>No Pickup Agents Found</h4>
+                            </div>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock body %}
