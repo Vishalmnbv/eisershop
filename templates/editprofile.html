@@ -120,7 +120,7 @@
                             <label class="form-label">Profile Image <span class="text-danger">*</span></label>
                             <input type="file" class="form-control shadow-none" name="profile_image" id="image" accept="image/*" onchange="previewImage(event)">
                             <div class="mt-3 d-flex justify-content-center">
-                                {% if user.profile.image %}
+                                {% if user.is_authenticated and user.profile and user.profile.image %}
                                     <img src="{{ user.profile.image.url }}" id="preview" class="rounded-pill" style="width:150px;height:150px;object-fit:fill;border:1px solid #ccc;">
                                 {% else %}
                                     <img src="{% static 'IMG/default.png' %}" id="preview" class="rounded-pill" style="width:150px;height:150px;object-fit:fill;border:1px solid #ccc;">

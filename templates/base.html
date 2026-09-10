@@ -81,13 +81,13 @@
                                 <ul class="dropdown-menu dropdown-menu-end border-0 shadow mt-0 p-3" style="width: 260px;">
                                     <li>
                                         <div class="d-flex align-items-center pb-2 mb-2 border-bottom">
-                                            {% if user.profile.image %}
+                                            {% if user.is_authenticated and user.profile and user.profile.image %}
                                                 <img src="{{ user.profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% else %}
                                                 <img src="/static/IMAGES/default.png" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% endif %}
                                             <div class="overflow-hidden">
-                                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ user.first_name }} {{ user.username }} {{ user.last_name }}</h6>                                            
+                                                <h6 class="mb-0 text-dark fw-bold text-truncate">{{ user.first_name }} {{ user.username }} {{ user.last_name }}</h6>                                           
                                             </div>
                                         </div>
                                     </li>
