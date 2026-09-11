@@ -294,6 +294,12 @@ class RegisterView(View):
         if User.objects.filter(email=email).exists():
             messages.warning(request, "Email already taken")
             return redirect("register")
+        if not mobile.isdigit() or len(mobile) != 10:
+            messages.error(request, "Please enter a valid 10-digit mobile number")
+            return redirect("register")
+        if Profile.objects.filter(mobile=mobile).exists():
+            messages.warning(request, "Mobile number already registered")
+            return redirect("register")
         user = User.objects.create_user(
             first_name=firstname,
             last_name=lastname,
