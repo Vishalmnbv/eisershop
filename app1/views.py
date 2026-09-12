@@ -322,7 +322,8 @@ def send_async_login_email(user, html_content, logo_path):
                 attachments.append({
                     "filename": "logo.png",
                     "content": file_content,
-                    "content_id": "header_logo"
+                    "content_id": "header_logo",
+                    "disposition": "inline"
                 })
 
         params = {
@@ -389,7 +390,7 @@ class LoginView(View):
         if ip_address not in ["127.0.0.1", "::1"]:
             try:
                 response = requests.get(
-                    f"https://ip-api.com/json/{ip_address}",
+                    f"http://ip-api.com/json/{ip_address}",
                     timeout=4,
                     headers={"User-Agent": "EiserShop"},
                 ).json()
