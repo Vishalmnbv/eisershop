@@ -49,6 +49,7 @@ import os
 import re
 import base64
 import resend
+from django.contrib.staticfiles import finders
 # Create your views here.
 def send_email_thread(email):
     try:
@@ -383,12 +384,18 @@ class LoginView(View):
         # LOGIN EMAIL (Background Threading with Resend)
         if user.email:
             try:
+                logo_base64 = ""
+                logo_path = finders.find('IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png')
+                if logo_path and os.path.exists(logo_path):
+                    with open(logo_path, "rb") as f:
+                        logo_base64 = base64.b64encode(f.read()).decode("utf-8")
                 email_context = {
                     "user": user,
                     "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
+                    "logo_base64": logo_base64,
                 }
                 html_content = render_to_string("emails/login_success.html", email_context)
                 threading.Thread(
@@ -398,6 +405,7 @@ class LoginView(View):
             except Exception as e:
                 print("Login email setup error:", str(e))
                 traceback.print_exc()
+
         messages.success(request, f"Welcome back, {user.username}! You have successfully logged in.")
         return redirect("home")
 class LogoutView(View):
