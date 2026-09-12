@@ -83,13 +83,11 @@
                                     <li>
                                         <div class="d-flex align-items-center pb-2 mb-2 border-bottom">
                                             {% if user.is_authenticated %}
-                                                {% with profile=user.profile %}
-                                                    {% if profile and profile.image %}
-                                                        <img src="{{ profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                                    {% else %}
-                                                        <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
-                                                    {% endif %}
-                                                {% endwith %}
+                                                {% if user.profile and user.profile.image %}
+                                                    <img src="{{ user.profile.image.url }}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;" onerror="this.onerror=null; this.src='{% static 'IMAGES/default.png' %}';">
+                                                {% else %}
+                                                    <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
+                                                {% endif %}
                                             {% else %}
                                                 <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% endif %}

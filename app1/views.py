@@ -313,29 +313,14 @@ class RegisterView(View):
         messages.success(request, f"Hello {username}! Your account has been created successfully.")
         return redirect(f"/login/?username={username}")
 resend.api_key = os.environ.get("RESEND_API_KEY")
-def send_async_login_email(user, html_content, logo_path):
+def send_async_login_email(user, html_content):
     try:
-        attachments = []
-        if logo_path and os.path.exists(logo_path):
-            with open(logo_path, "rb") as f:
-                file_content = base64.b64encode(f.read()).decode("utf-8")
-                attachments.append({
-                    "filename": "logo.png",
-                    "content": file_content,
-                    "content_id": "header_logo",
-                    "disposition": "inline"
-                })
-
         params = {
             "from": "EiserShop <onboarding@resend.dev>",  
             "to": [user.email],
             "subject": "Login Successful - EiserShop",
             "html": html_content,
         }
-        
-        if attachments:
-            params["attachments"] = attachments
-
         resend.Emails.send(params)
     except Exception as e:
         print("Resend login email error:", str(e))
@@ -415,16 +400,9 @@ class LoginView(View):
                 }
                 html_content = render_to_string("emails/login_success.html", email_context)
                 
-                logo_path = os.path.join(
-                    settings.BASE_DIR,
-                    "static",
-                    "IMAGES",
-                    "79e44a35-def7-4146-8642-961f01c9dea4.png",
-                )
-                
                 threading.Thread(
                     target=send_async_login_email,
-                    args=(user, html_content, logo_path)
+                    args=(user, html_content)
                 ).start()
             except Exception as e:
                 print("Login email setup error:", str(e))
