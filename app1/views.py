@@ -312,6 +312,7 @@ class RegisterView(View):
         Profile.objects.create(user=user, image=image, mobile=mobile)
         messages.success(request, f"Hello {username}! Your account has been created successfully.")
         return redirect(f"/login/?username={username}")
+resend.api_key = os.environ.get("RESEND_API_KEY")
 def send_async_login_email(user, html_content, logo_path):
     try:
         attachments = []
