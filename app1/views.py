@@ -603,6 +603,7 @@ class EditProfileView(LoginRequiredMixin, View):
                 profile.mobile = last_order.mobile
         context = {"category": Category.objects.all(), "profile": profile}
         return render(request, self.template_name, context)
+
     def post(self, request):
         user = request.user
         profile, created = Profile.objects.get_or_create(user=user)
@@ -612,13 +613,17 @@ class EditProfileView(LoginRequiredMixin, View):
         user.email = request.POST.get("email", "").strip()
         profile.delivery_address = request.POST.get("delivery_address", "").strip()
         profile.mobile = request.POST.get("mobile", "").strip()
+        
         uploaded_image = request.FILES.get("profile_image")
+        
         if User.objects.exclude(pk=user.pk).filter(username=user.username).exists():
             messages.error(request, "Username already exists.")
             return redirect("editprofile")
+            
         if User.objects.exclude(pk=user.pk).filter(email=user.email).exists():
             messages.error(request, "Email already exists.")
             return redirect("editprofile")
+            
         try:
             user.save()
             if uploaded_image:
