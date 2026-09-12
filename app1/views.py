@@ -314,17 +314,33 @@ class RegisterView(View):
         messages.success(request, f"Hello {username}! Your account has been created successfully.")
         return redirect(f"/login/?username={username}")
 resend.api_key = os.environ.get("RESEND_API_KEY")
-def send_async_login_email(user, html_content):
+def send_async_login_email(user, html_content, logo_path=None):
     try:
         params = {
-            "from": "EiserShop <onboarding@resend.dev>",  
+            "from": "EiserShop <onboarding@resend.dev>",
             "to": [user.email],
             "subject": "Login Successful - EiserShop",
             "html": html_content,
         }
-        resend.Emails.send(params)
+
+        # Add logo as inline CID attachment
+        if logo_path and os.path.exists(logo_path):
+            params["attachments"] = [
+                {
+                    "path": logo_path,
+                    "filename": "eisershop-logo.png",
+                    "content_id": "eisershop-logo",
+                    "content_type": "image/png",
+                }
+            ]
+
+        response = resend.Emails.send(params)
+
+        print("Login email sent successfully:", response)
+
     except Exception as e:
         print("Resend login email error:", str(e))
+        traceback.print_exc()
 class LoginView(View):
     template_name = "login.html"
 
@@ -333,90 +349,263 @@ class LoginView(View):
             "category": Category.objects.all(),
             "username": request.GET.get("username", ""),
         }
-        return render(request, self.template_name, context)
+
+        return render(
+            request,
+            self.template_name,
+            context
+        )
 
     def post(self, request):
+
+        # =====================================================
+        # LOGIN DATA
+        # =====================================================
+
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
-        user = auth.authenticate(request, username=username, password=password)
-        
+
+        user = auth.authenticate(
+            request,
+            username=username,
+            password=password
+        )
+
+        # =====================================================
+        # INVALID LOGIN
+        # =====================================================
+
         if user is None:
-            messages.error(request, "Invalid username or password")
+
+            messages.error(
+                request,
+                "Invalid username or password"
+            )
+
             return render(
                 request,
                 self.template_name,
-                {"category": Category.objects.all(), "username": username},
+                {
+                    "category": Category.objects.all(),
+                    "username": username,
+                },
             )
-        
+
+        # =====================================================
+        # LOGIN USER
+        # =====================================================
+
         auth.login(request, user)
 
-        # IP ADDRESS 
-        x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
-        if x_forwarded_for:
-            ip_address = x_forwarded_for.split(",")[0].strip()
-        else:
-            ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
+        # =====================================================
+        # IP ADDRESS
+        # =====================================================
 
-        # DEVICE 
-        user_agent = request.META.get("HTTP_USER_AGENT", "")
+        x_forwarded_for = request.META.get(
+            "HTTP_X_FORWARDED_FOR"
+        )
+
+        if x_forwarded_for:
+
+            ip_address = (
+                x_forwarded_for
+                .split(",")[0]
+                .strip()
+            )
+
+        else:
+
+            ip_address = request.META.get(
+                "REMOTE_ADDR",
+                "127.0.0.1"
+            )
+
+        # =====================================================
+        # DEVICE INFORMATION
+        # =====================================================
+
+        user_agent = request.META.get(
+            "HTTP_USER_AGENT",
+            ""
+        )
+
         device = "Unknown Device"
+
         try:
+
             ua = parse(user_agent)
-            device = (
+
+            browser = (
                 f"{ua.browser.family} "
-                f"{ua.browser.version_string} "
-                f"on {ua.os.family} "
+                f"{ua.browser.version_string}"
+            )
+
+            operating_system = (
+                f"{ua.os.family} "
                 f"{ua.os.version_string}"
             )
-        except Exception:
-            pass
 
-        # LOCATION 
+            device = (
+                f"{browser} on {operating_system}"
+            )
+
+        except Exception:
+
+            device = "Unknown Device"
+
+        # =====================================================
+        # LOCATION
+        # =====================================================
+
         location = "Unknown Location"
-        if ip_address not in ["127.0.0.1", "::1"]:
+
+        if ip_address not in [
+            "127.0.0.1",
+            "::1"
+        ]:
+
             try:
+
                 response = requests.get(
                     f"http://ip-api.com/json/{ip_address}",
                     timeout=4,
-                    headers={"User-Agent": "EiserShop"},
-                ).json()
-                if response.get("status") == "success":
-                    location = (
-                        f"{response.get('city')}, "
-                        f"{response.get('regionName')}, "
-                        f"{response.get('country')}"
-                    )
-            except Exception:
-                pass
+                    headers={
+                        "User-Agent": "EiserShop"
+                    }
+                )
 
-        # LOGIN EMAIL (Background Threading with Resend)
+                data = response.json()
+
+                if data.get("status") == "success":
+
+                    city = data.get(
+                        "city",
+                        ""
+                    )
+
+                    region = data.get(
+                        "regionName",
+                        ""
+                    )
+
+                    country = data.get(
+                        "country",
+                        ""
+                    )
+
+                    location = (
+                        f"{city}, "
+                        f"{region}, "
+                        f"{country}"
+                    )
+
+            except Exception as e:
+
+                print(
+                    "Location lookup error:",
+                    str(e)
+                )
+
+        # =====================================================
+        # LOGIN SUCCESS EMAIL
+        # =====================================================
+
         if user.email:
+
             try:
-                logo_base64 = ""
-                logo_path = finders.find('IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png')
-                if logo_path and os.path.exists(logo_path):
-                    with open(logo_path, "rb") as f:
-                        logo_base64 = base64.b64encode(f.read()).decode("utf-8")
+
+                # -------------------------------------------------
+                # FIND LOGO
+                # -------------------------------------------------
+
+                logo_path = finders.find(
+                    "IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png"
+                )
+
+                if not logo_path:
+
+                    print(
+                        "WARNING: Logo not found!"
+                    )
+
+                else:
+
+                    print(
+                        "Logo found:",
+                        logo_path
+                    )
+
+                # -------------------------------------------------
+                # EMAIL CONTEXT
+                # -------------------------------------------------
 
                 email_context = {
+
                     "user": user,
-                    "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
+
+                    "login_time": (
+                        timezone
+                        .localtime()
+                        .strftime(
+                            "%d-%m-%Y %I:%M %p"
+                        )
+                    ),
+
                     "device": device,
+
                     "location": location,
+
                     "ip_address": ip_address,
-                    "logo_base64": logo_base64,
+
                 }
-                html_content = render_to_string("emails/login_success.html", email_context)
-                
-                threading.Thread(
+
+                # -------------------------------------------------
+                # RENDER EMAIL HTML
+                # -------------------------------------------------
+
+                html_content = render_to_string(
+                    "emails/login_success.html",
+                    email_context
+                )
+
+                # -------------------------------------------------
+                # SEND EMAIL IN BACKGROUND
+                # -------------------------------------------------
+
+                email_thread = threading.Thread(
+
                     target=send_async_login_email,
-                    args=(user, html_content)
-                ).start()
+
+                    args=(
+                        user,
+                        html_content,
+                        logo_path,
+                    ),
+
+                    daemon=True,
+                )
+
+                email_thread.start()
+
             except Exception as e:
-                print("Login email setup error:", str(e))
+
+                print(
+                    "Login email setup error:",
+                    str(e)
+                )
+
                 traceback.print_exc()
 
-        messages.success(request, f"Welcome back, {user.username}! You have successfully logged in.")
+        # =====================================================
+        # SUCCESS MESSAGE
+        # =====================================================
+
+        messages.success(
+            request,
+            f"Welcome back, {user.username}! "
+            f"You have successfully logged in."
+        )
+
         return redirect("home")
 class LogoutView(View):
     def get(self,request):
