@@ -392,12 +392,19 @@ class LoginView(View):
         # LOGIN EMAIL (Background Threading with Resend)
         if user.email:
             try:
+                logo_base64 = ""
+                logo_path = finders.find('IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png')
+                if logo_path and os.path.exists(logo_path):
+                    with open(logo_path, "rb") as f:
+                        logo_base64 = base64.b64encode(f.read()).decode("utf-8")
+
                 email_context = {
                     "user": user,
                     "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
+                    "logo_base64": logo_base64,
                 }
                 html_content = render_to_string("emails/login_success.html", email_context)
                 
