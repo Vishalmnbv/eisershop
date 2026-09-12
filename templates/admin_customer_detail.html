@@ -32,7 +32,7 @@
                                     {% if user.profile.image %}
                                         <img src="{{ user.profile.image.url }}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
                                     {% else %}
-                                        <img src="/static/IMAGES/default.png" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
+                                        <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle border border-light me-2" style="width: 34px; height: 34px; object-fit: cover;">
                                     {% endif %}
                                     <div class="d-none d-xl-block lh-sm">
                                         <span class="d-block text-white-50" style="font-size: 11px;">Administrator</span>
@@ -73,7 +73,7 @@
                         {% if customer.profile.image %}
                             <img src="{{ customer.profile.image.url }}" class="rounded-circle object-fit-cover" width="100" height="100" alt="{{ customer.username }}">
                         {% else %}
-                            <img src="/static/IMG/default.png" class="rounded-circle border border-3 border-secondary shadow-sm object-fit-cover" width="100" height="100" alt="Default Avatar">
+                            <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle border border-3 border-secondary shadow-sm object-fit-cover" width="100" height="100" alt="Default Avatar">
                         {% endif %}
                     </div>
                     <div class="col-md-10">

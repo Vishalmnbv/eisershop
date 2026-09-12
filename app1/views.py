@@ -310,27 +310,53 @@ class RegisterView(View):
         Profile.objects.create(user=user, image=image, mobile=mobile)
         messages.success(request, f"Hello {username}! Your account has been created successfully.")
         return redirect(f"/login/?username={username}")
+def send_async_login_email(user, html_content, logo_path):
+    try:
+        email = EmailMultiAlternatives(
+            subject="Login Successful - EiserShop",
+            body=f"Hello {user.username}, you have successfully logged in.",
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            to=[user.email],
+        )
+        email.attach_alternative(html_content, "text/html")
+        if logo_path and os.path.exists(logo_path):
+            with open(logo_path, "rb") as f:
+                logo = MIMEImage(f.read())
+                logo.add_header("Content-ID", "<header_logo>")
+                logo.add_header("Content-Disposition", "inline", filename="logo.png")
+                email.attach(logo)
+        email.send(fail_silently=True)
+    except Exception as e:
+        print("Login email error:", str(e))
 class LoginView(View):
     template_name = "login.html"
+
     def get(self, request):
-        context = {"category": Category.objects.all(),"username": request.GET.get("username", "")}
+        context = {
+            "category": Category.objects.all(),
+            "username": request.GET.get("username", ""),
+        }
         return render(request, self.template_name, context)
     def post(self, request):
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
-        user = auth.authenticate(request,username=username,password=password,)
+        user = auth.authenticate(request, username=username, password=password)
         if user is None:
             messages.error(request, "Invalid username or password")
-            return render(request,self.template_name,{"category": Category.objects.all(),"username": username,},)
+            return render(
+                request,
+                self.template_name,
+                {"category": Category.objects.all(), "username": username},
+            )
         auth.login(request, user)
         # IP ADDRESS 
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
-            ip_address = request.META.get("REMOTE_ADDR","127.0.0.1")
+            ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
         # DEVICE 
-        user_agent = request.META.get("HTTP_USER_AGENT","")
+        user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
         try:
             ua = parse(user_agent)
@@ -344,17 +370,12 @@ class LoginView(View):
             pass
         # LOCATION 
         location = "Unknown Location"
-        if ip_address not in [
-            "127.0.0.1",
-            "::1"
-        ]:
+        if ip_address not in ["127.0.0.1", "::1"]:
             try:
                 response = requests.get(
                     f"https://ip-api.com/json/{ip_address}",
                     timeout=4,
-                    headers={
-                        "User-Agent": "EiserShop"
-                    },
+                    headers={"User-Agent": "EiserShop"},
                 ).json()
                 if response.get("status") == "success":
                     location = (
@@ -367,43 +388,28 @@ class LoginView(View):
         # LOGIN EMAIL 
         if user.email:
             try:
-                context = {
+                email_context = {
                     "user": user,
                     "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
                 }
-                html_content = render_to_string("emails/login_success.html",context)
-                email = EmailMultiAlternatives(
-                    subject="Login Successful - EiserShop",
-                    body=(f"Hello {user.username}, " "you have successfully logged in."),from_email=settings.DEFAULT_FROM_EMAIL,to=[user.email],)
-                email.attach_alternative(html_content,"text/html")
-                # Logo 
+                html_content = render_to_string("emails/login_success.html", email_context)
                 logo_path = os.path.join(
                     settings.BASE_DIR,
                     "static",
                     "IMAGES",
                     "79e44a35-def7-4146-8642-961f01c9dea4.png",
                 )
-                if os.path.exists(logo_path):
-                    with open(logo_path, "rb") as f:
-                        logo = MIMEImage(f.read())
-                        logo.add_header(
-                            "Content-ID",
-                            "<header_logo>"
-                        )
-                        logo.add_header(
-                            "Content-Disposition",
-                            "inline",
-                            filename="logo.png",
-                        )
-                        email.attach(logo)
-                email.send(fail_silently=True)
+                threading.Thread(
+                    target=send_async_login_email,
+                    args=(user, html_content, logo_path)
+                ).start()
             except Exception as e:
-                print("Login email error:",str(e))
+                print("Login email setup error:", str(e))
                 traceback.print_exc()
-        messages.success(request,f"Welcome back, {user.username}! You have successfully logged in.")
+        messages.success(request, f"Welcome back, {user.username}! You have successfully logged in.")
         return redirect("home")
 class LogoutView(View):
     def get(self,request):
