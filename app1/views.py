@@ -327,16 +327,19 @@ def send_async_login_email(user, html_content):
         print("Resend login email error:", str(e))
 class LoginView(View):
     template_name = "login.html"
+
     def get(self, request):
         context = {
             "category": Category.objects.all(),
             "username": request.GET.get("username", ""),
         }
         return render(request, self.template_name, context)
+
     def post(self, request):
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
         user = auth.authenticate(request, username=username, password=password)
+        
         if user is None:
             messages.error(request, "Invalid username or password")
             return render(
@@ -344,13 +347,16 @@ class LoginView(View):
                 self.template_name,
                 {"category": Category.objects.all(), "username": username},
             )
+        
         auth.login(request, user)
+
         # IP ADDRESS 
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
             ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
+
         # DEVICE 
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
@@ -364,6 +370,7 @@ class LoginView(View):
             )
         except Exception:
             pass
+
         # LOCATION 
         location = "Unknown Location"
         if ip_address not in ["127.0.0.1", "::1"]:
@@ -381,23 +388,19 @@ class LoginView(View):
                     )
             except Exception:
                 pass
+
         # LOGIN EMAIL (Background Threading with Resend)
         if user.email:
             try:
-                logo_base64 = ""
-                logo_path = finders.find('IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png')
-                if logo_path and os.path.exists(logo_path):
-                    with open(logo_path, "rb") as f:
-                        logo_base64 = base64.b64encode(f.read()).decode("utf-8")
                 email_context = {
                     "user": user,
                     "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
-                    "logo_base64": logo_base64,
                 }
                 html_content = render_to_string("emails/login_success.html", email_context)
+                
                 threading.Thread(
                     target=send_async_login_email,
                     args=(user, html_content)
