@@ -417,10 +417,23 @@ class LogoutView(View):
         auth.logout(request)
         messages.success(request,f"Thank you for visiting EiserShop, {username}! You have successfully logged out.")
         return redirect("home")
+def send_async_email(user_email, subject, html_content):
+    try:
+        params = {
+            "from": "EiserShop <onboarding@resend.dev>",  
+            "to": [user_email],
+            "subject": subject,
+            "html": html_content,
+        }
+        resend.Emails.send(params)
+    except Exception as e:
+        print("Resend email error:", str(e))
 class ForgetPasswordView(View):
     template_name = "forgetpassword.html"
+
     def get(self, request):
-        return render(request,self.template_name,{"category": Category.objects.all()},)
+        return render(request, self.template_name, {"category": Category.objects.all()})
+
     def post(self, request):
         context = {
             "category": Category.objects.all(),
@@ -431,66 +444,93 @@ class ForgetPasswordView(View):
         otp = request.POST.get("otp", "").strip()
         newpassword = request.POST.get("newpassword", "")
         confirmpassword = request.POST.get("confirmpassword", "")
+        
         user = User.objects.filter(
             Q(email__iexact=identifier) |
             Q(username__iexact=identifier)
         ).first()
+        
         if not user:
             messages.error(request, "No account found with this Email or Username.")
             return render(request, self.template_name, context)
+            
         if "send_otp" in request.POST:
             generated_otp = str(random.randint(100000, 999999))
             request.session["reset_email"] = user.email
             request.session["reset_otp"] = generated_otp
+            
             try:
-                send_mail(
-                    subject="Password Reset OTP - EiserShop",
-                    message=f"""
-Hello {user.username},
-Your Password Reset OTP is:
-{generated_otp}
-Do not share this OTP with anyone.
-Regards,
-EiserShop Team
-""",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    recipient_list=[user.email],
-                    fail_silently=False,
-                )
-                messages.success(request,"OTP sent successfully to your registered email.")
+                otp_html_content = f"""
+                <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
+                    <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="background-color: #131921; padding: 22px; text-align: center;">
+                            <img src="https://eishershop.onrender.com/static/IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png" alt="EiserShop Logo" style="max-height: 50px; display: block; margin: 0 auto;">
+                            <p style="color: #ffffff; margin-top: 10px; font-size: 15px;">Password Reset Request</p>
+                        </div>
+                        <div style="padding: 30px; color: #333333;">
+                            <h2 style="color: #131921;">Hello {user.username},</h2>
+                            <p>We received a request to reset your password for your <strong>EiserShop</strong> account.</p>
+                            <p>Your Password Reset OTP is:</p>
+                            <div style="background-color: #f8f9fa; padding: 15px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 2px; color: #7fad39; margin: 20px 0; border-radius: 4px;">
+                                {generated_otp}
+                            </div>
+                            <p style="color: #777777; font-size: 13px;">Do not share this OTP with anyone. If you didn't request this, please ignore this email.</p>
+                            <p style="margin-top: 30px;">Regards,<br><strong>EiserShop Team</strong></p>
+                        </div>
+                    </div>
+                </div>
+                """
+                
+                threading.Thread(
+                    target=send_async_email,
+                    args=(user.email, "Password Reset OTP - EiserShop", otp_html_content),
+                    daemon=True
+                ).start()
+                
+                messages.success(request, "OTP sent successfully to your registered email.")
             except Exception:
                 traceback.print_exc()
                 messages.error(request, "Unable to send OTP email.")
             return render(request, self.template_name, context)
+            
         if request.session.get("reset_email") != user.email:
             messages.error(request, "Please generate OTP first.")
             return render(request, self.template_name, context)
+            
         if otp != request.session.get("reset_otp"):
             messages.error(request, "Invalid OTP.")
             return render(request, self.template_name, context)
+            
         if newpassword != confirmpassword:
             messages.error(request, "Passwords do not match.")
             return render(request, self.template_name, context)
+            
         if len(newpassword) < 8:
             messages.error(request, "Password must be at least 8 characters.")
             return render(request, self.template_name, context)
+            
         user.set_password(newpassword)
         user.save()
+        
         request.session.pop("reset_email", None)
         request.session.pop("reset_otp", None)
+        
         try:
             html_content = render_to_string(
-                "emails/password_reset_success.html",{"user": user,"change_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),},)
-            email = EmailMultiAlternatives(
-                subject="Password Changed Successfully - EiserShop",
-                body="Your password has been changed successfully.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[user.email],
+                "emails/password_reset_success.html",
+                {
+                    "user": user,
+                    "change_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
+                },
             )
-            email.attach_alternative(html_content, "text/html")
-            threading.Thread(target=send_email_thread,args=(email,),daemon=True,).start()
+            threading.Thread(
+                target=send_async_email,
+                args=(user.email, "Password Changed Successfully - EiserShop", html_content),
+                daemon=True
+            ).start()
         except Exception:
             traceback.print_exc()
+            
         messages.success(request, "Password reset successfully.")
         return redirect(f"/login/?username={user.username}")
 class EditProfileView(LoginRequiredMixin, View):
