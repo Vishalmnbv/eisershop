@@ -123,7 +123,7 @@
             </div>
         </div>
     </nav>
-    {% if messages and request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'wishlist' and request.resolver_match.url_name != 'conformorder' and request.resolver_match.url_name != 'productview' and request.resolver_match.url_name != 'my_orders' and request.resolver_match.url_name != 'browsing_history' and request.resolver_match.url_name != 'register' %}
+    {% if messages and request.resolver_match.url_name != 'cart' and request.resolver_match.url_name != 'wishlist' and request.resolver_match.url_name != 'conformorder' and request.resolver_match.url_name != 'productview' and request.resolver_match.url_name != 'my_orders' and request.resolver_match.url_name != 'browsing_history' and request.resolver_match.url_name != 'register' and request.resolver_match.url_name != 'forgetpassword' %}
         <div class="container">
             {% for message in messages %}
                 {% with tag=message.tags|default:'info' %}
