@@ -47,6 +47,8 @@ import requests
 import random
 import os
 import re
+import base64
+import resend
 # Create your views here.
 def send_email_thread(email):
     try:
@@ -312,22 +314,29 @@ class RegisterView(View):
         return redirect(f"/login/?username={username}")
 def send_async_login_email(user, html_content, logo_path):
     try:
-        email = EmailMultiAlternatives(
-            subject="Login Successful - EiserShop",
-            body=f"Hello {user.username}, you have successfully logged in.",
-            from_email=settings.DEFAULT_FROM_EMAIL,
-            to=[user.email],
-        )
-        email.attach_alternative(html_content, "text/html")
+        attachments = []
         if logo_path and os.path.exists(logo_path):
             with open(logo_path, "rb") as f:
-                logo = MIMEImage(f.read())
-                logo.add_header("Content-ID", "<header_logo>")
-                logo.add_header("Content-Disposition", "inline", filename="logo.png")
-                email.attach(logo)
-        email.send(fail_silently=True)
+                file_content = base64.b64encode(f.read()).decode("utf-8")
+                attachments.append({
+                    "filename": "logo.png",
+                    "content": file_content,
+                    "content_id": "header_logo"
+                })
+
+        params = {
+            "from": "EiserShop <onboarding@resend.dev>",  
+            "to": [user.email],
+            "subject": "Login Successful - EiserShop",
+            "html": html_content,
+        }
+        
+        if attachments:
+            params["attachments"] = attachments
+
+        resend.Emails.send(params)
     except Exception as e:
-        print("Login email error:", str(e))
+        print("Resend login email error:", str(e))
 class LoginView(View):
     template_name = "login.html"
 
@@ -337,10 +346,12 @@ class LoginView(View):
             "username": request.GET.get("username", ""),
         }
         return render(request, self.template_name, context)
+
     def post(self, request):
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
         user = auth.authenticate(request, username=username, password=password)
+        
         if user is None:
             messages.error(request, "Invalid username or password")
             return render(
@@ -348,13 +359,16 @@ class LoginView(View):
                 self.template_name,
                 {"category": Category.objects.all(), "username": username},
             )
+        
         auth.login(request, user)
+
         # IP ADDRESS 
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
             ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
+
         # DEVICE 
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
@@ -368,6 +382,7 @@ class LoginView(View):
             )
         except Exception:
             pass
+
         # LOCATION 
         location = "Unknown Location"
         if ip_address not in ["127.0.0.1", "::1"]:
@@ -385,7 +400,8 @@ class LoginView(View):
                     )
             except Exception:
                 pass
-        # LOGIN EMAIL 
+
+        # LOGIN EMAIL (Background Threading with Resend)
         if user.email:
             try:
                 email_context = {
@@ -396,12 +412,14 @@ class LoginView(View):
                     "ip_address": ip_address,
                 }
                 html_content = render_to_string("emails/login_success.html", email_context)
+                
                 logo_path = os.path.join(
                     settings.BASE_DIR,
                     "static",
                     "IMAGES",
                     "79e44a35-def7-4146-8642-961f01c9dea4.png",
                 )
+                
                 threading.Thread(
                     target=send_async_login_email,
                     args=(user, html_content, logo_path)
@@ -409,6 +427,7 @@ class LoginView(View):
             except Exception as e:
                 print("Login email setup error:", str(e))
                 traceback.print_exc()
+
         messages.success(request, f"Welcome back, {user.username}! You have successfully logged in.")
         return redirect("home")
 class LogoutView(View):
