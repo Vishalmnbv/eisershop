@@ -315,9 +315,6 @@ class RegisterView(View):
         return redirect(f"/login/?username={username}")
 resend.api_key = os.environ.get("RESEND_API_KEY")
 def send_async_login_email(user, html_content):
-    """
-    Background thread function to send email via Resend without blocking the request.
-    """
     try:
         params = {
             "from": "EiserShop <onboarding@resend.dev>",
@@ -325,40 +322,27 @@ def send_async_login_email(user, html_content):
             "subject": "Login Successful - EiserShop",
             "html": html_content,
         }
-
         response = resend.Emails.send(params)
         print("RESEND RESPONSE:", response)
-
     except Exception as e:
         print("RESEND LOGIN EMAIL ERROR:", repr(e))
         traceback.print_exc()
 class LoginView(View):
     template_name = "login.html"
-
     def get(self, request):
         context = {
             "category": Category.objects.all(),
             "username": request.GET.get("username", ""),
         }
         return render(request, self.template_name, context)
-
     def post(self, request):
-
-        # =====================================================
-        # LOGIN DATA
-        # =====================================================
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
-
         user = auth.authenticate(
             request,
             username=username,
             password=password
         )
-
-        # =====================================================
-        # INVALID LOGIN
-        # =====================================================
         if user is None:
             messages.error(
                 request,
@@ -372,27 +356,14 @@ class LoginView(View):
                     "username": username,
                 },
             )
-
-        # =====================================================
-        # LOGIN USER
-        # =====================================================
         auth.login(request, user)
-
-        # =====================================================
-        # IP ADDRESS
-        # =====================================================
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
             ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
-
-        # =====================================================
-        # DEVICE INFORMATION
-        # =====================================================
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
-
         try:
             ua = parse(user_agent)
             browser = f"{ua.browser.family} {ua.browser.version_string}"
@@ -400,10 +371,6 @@ class LoginView(View):
             device = f"{browser} on {operating_system}"
         except Exception:
             device = "Unknown Device"
-
-        # =====================================================
-        # LOCATION
-        # =====================================================
         location = "Unknown Location"
         if ip_address not in ["127.0.0.1", "::1"]:
             try:
@@ -420,10 +387,6 @@ class LoginView(View):
                     location = f"{city}, {region}, {country}"
             except Exception as e:
                 print("Location lookup error:", str(e))
-
-        # =====================================================
-        # LOGIN SUCCESS EMAIL
-        # =====================================================
         if user.email:
             try:
                 # EMAIL CONTEXT (Using absolute hosted URL for the logo)
@@ -433,16 +396,12 @@ class LoginView(View):
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
-                    "logo_url": "https://eishershop.onrender.com/static/IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png",
+                    "logo_url": "https://eishershop.onrender.com/static/IMAGES/logo.png",
                 }
-
-                # RENDER EMAIL HTML
                 html_content = render_to_string(
                     "emails/login_success.html",
                     email_context
                 )
-
-                # SEND EMAIL IN BACKGROUND (Ab arguments match kar rahe hain)
                 email_thread = threading.Thread(
                     target=send_async_login_email,
                     args=(
@@ -452,19 +411,13 @@ class LoginView(View):
                     daemon=True,
                 )
                 email_thread.start()
-
             except Exception as e:
                 print("Login email setup error:", str(e))
                 traceback.print_exc()
-
-        # =====================================================
-        # SUCCESS MESSAGE
-        # =====================================================
         messages.success(
             request,
             f"Welcome back, {user.username}! You have successfully logged in."
         )
-
         return redirect("home")
 class LogoutView(View):
     def get(self,request):
@@ -485,10 +438,8 @@ def send_async_email(user_email, subject, html_content):
         print("Resend email error:", str(e))
 class ForgetPasswordView(View):
     template_name = "forgetpassword.html"
-
     def get(self, request):
         return render(request, self.template_name, {"category": Category.objects.all()})
-
     def post(self, request):
         context = {
             "category": Category.objects.all(),
@@ -499,27 +450,23 @@ class ForgetPasswordView(View):
         otp = request.POST.get("otp", "").strip()
         newpassword = request.POST.get("newpassword", "")
         confirmpassword = request.POST.get("confirmpassword", "")
-        
         user = User.objects.filter(
             Q(email__iexact=identifier) |
             Q(username__iexact=identifier)
         ).first()
-        
         if not user:
             messages.error(request, "No account found with this Email or Username.")
             return render(request, self.template_name, context)
-            
         if "send_otp" in request.POST:
             generated_otp = str(random.randint(100000, 999999))
             request.session["reset_email"] = user.email
             request.session["reset_otp"] = generated_otp
-            
             try:
                 otp_html_content = f"""
                 <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <div style="background-color: #131921; padding: 22px; text-align: center;">
-                            <img src="https://eishershop.onrender.com/static/IMAGES/79e44a35-def7-4146-8642-961f01c9dea4.png" alt="EiserShop Logo" style="max-height: 50px; display: block; margin: 0 auto;">
+                            <img src="https://eishershop.onrender.com/static/IMAGES/logo.png" alt="EiserShop Logo" style="max-height: 50px; display: block; margin: 0 auto;">
                             <p style="color: #ffffff; margin-top: 10px; font-size: 15px;">Password Reset Request</p>
                         </div>
                         <div style="padding: 30px; color: #333333;">
@@ -535,41 +482,32 @@ class ForgetPasswordView(View):
                     </div>
                 </div>
                 """
-                
                 threading.Thread(
                     target=send_async_email,
                     args=(user.email, "Password Reset OTP - EiserShop", otp_html_content),
                     daemon=True
                 ).start()
-                
                 messages.success(request, "OTP sent successfully to your registered email.")
             except Exception:
                 traceback.print_exc()
                 messages.error(request, "Unable to send OTP email.")
             return render(request, self.template_name, context)
-            
         if request.session.get("reset_email") != user.email:
             messages.error(request, "Please generate OTP first.")
             return render(request, self.template_name, context)
-            
         if otp != request.session.get("reset_otp"):
             messages.error(request, "Invalid OTP.")
             return render(request, self.template_name, context)
-            
         if newpassword != confirmpassword:
             messages.error(request, "Passwords do not match.")
             return render(request, self.template_name, context)
-            
         if len(newpassword) < 8:
             messages.error(request, "Password must be at least 8 characters.")
             return render(request, self.template_name, context)
-            
         user.set_password(newpassword)
         user.save()
-        
         request.session.pop("reset_email", None)
         request.session.pop("reset_otp", None)
-        
         try:
             html_content = render_to_string(
                 "emails/password_reset_success.html",
@@ -584,8 +522,7 @@ class ForgetPasswordView(View):
                 daemon=True
             ).start()
         except Exception:
-            traceback.print_exc()
-            
+            traceback.print_exc()  
         messages.success(request, "Password reset successfully.")
         return redirect(f"/login/?username={user.username}")
 class EditProfileView(LoginRequiredMixin, View):
@@ -603,7 +540,6 @@ class EditProfileView(LoginRequiredMixin, View):
                 profile.mobile = last_order.mobile
         context = {"category": Category.objects.all(), "profile": profile}
         return render(request, self.template_name, context)
-
     def post(self, request):
         user = request.user
         profile, created = Profile.objects.get_or_create(user=user)
@@ -613,17 +549,13 @@ class EditProfileView(LoginRequiredMixin, View):
         user.email = request.POST.get("email", "").strip()
         profile.delivery_address = request.POST.get("delivery_address", "").strip()
         profile.mobile = request.POST.get("mobile", "").strip()
-        
         uploaded_image = request.FILES.get("profile_image")
-        
         if User.objects.exclude(pk=user.pk).filter(username=user.username).exists():
             messages.error(request, "Username already exists.")
             return redirect("editprofile")
-            
         if User.objects.exclude(pk=user.pk).filter(email=user.email).exists():
             messages.error(request, "Email already exists.")
             return redirect("editprofile")
-            
         try:
             user.save()
             if uploaded_image:
