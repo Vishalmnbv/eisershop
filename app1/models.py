@@ -249,7 +249,10 @@ class Order(models.Model):
         super().save(*args, **kwargs)
     def send_delivery_email(self):
         subject = f"Order Delivered - EiserShop (#{self.amazon_order_id or self.orderid})"
-        context = {'order': self}
+        context = {
+            'order': self,
+            'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+        }
         html_content = render_to_string('emails/order_delivered.html', context)
         text_content = strip_tags(html_content) 
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
@@ -262,22 +265,6 @@ class Order(models.Model):
                     [recipient_email]
                 )
                 email.attach_alternative(html_content, "text/html")
-                logo_path = os.path.join(
-                    settings.BASE_DIR,
-                    "static",
-                    "IMAGES",
-                    "79e44a35-def7-4146-8642-961f01c9dea4.png",
-                )
-                if os.path.exists(logo_path):
-                    with open(logo_path, "rb") as f:
-                        logo = MIMEImage(f.read())
-                        logo.add_header("Content-ID", "<logo>")
-                        logo.add_header(
-                            "Content-Disposition",
-                            "inline",
-                            filename="logo.png",
-                        )
-                        email.attach(logo)
                 email.send(fail_silently=False)
             except Exception as e:
                 print(f"Error sending email: {e}")

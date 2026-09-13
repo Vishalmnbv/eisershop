@@ -246,11 +246,10 @@
                                                         {% for _ in product.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
                                                     </div>
                                                 </div>
-                                                <div class="mt-auto">
+                                                <div class="d-flex align-items-center gap-1 flex-wrap">
                                                     <div class="fw-bold text-dark" style="font-size:22px;">₹{{ product.productprice|format_indian_currency }}</div>
                                                     {% if product.productmrpprice %}
-                                                        <div class="small text-muted">M.R.P.
-                                                            <span class="text-decoration-line-through">₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                                        <div class="small text-muted text-decoration-line-through">M.R.P. ₹{{ product.productmrpprice|format_indian_currency }}
                                                             {% if product.productdiscountrate != "0" %}
                                                                 <span class="text-success fw-semibold ms-1">({{ product.productdiscountrate }}% OFF)</span>
                                                             {% endif %}

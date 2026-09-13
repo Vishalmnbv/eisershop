@@ -344,10 +344,7 @@ class LoginView(View):
             password=password
         )
         if user is None:
-            messages.error(
-                request,
-                "Invalid username or password"
-            )
+            messages.error(request,"Invalid username or password")
             return render(
                 request,
                 self.template_name,
@@ -389,7 +386,7 @@ class LoginView(View):
                 print("Location lookup error:", str(e))
         if user.email:
             try:
-                # EMAIL CONTEXT (Using absolute hosted URL for the logo)
+                # EMAIL 
                 email_context = {
                     "user": user,
                     "login_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
@@ -1952,7 +1949,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
                         product.sold_count += (item.quantity) 
                     else:
                         product.stock = 0
-                    product.save()
+                    product.save()  
         try:
             context = {
                 "user": request.user,
@@ -1960,6 +1957,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 "order_items": order.orderitem_set.all(),
                 "coupon_code": coupon_code,
                 "discount": discount,
+                "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
             }
             html_content = render_to_string("emails/order_confirmation.html", context)
             email = EmailMultiAlternatives(
@@ -1969,22 +1967,6 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 to=[order.email],
             )
             email.attach_alternative(html_content, "text/html")
-            logo_path = os.path.join(
-                settings.BASE_DIR,
-                "static",
-                "IMAGES",
-                "79e44a35-def7-4146-8642-961f01c9dea4.png",
-            )
-            if os.path.exists(logo_path):
-                with open(logo_path, "rb") as f:
-                    logo = MIMEImage(f.read())
-                    logo.add_header("Content-ID", "<logo>")
-                    logo.add_header(
-                        "Content-Disposition",
-                        "inline",
-                        filename="logo.png",
-                    )
-                    email.attach(logo)
             email.send(fail_silently=False)
         except Exception as e:
             print("Order email error:", str(e))
@@ -1996,10 +1978,17 @@ class PlaceOrderView(LoginRequiredMixin, View):
 class CancelProductView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request, orderitemid):
-        order_item = get_object_or_404(Orderitem,orderitemid=orderitemid,order_id__user_id=request.user,)
+        order_item = get_object_or_404(
+            Orderitem,
+            orderitemid=orderitemid,
+            order_id__user_id=request.user,
+        )
         order = order_item.order_id
         if request.session.get("order_just_placed_id") == order.orderid:
-            messages.error(request,"Please place your order first. You cannot cancel products during checkout.",)
+            messages.error(
+                request,
+                "Please place your order first. You cannot cancel products during checkout.",
+            )
             return redirect("conformorder", order.orderid)
         cancelled_product_name = order_item.productview_id.producttitle
         cancelled_quantity = order_item.quantity
@@ -2040,8 +2029,12 @@ class CancelProductView(LoginRequiredMixin, View):
                     ),
                     "remaining_total": order.total,
                     "refund_amount": cancelled_price,
+                    "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string("emails/order_cancelled.html",context,)
+                html_content = render_to_string(
+                    "emails/order_cancelled.html",
+                    context,
+                )
                 email = EmailMultiAlternatives(
                     subject=f"Order Cancellation - {order.amazon_order_id}",
                     body="Your product has been cancelled successfully.",
@@ -2049,22 +2042,6 @@ class CancelProductView(LoginRequiredMixin, View):
                     to=[order.email],
                 )
                 email.attach_alternative(html_content, "text/html")
-                logo_path = os.path.join(
-                    settings.BASE_DIR,
-                    "static",
-                    "IMAGES",
-                    "79e44a35-def7-4146-8642-961f01c9dea4.png",
-                )
-                if os.path.exists(logo_path):
-                    with open(logo_path, "rb") as f:
-                        logo = MIMEImage(f.read())
-                        logo.add_header("Content-ID", "<logo>")
-                        logo.add_header(
-                            "Content-Disposition",
-                            "inline",
-                            filename="logo.png",
-                        )
-                        email.attach(logo)
                 if product_image_url:
                     try:
                         response = requests.get(product_image_url, timeout=10)
@@ -4039,7 +4016,11 @@ def download_bill(request, order_id):
         amazon_order_id = f"{int(order.orderid):05d}"
     except ValueError:
         amazon_order_id = order.orderid 
-    context = {'order': order,'amazon_order_id': amazon_order_id }
+    context = {
+        'order': order,
+        'amazon_order_id': amazon_order_id,
+        'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+    }
     template_path = 'emails/invoice_pdf.html'
     html = render_to_string(template_path, context)
     response = HttpResponse(content_type='application/pdf')

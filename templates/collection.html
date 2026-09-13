@@ -304,8 +304,8 @@
                                                 {% endfor %}
                                             </div>
                                         </div>
-                                        <div class="mt-auto d-flex align-items-baseline gap-2">
-                                            <span class="fw-bold text-dark" style="font-size: 18px;">₹{{ item.productprice|format_indian_currency}}</span>
+                                        <div class="d-flex align-items-center gap-1 flex-wrap">
+                                            <span class="fw-bold text-dark fs-6">₹{{ item.productprice|format_indian_currency}}</span>
                                             {% if item.productdiscountrate and item.productdiscountrate != '0' %}
                                                 <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ item.productmrpprice|format_indian_currency }}</span>
                                                 <span class="small text-success">({{ item.productdiscountrate }}% OFF)</span>
