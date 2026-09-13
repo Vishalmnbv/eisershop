@@ -163,9 +163,9 @@ DEFAULT_FROM_EMAIL =  EMAIL_HOST_USER
 
 
 CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': os.environ.get('rccdb6pd'),
-    'API_KEY': os.environ.get('196187459999258'),
-    'API_SECRET': os.environ.get('RSStKkejRSWcD7Ml9tJ6LxWWTNY'),
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
 }
 
 STORAGES = {
