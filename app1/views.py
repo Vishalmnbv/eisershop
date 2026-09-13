@@ -450,10 +450,7 @@ class ForgetPasswordView(View):
         otp = request.POST.get("otp", "").strip()
         newpassword = request.POST.get("newpassword", "")
         confirmpassword = request.POST.get("confirmpassword", "")
-        user = User.objects.filter(
-            Q(email__iexact=identifier) |
-            Q(username__iexact=identifier)
-        ).first()
+        user = User.objects.filter(Q(email__iexact=identifier) | Q(username__iexact=identifier)).first()
         if not user:
             messages.error(request, "No account found with this Email or Username.")
             return render(request, self.template_name, context)
@@ -514,6 +511,7 @@ class ForgetPasswordView(View):
                 {
                     "user": user,
                     "change_time": timezone.localtime().strftime("%d-%m-%Y %I:%M %p"),
+                    "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 },
             )
             threading.Thread(
