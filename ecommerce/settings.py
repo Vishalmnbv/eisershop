@@ -45,6 +45,9 @@ INSTALLED_APPS = [
     'app1',
     'rest_framework',
     "rest_framework.authtoken",
+    'cloudinary_storage',
+    'django.contrib.staticfiles',
+    'cloudinary',
 ]
 
 MIDDLEWARE = [
@@ -158,3 +161,19 @@ EMAIL_USE_SSL = False
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "gajjarvishal288@gmail.com")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "sncrsnpznyoyznaw")
 DEFAULT_FROM_EMAIL =  EMAIL_HOST_USER
+
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('rccdb6pd'),
+    'API_KEY': os.environ.get('196187459999258'),
+    'API_SECRET': os.environ.get('RSStKkejRSWcD7Ml9tJ6LxWWTNY'),
+}
+
+STORAGES = {
+    "default": {
+        "BACKEND": "cloudinary_storage.storage.MediaCloudinaryStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}

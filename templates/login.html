@@ -77,13 +77,13 @@
                         <label class="form-label">Username <span class="text-danger">*</span></label>
                         <div class="input-group">
                             <i class="fa-solid fa-user-tag"></i>
-                            <input type="text" class="form-control shadow-none rounded-pill" name="username" id="username" placeholder="Enter username" value="{{ username|default:'' }}" required>
+                            <input type="text" class="form-control shadow-none rounded-pill" name="username" autocomplete="off" id="username" placeholder="Enter username" value="{{ username|default:'' }}" required >
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Password <span class="text-danger">*</span></label>
                         <div class="input-group">
-                            <input type="password" class="form-control shadow-none rounded-pill" id="psw" name="password" placeholder="Enter password" required>
+                            <input type="password" class="form-control shadow-none rounded-pill" id="psw" name="password" autocomplete="password" placeholder="Enter password" required>
                             <i class="fa-solid fa-eye-slash" id="icon3"></i>
                         </div>
                     </div>
