@@ -97,13 +97,13 @@
     {% endif %}
     <div class="container py-2">
         <nav aria-label="breadcrumb">
-            <ol class="breadcrumb small mb-0">
+            <ol class="breadcrumb small mb-0 flex-wrap">
                 <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
                 <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
-                {% if request.GET.ref_page %}
-                    <li class="breadcrumb-item"><a href="{% url 'collection' categories.categoryid %}?page={{ request.GET.ref_page }}" class="text-decoration-none text-secondary"><i class="fa-solid fa-file-lines me-1"></i>Page {{ request.GET.ref_page }}</a></li>
-                {% endif %}
-                <li class="breadcrumb-item active breadcrumb-active text-secondary" style="max-width: 900px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45}}</li>
+                    {% if request.GET.ref_page %}
+                <li class="breadcrumb-item"><a href="{% url 'collection' categories.categoryid %}?page={{ request.GET.ref_page }}" class="text-decoration-none text-secondary"><i class="fa-solid fa-file-lines me-1"></i>Page {{ request.GET.ref_page }}</a></li>
+                    {% endif %}
+                <li class="breadcrumb-item active breadcrumb-active text-secondary text-truncate" style="max-width: 220px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45}}</li>
             </ol>
         </nav>
         {% for message in messages %}
@@ -408,11 +408,11 @@
                         {% endif %}
                         <div class="mt-4">
                             {% if not variant_unavailable and stock_available %}
-                                <div class="d-flex flex-row gap-2 mb-2 w-100">                             
+                                <div class="d-flex flex-column flex-sm-row gap-2 mb-2 w-100">                            
                                     <button type="submit" formaction="{% url 'add_to_cart' productview.productviewid %}" class="btn btn-warning px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center">
                                         <i class="fa-solid fa-cart-shopping me-2"></i>Add to Cart
                                     </button>                            
-                                    <button type="submit" formaction="{% url 'add_to_cart' productview.productviewid %}?buy_now=true" class="btn btn-orange text-white  px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center" style="background-color: #ff6000;">
+                                    <button type="submit" formaction="{% url 'add_to_cart' productview.productviewid %}?buy_now=true" class="btn text-white px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center" style="background-color: #ff6000;">
                                         <i class="fa-solid fa-bolt me-2"></i>Buy Now
                                     </button>
                                     <button type="submit" formaction="{% url 'add_wishlist' productview.productviewid %}" class="btn btn-danger px-3 py-2 flex-fill fw-semibold d-flex align-items-center justify-content-center">

@@ -55,10 +55,10 @@
     </div>
     <div class="container py-3">
         <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb bg-white px-3 py-2 rounded mb-0">
+            <ol class="breadcrumb bg-white px-3 py-2 rounded mb-0 flex-wrap">
                 <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
                 <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
-                <li class="breadcrumb-item breadcrumb-active text-secondary" style="max-width: 480px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45 }}</li>
+                <li class="breadcrumb-item breadcrumb-active text-secondary text-truncate" style="max-width: 180px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45 }}</li>
                 <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
                 <li class="breadcrumb-item"><a href="/checkout/" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Checkout</a></li>
                 <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-circle-check me-1"></i>ConfomerOrder</li>
@@ -166,13 +166,14 @@
                 <div class="card premium-card mb-4 border">
                     <div class="card-body py-4">
                         <div class="row g-3 text-center text-sm-start">
-                            <div class="col-sm-6 col-md-3 border-end">
+                            <div class="col-sm-6 col-md-3 position-relative">
                                 <span class="text-muted small d-block mb-1">Order ID</span>
                                 <span class="fw-bold text-dark font-monospace">#{{ order.amazon_order_id }}</span>
+                                <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y border-end" style="height: 35px;"></div>
                             </div>
-                            <div class="col-sm-6 col-md-3 border-end">
+                            <div class="col-sm-6 col-md-3 position-relative">
                                 <span class="text-muted small d-block mb-1">Payment Method</span>
-                                <span class="fw-bold text-success d-flex align-items-center gap-2">
+                                <span class="fw-bold text-success d-flex align-items-center justify-content-center justify-content-sm-start gap-2">
                                     <span style="font-size:13px;">{{ order.paymentmethod }}</span>
                                     {% if order.payment_status_display == "Paid" or order.paymentmethod == "UPI" or order.paymentmethod == "upi" %}
                                         <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.62rem;">
@@ -188,15 +189,17 @@
                                         </span>
                                     {% endif %}
                                 </span>
+                                <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y border-end" style="height: 35px;"></div>
                             </div>
-                            <div class="col-sm-6 col-md-3 border-end">
+                            <div class="col-sm-6 col-md-3 position-relative">
                                 {% if order.orderstatus == "Delivered" %}
                                     <span class="text-muted small d-block mb-1">Delivered On</span>
                                     <span class="fw-bold text-success"><i class="fa-solid fa-circle-check me-1"></i>{{ order.date|date:"d M Y" }}</span>
                                 {% else %}
-                                <span class="text-muted small d-block mb-1">Expected Delivery</span>
-                                <span class="fw-bold text-primary"><i class="fa-solid fa-truck-fast me-1"></i>{{ expected_delivery|date:"d M Y" }}</span>
-                            {% endif %}
+                                    <span class="text-muted small d-block mb-1">Expected Delivery</span>
+                                    <span class="fw-bold text-primary"><i class="fa-solid fa-truck-fast me-1"></i>{{ expected_delivery|date:"d M Y" }}</span>
+                                {% endif %}
+                                <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y border-end" style="height: 35px;"></div>
                             </div>
                             <div class="col-sm-6 col-md-3">
                                 <span class="text-muted small d-block mb-1">Shipping To</span>
@@ -213,31 +216,31 @@
                     <div class="card-body px-4 pb-4">
                         {% for i in cart_items %}
                             <div class="py-4 {% if not forloop.last %}border-bottom{% endif %}">
-                                <div class="row align-items-center">
-                                    <div class="col-md-2 col-4 text-center">
-                                        <img src="{{ i.productview_id.productimage1 }}" alt="{{ i.product_id.producttitle }}" class="img-fluid p-2 product-img {% if i.status == 'Cancelled' %}opacity-50{% endif %}" style="height:180px;width:100px;object-fit:contain;">
+                                <div class="row align-items-center g-3">
+                                    <div class="col-3 col-md-2 text-center">
+                                        <img src="{{ i.productview_id.productimage1 }}" alt="{{ i.product_id.producttitle }}" class="img-fluid p-1 product-img {% if i.status == 'Cancelled' %}opacity-50{% endif %}" style="height:100px;width:100%;object-fit:contain;">
                                     </div>
-                                    <div class="col-md-7 col-8">
-                                        <h8 class="fw-bold mb-2">{{ i.productview_id.producttitle }}</h8>
-                                        <div class="d-flex flex-wrap gap-3 mb-2">
+                                    <div class="col-9 col-md-7">
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem; line-height: 1.4;">{{ i.productview_id.producttitle }}</h6>
+                                        <div class="d-flex flex-wrap gap-2 mb-2 text-muted small">
                                             <span><strong>Qty:</strong> {{ i.quantity }}</span>
                                             {% if i.selected_size and i.selected_size|lower != "standard" and i.selected_size|lower != "none" %}
                                                 <span><strong>Size:</strong> {{ i.selected_size }}</span>
-                                            {% endif %}                                   
+                                            {% endif %}                            
                                             {% if i.productview_id.productcolor1 %}
                                                 <span><strong>Color:</strong> {{ i.productview_id.productcolor1 }}</span>
                                             {% endif %}
                                         </div>
-                                        <div class="small text-muted mb-3">Sold by: <strong class="text-dark">Eiser Shop</strong></div>
+                                        <div class="small text-muted mb-2">Sold by: <strong class="text-dark">Eiser Shop</strong></div>
                                         {% if not is_checkout %}
                                             {% if order.orderstatus == "Pending" or order.orderstatus == "Processing" %}
-                                                <a href="{% url 'cancel_product' i.orderitemid %}" class="btn btn-danger btn-sm rounded-pill"><i class="fa-solid fa-xmark me-1"></i>Cancel Product</a>
+                                                <a href="{% url 'cancel_product' i.orderitemid %}" class="btn btn-danger btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;"><i class="fa-solid fa-xmark me-1"></i>Cancel Product</a>
                                             {% elif order.orderstatus == "Cancelled" %}
                                                 <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>
                                             {% endif %}
                                         {% endif %}
                                     </div>
-                                    <div class="col-md-3 text-md-end mt-3 mt-md-0">
+                                    <div class="col-12 col-md-3 text-start text-md-end ps-5 ps-md-0">
                                         <h5 class="fw-bold text-success mb-0">₹{{ i.calculated_unit_price|format_indian_currency }}</h5>
                                     </div>
                                 </div>
@@ -290,7 +293,7 @@
                                 <div>
                                     <h6 class="fw-bold text-dark mb-1">{{ order.firstname }} {{ order.username }} {{ order.lastname }}</h6>
                                     <p class="text-muted small mb-2 lh-base">{{ order.address }} <br></p> 
-                                    <i class="fa-solid fa-phone me-1"></i>{{ order.number }}                                 
+                                    <i class="fa-solid fa-phone me-1"></i>{{ order.number }}                            
                                 </div>
                             </div>
                         </div>
@@ -307,7 +310,7 @@
                             </a>
                         </form>
                     {% else %}
-                        <div class="d-grid gap-3 mt-3">                        
+                        <div class="d-grid gap-3 mt-3">                    
                             <a href="{% url 'download_bill' order.orderid %}" class="btn btn-warning btn-lg  py-2 fw-semibold">
                                 <i class="fa-solid fa-file-arrow-down me-2"></i>Download Bill
                             </a>
