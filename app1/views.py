@@ -1969,7 +1969,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 to=[order.email],
             )
             email.attach_alternative(html_content, "text/html")
-            email.send(fail_silently=False)
+            email.send(fail_silently=True)
         except Exception as e:
             print("Order email error:", str(e))
         Cart.objects.filter(userid=request.user).delete()
