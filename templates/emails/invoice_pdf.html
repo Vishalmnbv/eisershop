@@ -99,21 +99,21 @@
                     <table class="totals-table">
                         <tr>
                             <td>Subtotal:</td>
-                            <td style="text-align: right;">₹. {{ order.subtotal|format_indian_currency }}</td>
+                            <td style="text-align: right;">Rs. {{ order.subtotal|format_indian_currency }}</td>
                         </tr>
                         {% if order.coupon_discount %}
                         <tr>
                             <td>Coupon Discount:</td>
-                            <td style="text-align: right; color: #007600;">- ₹. {{ order.coupon_discount|format_indian_currency }}</td>
+                            <td style="text-align: right; color: #007600;">&minus; Rs. {{ order.coupon_discount|format_indian_currency }}</td>
                         </tr>
                         {% endif %}
                         <tr>
                             <td>Delivery Charges:</td>
-                            <td style="text-align: right;">₹. {{ order.deliverycharges|format_indian_currency }}</td>
+                            <td style="text-align: right;">Rs. {{ order.deliverycharges|format_indian_currency }}</td>
                         </tr>
                         <tr>
                             <td style="font-size: 13px; color: #b12704;"><strong>Grand Total:</strong></td>
-                            <td style="text-align: right; font-size: 13px; color: #b12704; font-weight: bold;">₹. {{ order.total|format_indian_currency }}</td>
+                            <td style="text-align: right; font-size: 13px; color: #b12704; font-weight: bold;">Rs. {{ order.total|format_indian_currency }}</td>
                         </tr>
                     </table>
                 </td>
