@@ -396,7 +396,7 @@ class LoginView(View):
                     "device": device,
                     "location": location,
                     "ip_address": ip_address,
-                    "logo_url": "https://eishershop.onrender.com/static/IMAGES/logo.png",
+                    "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string(
                     "emails/login_success.html",
@@ -466,7 +466,7 @@ class ForgetPasswordView(View):
                 <div style="font-family: Arial, sans-serif; background-color: #f4f4f4; padding: 20px;">
                     <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                         <div style="background-color: #131921; padding: 22px; text-align: center;">
-                            <img src="https://eishershop.onrender.com/static/IMAGES/logo.png" alt="EiserShop Logo" style="max-height: 50px; display: block; margin: 0 auto;">
+                            <img src="https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png" alt="EiserShop Logo" style="max-height: 50px; display: block; margin: 0 auto;">
                             <p style="color: #ffffff; margin-top: 10px; font-size: 15px;">Password Reset Request</p>
                         </div>
                         <div style="padding: 30px; color: #333333;">
