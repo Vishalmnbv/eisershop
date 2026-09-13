@@ -4015,18 +4015,19 @@ def link_callback(uri, rel):
 def download_bill(request, order_id):
     order = get_object_or_404(Order, orderid=order_id, user_id=request.user)
     try:
-        amazon_order_id = f"{int(order.orderid):05d}"
+        order_no = f"{int(order.orderid):05d}"
     except ValueError:
-        amazon_order_id = order.orderid 
+        order_no = order.orderid 
+    formatted_invoice_id = f"eiser-{order_no}"
     context = {
         'order': order,
-        'amazon_order_id': amazon_order_id,
+        'amazon_order_id': formatted_invoice_id,
         'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
     }
     template_path = 'emails/invoice_pdf.html'
     html = render_to_string(template_path, context)
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = f'attachment; filename="Invoice_{amazon_order_id}.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="Invoice_{formatted_invoice_id}.pdf"'
     pisa_status = pisa.CreatePDF(html, dest=response, link_callback=link_callback)
     if pisa_status.err:
         return HttpResponse('Error generating PDF <pre>' + html + '</pre>')
