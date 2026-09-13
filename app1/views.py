@@ -1825,7 +1825,9 @@ class CheckoutView(LoginRequiredMixin, View):
         number = request.POST.get("number")
         address = request.POST.get("address")
         paymentmethod = request.POST.get("paymentmethod")
-        tracker_status, created = Otracker.objects.get_or_create(status="conformorder",myuser=request.user)
+        tracker_status = Otracker.objects.filter(status="conformorder", myuser=request.user).first()
+        if not tracker_status:
+            tracker_status = Otracker.objects.create(status="conformorder", myuser=request.user)
         try:
             order = Order.objects.create(
                 orderstatus="Pending",
