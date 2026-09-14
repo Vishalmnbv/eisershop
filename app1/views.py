@@ -1930,6 +1930,8 @@ class PlaceOrderView(LoginRequiredMixin, View):
             messages.error(request, "No order found.")
             return redirect("cart")
         order = get_object_or_404(Order, orderid=order_id, user_id=request.user)
+        if order.orderstatus and order.orderstatus != "Pending":
+            return redirect("thankyou", order.orderid)
         order.orderstatus = "Processing"
         coupon_code = request.session.get("coupon_code", "")
         discount = request.session.get("coupon_discount", 0)
