@@ -60,7 +60,13 @@
                                     {% endif %}
                                     <tr>
                                         <td><b>Delivery Charges</b></td>
-                                        <td align="right">₹{{ order.deliverycharges|format_indian_currency }}</td>
+                                        <td align="right">
+                                            {% if order.deliverycharges and order.deliverycharges > 0 %}
+                                                ₹{{ order.deliverycharges|format_indian_currency }}
+                                            {% else %}
+                                                Free
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     <tr bgcolor="#FFF8E6">
                                         <td style="font-size:18px;"><b>Total Amount</b></td>

@@ -100,63 +100,61 @@
         <div class="card premium-card mb-4 p-3 border">
             <div class="card-body">
                 <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-route text-primary me-2"></i>Order Shipment Journey</h5>
-                <div class="position-relative py-3">
-                    <div class="progress position-absolute top-50 start-0 translate-middle-y" style="height: 6px; left: 12.5% !important; width: 75%; z-index: 1; border-radius: 10px;">
-                        <div class="progress-bar bg-success" style="width: 
-                            {% if order.orderstatus == 'Pending' %}0%
-                            {% elif order.orderstatus == 'Processing' %}33.33%
-                            {% elif order.orderstatus == 'Shipped' %}66.66%
-                            {% elif order.orderstatus == 'Delivered' %}100%
+                <div class="position-relative px-2 py-3">
+                    <div style="position: absolute; top: 40%; left: 12%; right: 12%; height: 5px; background-color: #e9ecef; transform: translateY(-50%); z-index: 1; border-radius: 10px;">
+                        <div style="height: 100%; background-color: #198754; border-radius: 10px; width: 
+                            {% if order.status_step == 1 %}0%
+                            {% elif order.status_step == 2 %}33.33%
+                            {% elif order.status_step == 3 %}66.66%
+                            {% elif order.status_step == 4 %}100%
                             {% else %}0%{% endif %}; transition: width 0.4s ease;">
                         </div>
                     </div>
-                   <div class="row justify-content-between position-relative" style="z-index: 2;">
-                        <div class="col-3 text-center">
-                            <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
-                            <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Ordered
-                                <br>
-                                <small class="text-muted fw-normal" style="font-size: 11px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y" }}</small>
+                    <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
+                        <div class="text-center bg-white px-1" style="width: 25%;">
+                            <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Ordered
+                                <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y" }}</small>
                             </div>
                         </div>
-                        <div class="col-3 text-center">
+                        <div class="text-center bg-white px-1" style="width: 25%;">
                             {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Processing
-                                    <br>
-                                    <small class="text-muted fw-normal" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.processing_at|date:"d M Y" }}</small>
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Processing
+                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.processing_at %}{{ order.processing_at|date:"d M Y" }}{% else %}{{ order.date|date:"d M Y" }}{% endif %}</small>
                                 </div>
                             {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Processing</div>
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Processing</div>
                             {% endif %}
                         </div>
-                        <div class="col-3 text-center">
+                        <div class="text-center bg-white px-1" style="width: 25%;">
                             {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Shipped
-                                    <br>
-                                    <small class="text-muted fw-normal" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i> {{ order.shipped_at|date:"d M Y" }}</small>
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Shipped
+                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.shipped_at %}{{ order.shipped_at|date:"d M Y" }}{% else %}--{% endif %}</small>
                                 </div>
                             {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Shipped</div>
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Shipped</div>
                             {% endif %}
                         </div>
-                        <div class="col-3 text-center">
+                        <div class="text-center bg-white px-1" style="width: 25%;">
                             {% if order.orderstatus == 'Delivered' %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"><i class="fa-solid fa-circle-check"></i></div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 13px;">Delivered</div>
-                                <small class="text-muted d-block" style="font-size:11px;"><i class="fa-regular fa-calendar me-1"></i> {{ order.delivered_at|date:"d M Y" }}</small>
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Delivered
+                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.delivered_at %}{{ order.delivered_at|date:"d M Y" }}{% else %}--{% endif %}</small>
+                                </div>
                             {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center" style="width: 40px; height: 40px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 13px;">Delivered</div>
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Delivered</div>
                             {% endif %}
                         </div>
                     </div>
                 </div>
-                <div class="alert alert-warning mt-4 mb-0 text-center">
+                <div class="alert alert-warning mt-4 mb-3 text-center py-2" style="font-size: 12px;">
                     <i class="fa-solid fa-circle-info me-2"></i>
-                    <strong>This is your Order ConfomerOrder page.</strong><br>
+                    <strong>This is your Order Confirm Order page.</strong><br>
                     Your order will be placed after clicking the <strong>"Place Order"</strong> button.
                 </div>
             </div>
@@ -259,20 +257,29 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Subtotal</span>
                                 <span class="fw-semibold text-dark">₹{{ subtotal|format_indian_currency }}</span>
-                            </div>
+                            </div>                        
                             {% if discount %}
                                 <div class="d-flex justify-content-between mb-2 fw-bold">
                                     <span class="text-success">Coupon ({{ coupon_code }})</span>
                                     <span class="fw-bold text-success">- ₹{{ discount|format_indian_currency }}</span>
                                 </div>
                             {% else %}
-                                <div class="d-flex justify-content-between mb-2 fw-bold">
-                                    <span class="fw-semibold text-dark">No Coupon Apply</span>
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="text-muted">Coupon</span>
+                                    <span class="fw-semibold text-dark">None</span>
                                 </div>
                             {% endif %}
                             <div class="d-flex justify-content-between mb-3">
                                 <span class="text-muted">Delivery Charges</span>
-                                <span class="fw-semibold text-dark">₹{{ order.deliverycharges|format_indian_currency }}</span>
+                                <span class="fw-semibold text-dark">
+                                    {% if order.delivery_charge and order.delivery_charge > 0 %}
+                                        ₹{{ order.delivery_charge|format_indian_currency }}
+                                    {% elif order.deliverycharges and order.deliverycharges > 0 %}
+                                        ₹{{ order.deliverycharges|format_indian_currency }}
+                                    {% else %}
+                                        <span class="text-dark">Free</span>
+                                    {% endif %}
+                                </span>
                             </div>
                             <hr class="text-muted opacity-25">
                             <div class="d-flex justify-content-between align-items-center mt-3">
@@ -301,16 +308,19 @@
                     {% if is_checkout %}
                         <form action="{% url 'place_order' %}" method="POST" class="d-grid gap-3 mt-3">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-warning btn-lg rounded-pill fw-bold text-dark py-2 shadow-sm">
+                            <button type="submit" class="btn btn-warning btn-lg fw-bold text-dark py-2 shadow-sm">
                                 <i class="fa-solid fa-lock me-2"></i>Place Order
                                 <span class="float-end">₹{{ order.total|format_indian_currency }}</span>
                             </button>
-                            <a href="{% url 'home' %}" class="btn btn-dark btn-lg rounded-pill py-2 fw-semibold">
+                            <a href="{% url 'home' %}" class="btn btn-dark btn-lg  py-2 fw-semibold">
                                 <i class="fa-solid fa-arrow-left me-2"></i>Back to Checkout
                             </a>
                         </form>
                     {% else %}
-                        <div class="d-grid gap-3 mt-3">                    
+                        <div class="d-grid gap-3 mt-3">     
+                            <a href="{% url 'view_bill' order.orderid %}" class="btn btn-primary btn-lg py-2 fw-semibold">
+                                <i class="fa-solid fa-file-lines me-2"></i>View Bill
+                            </a>               
                             <a href="{% url 'download_bill' order.orderid %}" class="btn btn-warning btn-lg  py-2 fw-semibold">
                                 <i class="fa-solid fa-file-arrow-down me-2"></i>Download Bill
                             </a>

@@ -68,16 +68,16 @@
     </div>
     <div class="container-fluid py-4">
         <div class="d-flex align-items-center gap-2">
-            <div class="d-lg-none d-flex align-items-center">
+            <div class="d-lg-none d-flex align-items-center flex-shrink-0">
                 <button class="btn btn-dark btn-icon-only shadow-none d-inline-flex align-items-center justify-content-center p-0" type="button" data-bs-toggle="offcanvas" 
                     data-bs-target="#mobileFilter" aria-label="Open Filters" style="width: 32px; height: 32px; border-radius: 4px;">
                     <i class="fa-solid fa-bars text-white fs-6"></i>
                 </button>
             </div>
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb small mb-0">
-                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-house me-1"></i>Home</a></li>
-                    <li class="breadcrumb-item active breadcrumb-active text-secondary d-inline-flex align-items-center" aria-current="page"><i class="fa-solid fa-magnifying-glass me-1"></i>Search : "{{ breadcrumb_title }}"</li>
+            <nav aria-label="breadcrumb" class="overflow-hidden w-100">
+                <ol class="breadcrumb small mb-0 flex-nowrap overflow-hidden" style="white-space: nowrap;">
+                    <li class="breadcrumb-item flex-shrink-0"><a href="/" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                    <li class="breadcrumb-item active breadcrumb-active text-secondary d-inline-flex align-items-center flex-shrink-1 text-truncate" aria-current="page" style="min-width: 0;"><span class="d-inline-flex align-items-center text-truncate w-100"><i class="fa-solid fa-magnifying-glass me-1 flex-shrink-0"></i><span class="text-truncate">Search : "{{ breadcrumb_title|truncatechars:25 }}"</span></span></li>
                 </ol>
             </nav>
         </div>

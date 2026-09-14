@@ -94,43 +94,31 @@
                 </button>
             </div>
             <nav aria-label="breadcrumb">
-                <ol class="breadcrumb small mb-0 align-items-center">
-                    <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <ol class="breadcrumb small mb-0 align-items-center flex-nowrap overflow-hidden" style="white-space: nowrap;">
+                    <li class="breadcrumb-item flex-shrink-0"><a href="/" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-house me-1"></i>Home</a></li>
                     {% if selected_brands or selected_sizes_text or selected_colors_text or selected_price_text or page_obj.number > 1 %}
-                        <li class="breadcrumb-item"><a href="{% url 'collection' categories.categoryid %}" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-tags me-1"></i>{{ categories.categoryname }}</a></li>
+                        <li class="breadcrumb-item flex-shrink-0"><a href="{% url 'collection' categories.categoryid %}" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-tags me-1"></i>{{ categories.categoryname }}</a></li>
                     {% else %}
-                        <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-tags me-1"></i>{{ categories.categoryname }}</span></li>
+                        <li class="breadcrumb-item active text-secondary flex-shrink-0" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-tags me-1"></i>{{ categories.categoryname }}</span></li>
                     {% endif %}
                     {% if selected_brands %}
                         {% if selected_sizes_text or selected_colors_text or selected_price_text or page_obj.number > 1 %}
-                            <li class="breadcrumb-item"><a href="?brand={{ selected_brands|first }}" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-tag me-1"></i>{{ page_title }}</a></li>
+                            <li class="breadcrumb-item flex-shrink-0"><a href="?brand={{ selected_brands|first }}" class="text-decoration-none text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-tag me-1"></i>{{ page_title|truncatechars:18 }}</a></li>
                         {% else %}
-                            <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-tag me-1"></i>{{ page_title|truncatechars:43 }}</span></li>
+                            <li class="breadcrumb-item active text-secondary flex-shrink-0" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-tag me-1"></i>{{ page_title|truncatechars:18 }}</span></li>
                         {% endif %}
                     {% endif %}
                     {% if selected_sizes_text %}
-                        {% if selected_colors_text or selected_price_text or page_obj.number > 1 %}
-                            <li class="breadcrumb-item text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-ruler me-1"></i>Size: {{ selected_sizes_text }}</li>
-                        {% else %}
-                            <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-ruler me-1"></i>Size: {{ selected_sizes_text }}</span></li>
-                        {% endif %}
+                        <li class="breadcrumb-item text-secondary d-inline-flex align-items-center flex-shrink-0"><i class="fa-solid fa-ruler me-1"></i>Size: {{ selected_sizes_text }}</li>
                     {% endif %}
                     {% if selected_colors_text %}
-                        {% if selected_price_text or page_obj.number > 1 %}
-                            <li class="breadcrumb-item text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-palette me-1"></i>Color: {{ selected_colors_text }}</li>
-                        {% else %}
-                            <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-palette me-1"></i>Color: {{ selected_colors_text }}</span></li>
-                        {% endif %}
+                        <li class="breadcrumb-item text-secondary d-inline-flex align-items-center flex-shrink-0"><i class="fa-solid fa-palette me-1"></i>Color: {{ selected_colors_text }}</li>
                     {% endif %}
                     {% if selected_price_text %}
-                        {% if page_obj.number > 1 %}
-                            <li class="breadcrumb-item text-secondary d-inline-flex align-items-center"><i class="fa-solid fa-indian-rupee-sign me-1"></i>Price: {{ selected_price_text }}</li>
-                        {% else %}
-                            <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-indian-rupee-sign me-1"></i>Price: {{ selected_price_text }}</span></li>
-                        {% endif %}
+                        <li class="breadcrumb-item text-secondary d-inline-flex align-items-center flex-shrink-0"><i class="fa-solid fa-indian-rupee-sign me-1"></i>Price: {{ selected_price_text }}</li>
                     {% endif %}
                     {% if page_obj.number > 1 %}
-                        <li class="breadcrumb-item active text-secondary" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-file-lines me-1"></i>Page {{ page_obj.number }}</span></li>
+                        <li class="breadcrumb-item active text-secondary flex-shrink-0" aria-current="page"><span class="d-inline-flex align-items-center"><i class="fa-solid fa-file-lines me-1"></i>Page {{ page_obj.number }}</span></li>
                     {% endif %}
                 </ol>
             </nav>

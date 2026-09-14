@@ -148,7 +148,13 @@
                                 {% endif %}
                                 <div class="d-flex justify-content-between mb-2">
                                     <span>Delivery Charge</span>
-                                    <span>₹ {{ deliverycharge|format_indian_currency }}</span>
+                                    <span>
+                                        {% if deliverycharge and deliverycharge > 0 %}
+                                            ₹ {{ deliverycharge|format_indian_currency }}
+                                        {% else %}
+                                            Free
+                                        {% endif %}
+                                    </span>
                                     <input type="hidden" name="deliverycharges" value="{{ deliverycharge }}">
                                 </div>
                                 <hr>

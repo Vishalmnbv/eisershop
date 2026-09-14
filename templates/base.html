@@ -55,7 +55,7 @@
                                 <i class="fa-solid fa-magnifying-glass d-lg-none"></i><span class="d-none d-lg-inline">Search</span>
                             </button>
                         </div>
-                        <div id="searchSuggestions" class="position-absolute start-0 w-100 bg-white border rounded-bottom shadow-lg" style="display: none; z-index: 9999; top: 100%; max-height: 400px; overflow-y: auto;"></div>
+                        <div id="searchSuggestions" class="position-absolute start-0 w-100 bg-white border rounded-bottom" style="display: none; z-index: 9999; top: 100%; max-height: 500px; overflow-y: auto;"></div>
                     </form>
                     <div class="d-flex align-items-center justify-content-between justify-content-lg-end gap-3 mt-2 mt-lg-0">
                         <div class="d-flex align-items-center gap-3 me-1">
@@ -91,11 +91,10 @@
                                             {% else %}
                                                 <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle me-2" style="width: 40px; height: 40px; object-fit: cover;">
                                             {% endif %}
-                                            
                                             <div class="overflow-hidden">
                                                 <h6 class="mb-0 text-dark fw-bold text-truncate">
                                                     {% if user.first_name and user.last_name %}
-                                                        {{ user.first_name }} {{ user.last_name }}
+                                                        {{ user.first_name }} {{ user.username }} {{ user.last_name }}
                                                     {% elif user.first_name %}
                                                         {{ user.first_name }}
                                                     {% else %}

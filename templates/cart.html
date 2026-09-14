@@ -210,14 +210,22 @@
                         {% endif %}
                         <div class="d-flex justify-content-between mb-3">
                             <span>Delivery Charge</span>
-                            <strong>₹ {{ deliverycharge|format_indian_currency }}</strong>
+                            <strong>
+                                {% if deliverycharge and deliverycharge > 0 %}
+                                    ₹ {{ deliverycharge|format_indian_currency }}
+                                {% else %}
+                                    Free
+                                {% endif %}
+                            </strong>
                         </div>
                         <hr>
                         <div class="d-flex justify-content-between fs-4 fw-bold mb-4">
                             <span>Total</span>
                             <span class="text-success">₹ {{ total|format_indian_currency }}</span>
                         </div>
-                        <a href="/checkout/" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow-none"><i class="fa-solid fa-receipt me-1"></i>Proceed to Checkout ({{ cartdata|length }} Items)</a>
+                        <a href="/checkout/" class="btn btn-warning w-100 py-3 rounded-pill fw-bold shadow-none">
+                            <i class="fa-solid fa-receipt me-1"></i>Proceed to Checkout ({{ cartdata|length }} Items)
+                        </a>
                     </div>
                 </div>
             </div>

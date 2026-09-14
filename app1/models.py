@@ -237,13 +237,24 @@ class Order(models.Model):
             existing_orders_count = Order.objects.filter(user_id=self.user_id).count()
             self.user_order_seq = existing_orders_count + 1
             self.amazon_order_id = None
+            if self.orderstatus == 'Processing' and not self.processing_at:
+                self.processing_at = timezone.now()
         else:
             try:
                 original = Order.objects.get(pk=self.pk)
+                if original.orderstatus != 'Processing' and self.orderstatus == 'Processing':
+                    if not self.processing_at:
+                        self.processing_at = timezone.now()
+                if original.orderstatus != 'Shipped' and self.orderstatus == 'Shipped':
+                    if not self.shipped_at:
+                        self.shipped_at = timezone.now()
                 if original.orderstatus != 'Delivered' and self.orderstatus == 'Delivered':
                     if not self.delivered_at:
                         self.delivered_at = timezone.now()
                     self.send_delivery_email()
+                if original.orderstatus != 'Cancelled' and self.orderstatus == 'Cancelled':
+                    if not self.cancelled_at:
+                        self.cancelled_at = timezone.now()
             except Order.DoesNotExist:
                 pass
         super().save(*args, **kwargs)

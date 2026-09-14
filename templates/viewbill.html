@@ -178,17 +178,26 @@
                             </tr>
                             {% if order.coupon %}
                                 <tr>
-                                    <td>Coupon<span class="text-success fw-bold"> {{ order.coupon.code }}</span></td>
+                                    <td>Coupon <span class="text-success fw-bold">({{ order.coupon.code }})</span></td>
                                     <td class="text-end text-success">- ₹ {{ order.coupon_discount|format_indian_currency }}</td>
                                 </tr>
                             {% else %}
                                 <tr>
-                                    <td class="text-end text-dark">No Coupon Apply</td>
+                                    <td>Coupon</td>
+                                    <td class="text-end text-dark">None</td>
                                 </tr>
                             {% endif %}
                             <tr>
                                 <td>Delivery Charges</td>
-                                <td class="text-end">₹ {{ order.deliverycharges|format_indian_currency }}</td>
+                                <td class="text-end">
+                                    {% if order.delivery_charge and order.delivery_charge > 0 %}
+                                        ₹ {{ order.delivery_charge|format_indian_currency }}
+                                    {% elif order.deliverycharges and order.deliverycharges > 0 %}
+                                        ₹ {{ order.deliverycharges|format_indian_currency }}
+                                    {% else %}
+                                        <span class="text-dark">Free</span>
+                                    {% endif %}
+                                </td>
                             </tr>
                             <tr class="border-top">
                                 <th>Total</th>
@@ -198,7 +207,7 @@
                     </div>
                 </div>
                 <div class="d-flex justify-content-between mt-4">
-                    <a href="{% url 'my_orders' %}" class="btn btn-dark rounded-pill px-4"><i class="fa-solid fa-box me-2"></i>My Orders</a>
+                    <a href="{% url 'my_orders' %}" class="btn btn-dark  px-4"><i class="fa-solid fa-box me-2"></i>My Orders</a>
                 </div>
             </div>
         </div>

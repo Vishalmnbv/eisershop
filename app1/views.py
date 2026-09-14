@@ -2129,12 +2129,7 @@ class MyOrdersView(LoginRequiredMixin, View):
     def get(self, request):
         orders = Order.objects.filter(user_id=request.user).order_by("-date")
         category = Category.objects.all()
-        # Orders Logic 
         for order in orders:
-            user_order_no = Order.objects.filter(user_id=request.user, orderid__lte=order.orderid).count()
-            order.amazon_order_id = f"{user_order_no:05d}"
-            order.save(update_fields=["amazon_order_id"])
-            # Updated Payment Status Logic for UPI & COD
             pm_method = str(getattr(order, 'paymentmethod', '')).strip().lower()
             if pm_method == 'upi' or (order.paymentmethod == "Cash on Delivery" and order.orderstatus == "Delivered"):
                 order.payment_status_display = "Paid"
@@ -2173,7 +2168,7 @@ class MyOrdersView(LoginRequiredMixin, View):
                 if existing_return:
                     item.has_return_request = True
                     item.return_status = existing_return.status
-                    item.return_date = (getattr(existing_return, 'updated_at', None) or  getattr(existing_return, 'created_at', None) or  getattr(existing_return, 'date', None))
+                    item.return_date = (getattr(existing_return, 'updated_at', None) or getattr(existing_return, 'created_at', None) or getattr(existing_return, 'date', None))
                 else:
                     item.has_return_request = False
                     item.return_status = None
@@ -2182,7 +2177,7 @@ class MyOrdersView(LoginRequiredMixin, View):
             order.calculated_subtotal = running_total
             order.calculated_total = running_total - discount
             order.order_items = order_items
-        context = {"orders": orders,"category": category,}
+        context = {"orders": orders, "category": category}
         return render(request, self.template_name, context)
 class UpdateOrderStatusView(LoginRequiredMixin, View):
     login_url = "login"
