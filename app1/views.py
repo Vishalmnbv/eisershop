@@ -1933,103 +1933,46 @@ class PlaceOrderView(LoginRequiredMixin, View):
         if order.orderstatus and order.orderstatus != "Pending":
             cart_count_before = Cart.objects.filter(userid_id=request.user.id).count()
             deleted_count, deleted_details = Cart.objects.filter(userid_id=request.user.id).delete()
-            print("====================================")
-            print("ORDER ALREADY PROCESSED")
-            print("USER ID:", request.user.id)
-            print("CART BEFORE DELETE:", cart_count_before)
-            print("CART DELETED:", deleted_count)
-            print("CART DETAILS:", deleted_details)
-            print("====================================")
             request.session.pop("coupon_code", None)
             request.session.pop("coupon_discount", None)
             request.session.pop("order_just_placed_id", None)
-
             return redirect("thankyou", order.orderid)
-
-        # =========================================================
-        # 4. CHANGE ORDER STATUS
-        # =========================================================
-
         order.orderstatus = "Processing"
-
-        # =========================================================
-        # 5. COUPON
-        # =========================================================
-
         coupon_code = request.session.get("coupon_code", "")
         discount = request.session.get("coupon_discount", 0)
-
         if coupon_code:
-
             try:
-                coupon = Coupon.objects.get(
-                    code=coupon_code
-                )
-
-                CouponUsage.objects.get_or_create(
-                    coupon=coupon,
-                    user=request.user
-                )
-
+                coupon = Coupon.objects.get(code=coupon_code)
+                CouponUsage.objects.get_or_create(coupon=coupon,user=request.user)
                 order.coupon = coupon
                 order.coupon_discount = discount
-
             except Coupon.DoesNotExist:
                 pass
-
-        # =========================================================
-        # 6. SAVE ORDER
-        # =========================================================
-
         order.save()
-
-        # =========================================================
-        # 7. UPDATE PRODUCT STOCK
-        # =========================================================
-
         for item in order.orderitem_set.all():
-
             product = item.productview_id
-
             if product:
-
                 if product.stock is not None:
-
                     if product.stock >= item.quantity:
-
                         product.stock -= item.quantity
                         product.sold_count += item.quantity
-
                     else:
-
                         product.stock = 0
                         product.sold_count += item.quantity
-
                     product.save()
-
-        # =========================================================
-        # 8. SEND ORDER CONFIRMATION EMAIL
-        # =========================================================
-
         try:
-
             context = {
                 "user": request.user,
                 "order": order,
                 "order_items": order.orderitem_set.all(),
                 "coupon_code": coupon_code,
                 "discount": discount,
-                "logo_url": (
-                    "https://res.cloudinary.com/rccdb6pd/"
-                    "image/upload/v1789276432/logo.png"
-                ),
+                "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
             }
-
             html_content = render_to_string(
                 "emails/order_confirmation.html",
                 context
             )
-
             params = {
                 "from": "EiserShop <onboarding@resend.dev>",
                 "to": [order.email],
@@ -2039,58 +1982,19 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 ),
                 "html": html_content,
             }
-
             response = resend.Emails.send(params)
-
-            print("ORDER EMAIL SENT:", response)
-
         except Exception as e:
-
-            import traceback
-
-            print("EMAIL ERROR:")
             traceback.print_exc()
             try:
                 deleted_count, deleted_details = Cart.objects.filter(userid=request.user).delete()
-                print("====================================")
-                print("CART CLEAR RESULT")
-                print("USER ID:", request.user.id)
-                print("DELETED CART ITEMS:", deleted_count)
-                print("CART DETAILS:", deleted_details)
                 remaining_cart = Cart.objects.filter(userid=request.user).count()
-                print("REMAINING CART ITEMS:", remaining_cart)
-                print("====================================")
             except Exception as e:
                 print("CART DELETE ERROR:")
                 traceback.print_exc()
-
-        # =========================================================
-        # 10. CLEAR SESSION
-        # =========================================================
-
-        request.session.pop(
-            "coupon_code",
-            None
-        )
-
-        request.session.pop(
-            "coupon_discount",
-            None
-        )
-
-        request.session.pop(
-            "order_just_placed_id",
-            None
-        )
-
-        # =========================================================
-        # 11. REDIRECT TO THANK YOU PAGE
-        # =========================================================
-
-        return redirect(
-            "thankyou",
-            order.orderid
-        )
+        request.session.pop("coupon_code",None)
+        request.session.pop("coupon_discount",None)
+        request.session.pop("order_just_placed_id",None)
+        return redirect("thankyou",order.orderid)
 class CancelProductView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request, orderitemid):
