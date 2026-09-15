@@ -59,7 +59,7 @@
                 <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
                 {% if category_name and producttitle %}
                     <li class="breadcrumb-item"><a href="/collection/{{ category_id }}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{ category_name }}</a></li>
-                    <li class="breadcrumb-item breadcrumb-active text-secondary fw-semibold text-truncate" style="max-width: 180px;"><i class="fa-solid fa-box me-1"></i>{{ producttitle|truncatechars:45 }}</li>
+                    <li class="breadcrumb-item breadcrumb-active text-secondary  text-truncate" style="max-width: 180px;"><i class="fa-solid fa-box me-1"></i>{{ producttitle|truncatechars:45 }}</li>
                 {% endif %}
                 <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
                 <li class="breadcrumb-item active breadcrumb-active"><i class="fa-solid fa-receipt me-1"></i>Checkout</li>
@@ -89,7 +89,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Phone</label>
-                                    <input type="tel" name="number" id="number" value="{% if last_order %}{{ last_order.number }}{% endif %}" maxlength="10" minlength="10" pattern="[0-9]{10}" class="form-control shadow-none" placeholder="Enter 10-digit mobile number" required  onkeyup="checkPhone()">
+                                    <input type="tel" name="number" id="number" value="{% if last_order %}{{ last_order.mobile }}{% elif user.profile.mobile %}{{ user.profile.mobile }}{% endif %}" maxlength="10" minlength="10" pattern="[0-9]{10}" class="form-control shadow-none" placeholder="Enter 10-digit mobile number" required >
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Username</label>
@@ -99,7 +99,6 @@
                                     <label class="form-label">Address</label>
                                     <textarea name="address" id="address" rows="5" class="form-control shadow-none address-box" required>{% if last_order %}{{ last_order.address }}{% endif %}</textarea>
                                 </div>
-                                
                             </div>
                         </div>
                     </div>
