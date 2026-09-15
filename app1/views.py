@@ -1944,18 +1944,18 @@ class PlaceOrderView(LoginRequiredMixin, View):
             except Coupon.DoesNotExist:
                 pass
         order.save()
+        
         for item in order.orderitem_set.all():
             product = item.productview_id
             if product:
                 if product.stock is not None:
                     if product.stock >= item.quantity:
                         product.stock -= item.quantity
-                        product.sold_count += (item.quantity) 
+                        product.sold_count += item.quantity 
                     else:
                         product.stock = 0
                     product.save()     
         try:
-            print("--- TRYING TO SEND ORDER EMAIL VIA RESEND ---")
             context = {
                 "user": request.user,
                 "order": order,
@@ -1972,13 +1972,11 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 "html": html_content,
             }
             response = resend.Emails.send(params)
-            print("RESEND ORDER EMAIL SUCCESS:", response)
         except Exception as e:
-            print("RESEND ORDER EMAIL ERROR:", repr(e))
             import traceback
             traceback.print_exc()
         try:
-            Cart.objects.filter(user=request.user).delete()
+            Cart.objects.filter(userid=request.user).delete()
         except Exception as e:
             print("CART DELETE ERROR:", repr(e))
         request.session.pop("coupon_code", None)
