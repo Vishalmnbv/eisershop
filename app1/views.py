@@ -1964,16 +1964,18 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
             }
             html_content = render_to_string("emails/order_confirmation.html", context)
-            email = EmailMultiAlternatives(
-                subject=f"Your Order #{order.amazon_order_id} has been placed!",
-                body="Your order has been placed successfully.",
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                to=[order.email],
-            )
-            email.attach_alternative(html_content, "text/html")
-            email.send(fail_silently=True)
+            params = {
+                "from": getattr(settings, 'DEFAULT_FROM_EMAIL', "onboarding@resend.dev"),
+                "to": [order.email],
+                "subject": f"Your Order #{order.amazon_order_id} has been placed!",
+                "html": html_content,
+            }
+            response = resend.Emails.send(params)
+            print("RESEND ORDER EMAIL RESPONSE:", response)
         except Exception as e:
             print("Order email error:", str(e))
+            import traceback
+            traceback.print_exc()
         Cart.objects.filter(userid=request.user).delete()
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
