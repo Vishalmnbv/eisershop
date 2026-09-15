@@ -1977,6 +1977,10 @@ class PlaceOrderView(LoginRequiredMixin, View):
             print("RESEND ORDER EMAIL ERROR:", repr(e))
             import traceback
             traceback.print_exc()
+        try:
+            Cart.objects.filter(user=request.user).delete()
+        except Exception as e:
+            print("CART DELETE ERROR:", repr(e))
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
         request.session.pop("order_just_placed_id", None)
