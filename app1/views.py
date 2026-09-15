@@ -1929,10 +1929,9 @@ class PlaceOrderView(LoginRequiredMixin, View):
         if not order_id:
             messages.error(request, "No order found.")
             return redirect("cart")
-        order = get_object_or_404(Order,orderid=order_id,user_id=request.user)
+        order = get_object_or_404(Order, orderid=order_id, user_id=request.user)
         if order.orderstatus and order.orderstatus != "Pending":
-            cart_count_before = Cart.objects.filter(userid_id=request.user.id).count()
-            deleted_count, deleted_details = Cart.objects.filter(userid_id=request.user.id).delete()
+            Cart.objects.filter(userid_id=request.user.id).delete()
             request.session.pop("coupon_code", None)
             request.session.pop("coupon_discount", None)
             request.session.pop("order_just_placed_id", None)
@@ -1943,7 +1942,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
         if coupon_code:
             try:
                 coupon = Coupon.objects.get(code=coupon_code)
-                CouponUsage.objects.get_or_create(coupon=coupon,user=request.user)
+                CouponUsage.objects.get_or_create(coupon=coupon, user=request.user)
                 order.coupon = coupon
                 order.coupon_discount = discount
             except Coupon.DoesNotExist:
@@ -1960,6 +1959,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
                         product.stock = 0
                         product.sold_count += item.quantity
                     product.save()
+        # Email Sending Logic
         try:
             context = {
                 "user": request.user,
@@ -1969,32 +1969,25 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 "discount": discount,
                 "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
             }
-            html_content = render_to_string(
-                "emails/order_confirmation.html",
-                context
-            )
+            html_content = render_to_string("emails/order_confirmation.html", context)
             params = {
                 "from": "EiserShop <onboarding@resend.dev>",
                 "to": [order.email],
-                "subject": (
-                    f"Your Order #{order.amazon_order_id} "
-                    f"has been placed!"
-                ),
+                "subject": f"Your Order #{order.amazon_order_id} has been placed!",
                 "html": html_content,
             }
             response = resend.Emails.send(params)
         except Exception as e:
             traceback.print_exc()
-            try:
-                deleted_count, deleted_details = Cart.objects.filter(userid=request.user).delete()
-                remaining_cart = Cart.objects.filter(userid=request.user).count()
-            except Exception as e:
-                print("CART DELETE ERROR:")
-                traceback.print_exc()
-        request.session.pop("coupon_code",None)
-        request.session.pop("coupon_discount",None)
-        request.session.pop("order_just_placed_id",None)
-        return redirect("thankyou",order.orderid)
+        try:
+            Cart.objects.filter(userid=request.user).delete()
+        except Exception as e:
+            print("CART DELETE ERROR:")
+            traceback.print_exc()
+        request.session.pop("coupon_code", None)
+        request.session.pop("coupon_discount", None)
+        request.session.pop("order_just_placed_id", None)
+        return redirect("thankyou", order.orderid)
 class CancelProductView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request, orderitemid):
