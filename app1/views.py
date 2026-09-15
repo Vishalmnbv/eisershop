@@ -2050,45 +2050,19 @@ class PlaceOrderView(LoginRequiredMixin, View):
 
             print("EMAIL ERROR:")
             traceback.print_exc()
-
-        # =========================================================
-        # 9. CLEAR CART
-        # =========================================================
-
-        try:
-
-            # Check cart before deleting
-            cart_count_before = Cart.objects.filter(
-                userid_id=request.user.id
-            ).count()
-
-            print("====================================")
-            print("CLEARING CART")
-            print("USER ID:", request.user.id)
-            print("CART BEFORE DELETE:", cart_count_before)
-
-            # Delete all cart items belonging to this user
-            deleted_count, deleted_details = Cart.objects.filter(
-                userid_id=request.user.id
-            ).delete()
-
-            print("CART DELETED:", deleted_count)
-            print("CART DETAILS:", deleted_details)
-
-            # Check cart after deleting
-            cart_count_after = Cart.objects.filter(
-                userid_id=request.user.id
-            ).count()
-
-            print("CART AFTER DELETE:", cart_count_after)
-            print("====================================")
-
-        except Exception as e:
-
-            import traceback
-
-            print("CART DELETE ERROR:")
-            traceback.print_exc()
+            try:
+                deleted_count, deleted_details = Cart.objects.filter(userid=request.user).delete()
+                print("====================================")
+                print("CART CLEAR RESULT")
+                print("USER ID:", request.user.id)
+                print("DELETED CART ITEMS:", deleted_count)
+                print("CART DETAILS:", deleted_details)
+                remaining_cart = Cart.objects.filter(userid=request.user).count()
+                print("REMAINING CART ITEMS:", remaining_cart)
+                print("====================================")
+            except Exception as e:
+                print("CART DELETE ERROR:")
+                traceback.print_exc()
 
         # =========================================================
         # 10. CLEAR SESSION
