@@ -316,17 +316,13 @@ class RegisterView(View):
 resend.api_key = os.environ.get("RESEND_API_KEY")
 def send_async_login_email(user, html_content):
     try:
-        params = {
-            "from": "EiserShop <onboarding@resend.dev>",
-            "to": [user.email],
-            "subject": "Login Successful - EiserShop",
-            "html": html_content,
-        }
-        response = resend.Emails.send(params)
-        print("RESEND RESPONSE:", response)
+        subject = "Login Successful - EiserShop"
+        email = EmailMultiAlternatives(subject, "", settings.DEFAULT_FROM_EMAIL, [user.email])
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        print("SMTP Email sent successfully to", user.email)
     except Exception as e:
-        print("RESEND LOGIN EMAIL ERROR:", repr(e))
-        traceback.print_exc()
+        print("SMTP Login Email Error:", repr(e))
 class LoginView(View):
     template_name = "login.html"
     def get(self, request):
@@ -424,15 +420,16 @@ class LogoutView(View):
         return redirect("home")
 def send_async_email(user_email, subject, html_content):
     try:
-        params = {
-            "from": "EiserShop <onboarding@resend.dev>",  
-            "to": [user_email],
-            "subject": subject,
-            "html": html_content,
-        }
-        resend.Emails.send(params)
+        from_email = settings.DEFAULT_FROM_EMAIL
+        
+        # Django ka EmailMultiAlternatives use karenge Brevo SMTP ke liye
+        email = EmailMultiAlternatives(subject, "", from_email, [user_email])
+        email.attach_alternative(html_content, "text/html")
+        email.send()
+        
+        print("SMTP Email sent successfully to", user_email)
     except Exception as e:
-        print("Resend email error:", str(e))
+        print("SMTP Email error:", repr(e))
 class ForgetPasswordView(View):
     template_name = "forgetpassword.html"
     def get(self, request):
