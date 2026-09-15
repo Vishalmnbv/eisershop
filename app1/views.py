@@ -1953,8 +1953,9 @@ class PlaceOrderView(LoginRequiredMixin, View):
                         product.sold_count += (item.quantity) 
                     else:
                         product.stock = 0
-                    product.save()  
+                    product.save()     
         try:
+            print("--- TRYING TO SEND ORDER EMAIL VIA RESEND ---")
             context = {
                 "user": request.user,
                 "order": order,
@@ -1965,18 +1966,17 @@ class PlaceOrderView(LoginRequiredMixin, View):
             }
             html_content = render_to_string("emails/order_confirmation.html", context)
             params = {
-                "from": getattr(settings, 'DEFAULT_FROM_EMAIL', "onboarding@resend.dev"),
+                "from": "EiserShop <onboarding@resend.dev>",  
                 "to": [order.email],
                 "subject": f"Your Order #{order.amazon_order_id} has been placed!",
                 "html": html_content,
             }
             response = resend.Emails.send(params)
-            print("RESEND ORDER EMAIL RESPONSE:", response)
+            print("RESEND ORDER EMAIL SUCCESS:", response)
         except Exception as e:
-            print("Order email error:", str(e))
+            print("RESEND ORDER EMAIL ERROR:", repr(e))
             import traceback
             traceback.print_exc()
-        Cart.objects.filter(userid=request.user).delete()
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
         request.session.pop("order_just_placed_id", None)
