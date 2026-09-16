@@ -1,5 +1,6 @@
 import math
 import os
+import traceback
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
 
@@ -56,3 +57,5 @@ def send_async_email(recipient_email, subject, html_content):
     except Exception as e:
         print("❌ General Email Error:", str(e))
         traceback.print_exc()
+def send_async_login_email(user, html_content):
+    send_async_email(user.email, "Login Successful - EiserShop", html_content)
