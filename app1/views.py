@@ -29,7 +29,7 @@ from django.db.models import Q
 from django.http import Http404
 from django.urls import reverse
 from django.contrib import auth
-from .utils import apply_rating, send_async_login_email
+from .utils import apply_rating, send_async_login_email, send_async_email
 from urllib.parse import quote
 from django.views import View
 from user_agents import parse
@@ -1935,31 +1935,40 @@ class PlaceOrderView(LoginRequiredMixin, View):
                         product.stock = 0
                         product.sold_count += item.quantity
                     product.save()
-        # Email Sending 
+                    
+        # Email Sending Logic (Fixed with send_async_email target)
         try:
-            context = {
-                "user": request.user,
-                "order": order,
-                "order_items": order.orderitem_set.all(),
-                "coupon_code": coupon_code,
-                "discount": discount,
-                "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-            }
-            html_content = render_to_string("emails/order_confirmation.html", context)
-            subject = f"Your Order #{order.amazon_order_id} has been placed!"
-            # Background thread ke through Brevo SMTP se email bhejenge
-            threading.Thread(
-                target=send_async_email,
-                args=(order.email, subject, html_content),
-                daemon=True
-            ).start()
-        except Exception as e:
+            recipient_email = order.email or request.user.email
+            if recipient_email:
+                context = {
+                    "user": request.user,
+                    "order": order,
+                    "order_items": order.orderitem_set.all(),
+                    "coupon_code": coupon_code,
+                    "discount": discount,
+                    "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string("emails/order_confirmation.html", context)
+                
+                # Safe fallback if amazon_order_id is None
+                order_ref = order.amazon_order_id or order.orderid
+                subject = f"Your Order #{order_ref} has been placed!"
+                
+                threading.Thread(
+                    target=send_async_email,  # <-- Yahan send_async_email hona chahiye
+                    args=(recipient_email, subject, html_content),
+                    daemon=True
+                ).start()
+        except Exception:
+            print("❌ Order confirmation email error:")
             traceback.print_exc()
+            
         try:
             Cart.objects.filter(userid=request.user).delete()
-        except Exception as e:
+        except Exception:
             print("CART DELETE ERROR:")
             traceback.print_exc()
+            
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
         request.session.pop("order_just_placed_id", None)
