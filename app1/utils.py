@@ -34,22 +34,25 @@ def apply_rating(product):
     else:
         product.productdiscountrate = "0"
     return product
-def send_async_login_email(user, html_content):
+def send_async_email(recipient_email, subject, html_content):
     try:
         configuration = sib_api_v3_sdk.Configuration()
         configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
         sender = {"name": "EiserShop", "email": os.getenv("DEFAULT_FROM_EMAIL")}
-        to = [{"email": user.email, "name": user.username}]
+        to = [{"email": recipient_email}]
+        
         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
             to=to,
             sender=sender,
-            subject="Login Successful - EiserShop",
+            subject=subject,
             html_content=html_content
         )
         api_instance.send_transac_email(send_smtp_email)
-        print("Brevo HTTP API Email sent successfully to", user.email)
+        print(f"✅ Brevo API Email sent successfully to {recipient_email}")
     except ApiException as e:
-        print("Brevo API Error:", repr(e))
+        print("❌ Brevo API Error:", repr(e))
+        traceback.print_exc()
     except Exception as e:
-        print("General Email Error:", str(e))
+        print("❌ General Email Error:", str(e))
+        traceback.print_exc()

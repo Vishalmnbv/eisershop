@@ -9,7 +9,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
+from .utils import apply_rating, send_async_login_email
 from django.utils.html import strip_tags
+import threading
+import traceback
 import random
 # Create your models here.
 class Profile(models.Model):
@@ -259,26 +262,26 @@ class Order(models.Model):
                 pass
         super().save(*args, **kwargs)
     def send_delivery_email(self):
-        subject = f"Order Delivered - EiserShop (#{self.amazon_order_id or self.orderid})"
-        context = {
-            'order': self,
-            'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-        }
-        html_content = render_to_string('emails/order_delivered.html', context)
-        text_content = strip_tags(html_content) 
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
         if recipient_email:
             try:
-                email = EmailMultiAlternatives(
-                    subject,
-                    text_content,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [recipient_email]
-                )
-                email.attach_alternative(html_content, "text/html")
-                email.send(fail_silently=False)
-            except Exception as e:
-                print(f"Error sending email: {e}")
+                subject = f"Order Delivered - EiserShop (#{self.amazon_order_id or self.orderid})"
+                context = {
+                    'order': self,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/order_delivered.html', context)
+                
+                # Background thread ke through Brevo API se delivery email bhejenge
+                threading.Thread(
+                    target=send_async_login_email,
+                    args=(recipient_email, subject, html_content),
+                    daemon=True
+                ).start()
+                print(f"✅ Delivery email thread triggered for {recipient_email}")
+            except Exception:
+                print("❌ Error triggering delivery email thread:")
+                traceback.print_exc()
 class Orderitem(models.Model):
     STATUS_CHOICES = [
         ("Pending", "Pending"),
