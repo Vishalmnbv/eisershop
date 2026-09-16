@@ -334,8 +334,6 @@ def send_brevo_api_email(user, html_content):
         print("Brevo API Email sent successfully to", user.email)
     except ApiException as e:
         print("Brevo API Login Email Error:", repr(e))
-def send_async_login_email(user, html_content):
-    threading.Thread(target=send_brevo_api_email, args=(user, html_content)).start()
 class LoginView(View):
     template_name = "login.html"
     def get(self, request):
