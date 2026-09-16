@@ -320,9 +320,9 @@ def send_async_login_email(user, html_content):
         email = EmailMultiAlternatives(subject, "", settings.DEFAULT_FROM_EMAIL, [user.email])
         email.attach_alternative(html_content, "text/html")
         email.send()
-        print("SMTP Email sent successfully to", user.email)
+        print("Brevo SMTP Email sent successfully to", user.email)
     except Exception as e:
-        print("SMTP Login Email Error:", repr(e))
+        print("Brevo SMTP Login Email Error:", repr(e))
 class LoginView(View):
     template_name = "login.html"
     def get(self, request):
