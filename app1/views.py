@@ -1,4 +1,7 @@
-from django.views.generic import TemplateView,ListView,DetailView,TemplateView,ListView
+# type: ignore
+import sib_api_v3_sdk
+from sib_api_v3_sdk.rest import ApiException
+from django.views.generic import TemplateView,ListView,DetailView
 from app1.templatetags.indian_formatting import format_indian_currency
 from django.db.models import Case, When, Value, IntegerField
 from django.db.models import Case, Q, Value, When
@@ -314,15 +317,25 @@ class RegisterView(View):
         messages.success(request, f"Hello {username}! Your account has been created successfully.")
         return redirect(f"/login/?username={username}")
 resend.api_key = os.environ.get("RESEND_API_KEY")
-def send_async_login_email(user, html_content):
+def send_brevo_api_email(user, html_content):
     try:
-        subject = "Login Successful - EiserShop"
-        email = EmailMultiAlternatives(subject, "", settings.DEFAULT_FROM_EMAIL, [user.email])
-        email.attach_alternative(html_content, "text/html")
-        email.send()
-        print("Brevo SMTP Email sent successfully to", user.email)
-    except Exception as e:
-        print("Brevo SMTP Login Email Error:", repr(e))
+        configuration = sib_api_v3_sdk.Configuration()
+        configuration.api_key['api-key'] = os.getenv("BREVO_API_KEY")
+        api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
+        sender = {"name": "EiserShop", "email": os.getenv("DEFAULT_FROM_EMAIL")}
+        to = [{"email": user.email, "name": user.username}]
+        send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
+            to=to,
+            sender=sender,
+            subject="Login Successful - EiserShop",
+            html_content=html_content
+        )
+        api_instance.send_transac_email(send_smtp_email)
+        print("Brevo API Email sent successfully to", user.email)
+    except ApiException as e:
+        print("Brevo API Login Email Error:", repr(e))
+def send_async_login_email(user, html_content):
+    threading.Thread(target=send_brevo_api_email, args=(user, html_content)).start()
 class LoginView(View):
     template_name = "login.html"
     def get(self, request):
