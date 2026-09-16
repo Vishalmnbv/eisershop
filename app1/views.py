@@ -409,18 +409,6 @@ class LogoutView(View):
         auth.logout(request)
         messages.success(request,f"Thank you for visiting EiserShop, {username}! You have successfully logged out.")
         return redirect("home")
-def send_async_email(user_email, subject, html_content):
-    try:
-        from_email = settings.DEFAULT_FROM_EMAIL
-        
-        # Django ka EmailMultiAlternatives use karenge Brevo SMTP ke liye
-        email = EmailMultiAlternatives(subject, "", from_email, [user_email])
-        email.attach_alternative(html_content, "text/html")
-        email.send()
-        
-        print("SMTP Email sent successfully to", user_email)
-    except Exception as e:
-        print("SMTP Email error:", repr(e))
 class ForgetPasswordView(View):
     template_name = "forgetpassword.html"
     def get(self, request):
@@ -1947,7 +1935,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
                         product.stock = 0
                         product.sold_count += item.quantity
                     product.save()
-        # Email Sending Logic
+        # Email Sending 
         try:
             context = {
                 "user": request.user,
@@ -1958,13 +1946,13 @@ class PlaceOrderView(LoginRequiredMixin, View):
                 "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
             }
             html_content = render_to_string("emails/order_confirmation.html", context)
-            params = {
-                "from": "EiserShop <onboarding@resend.dev>",
-                "to": [order.email],
-                "subject": f"Your Order #{order.amazon_order_id} has been placed!",
-                "html": html_content,
-            }
-            response = resend.Emails.send(params)
+            subject = f"Your Order #{order.amazon_order_id} has been placed!"
+            # Background thread ke through Brevo SMTP se email bhejenge
+            threading.Thread(
+                target=send_async_email,
+                args=(order.email, subject, html_content),
+                daemon=True
+            ).start()
         except Exception as e:
             traceback.print_exc()
         try:
@@ -1986,10 +1974,7 @@ class CancelProductView(LoginRequiredMixin, View):
         )
         order = order_item.order_id
         if request.session.get("order_just_placed_id") == order.orderid:
-            messages.error(
-                request,
-                "Please place your order first. You cannot cancel products during checkout.",
-            )
+            messages.error(request,"Please place your order first. You cannot cancel products during checkout.",)
             return redirect("conformorder", order.orderid)
         cancelled_product_name = order_item.productview_id.producttitle
         cancelled_quantity = order_item.quantity
@@ -2017,6 +2002,7 @@ class CancelProductView(LoginRequiredMixin, View):
             order.orderstatus = "Cancelled"
             order.cancelled_at = timezone.now()
         order.save()
+        # Email Sending
         if order.email:
             try:
                 context = {
@@ -2036,33 +2022,17 @@ class CancelProductView(LoginRequiredMixin, View):
                     "emails/order_cancelled.html",
                     context,
                 )
-                email = EmailMultiAlternatives(
-                    subject=f"Order Cancellation - {order.amazon_order_id}",
-                    body="Your product has been cancelled successfully.",
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[order.email],
-                )
-                email.attach_alternative(html_content, "text/html")
-                if product_image_url:
-                    try:
-                        response = requests.get(product_image_url, timeout=10)
-                        if response.status_code == 200:
-                            product = MIMEImage(response.content)
-                            product.add_header("Content-ID", "<product>")
-                            product.add_header(
-                                "Content-Disposition",
-                                "inline",
-                                filename="product.jpg",
-                            )
-                            product.add_header("X-Attachment-Id", "product")
-                            email.attach(product)
-                    except Exception as img_error:
-                        print("❌ Product Image Error:", img_error)
-                email.send(fail_silently=False)
-            except Exception as e:
-                print("❌ Cancellation email error:", str(e))
+                subject = f"Order Cancellation - {order.amazon_order_id}"
+                # Background thread call
+                threading.Thread(
+                    target=send_cancellation_email_with_image,
+                    args=(order.email, subject, html_content, product_image_url),
+                    daemon=True
+                ).start()
+            except Exception:
+                print("❌ Cancellation email error occurred")
                 traceback.print_exc()
-        messages.success(request,"Order cancelled successfully.",)
+        messages.success(request, "Order cancelled successfully.")
         return redirect("conformorder", order.orderid)
 class ThankYouView(LoginRequiredMixin,View):
     login_url = "login"
