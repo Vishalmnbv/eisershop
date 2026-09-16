@@ -20,13 +20,13 @@ def apply_rating(product):
     product.half_stars_range = range(half_stars)
     product.empty_stars_range = range(empty_stars)
     if (
-        product.productmrpPRICE
+        product.productmrp
         and product.productprice
-        and product.productmrpPRICE > product.productprice
+        and product.productmrp > product.productprice
     ):
         discount = (
-            (product.productmrpPRICE - product.productprice)
-            / product.productmrpPRICE
+            (product.productmrp - product.productprice)
+            / product.productmrp
         ) * 100
         product.productdiscountrate = str(int(discount))
     else:
