@@ -88,23 +88,23 @@
             </div>
         </div>
         {% if products %}
-            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xxl-5 g-2">
+            <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 row-cols-xxl-5 g-1 g-md-2">
                 {% for item in products %}
                     <div class="col">
                         <div class="card h-100 border rounded-3 position-relative product-card overflow-hidden">
-                            <a href="{% url 'remove_wishlist' item.id %}"  class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-2 border-0 d-flex align-items-center justify-content-center text-muted text-hover-danger"
+                            <a href="{% url 'remove_wishlist' item.id %}"  class="btn btn-light btn-sm rounded-circle position-absolute top-0 end-0 m-1 m-md-2 border-0 d-flex align-items-center justify-content-center text-muted text-hover-danger"
                                 style="width: 32px; height: 32px; z-index: 10;"title="Remove from Wishlist">
                                 <i class="fa-solid fa-xmark fs-6"></i>
                             </a>
                             <a href="{% url 'productview' item.product.category_id.categoryid item.product.productviewid %}" class="text-decoration-none">
-                                <div class="d-flex align-items-center justify-content-center p-3 bg-white" style="height: 220px;">
-                                    <img src="{{ item.product.productimage1 }}" class="img-fluid" style="max-height: 160px; object-fit: contain;" alt="{{ item.product.productname }}">
+                                <div class="d-flex align-items-center justify-content-center p-2 p-md-3 bg-white" style="height: 180px;">
+                                    <img src="{{ item.product.productimage1 }}" class="img-fluid" style="max-height: 140px; object-fit: contain;" alt="{{ item.product.productname }}">
                                 </div>
                             </a>
-                            <div class="card-body d-flex flex-column p-3 pt-1 bg-light-subtle">
+                            <div class="card-body d-flex flex-column p-2 p-md-3 pt-1 bg-light-subtle">
                                 <a href="{% url 'productview' item.product.category_id.categoryid item.product.productviewid %}" class="text-decoration-none text-dark">
-                                    <h6 class="fw-bold mb-1 text-truncate" style="font-size: 15px;">{{ item.product.productname }}</h6>
-                                    <p class="text-muted small mb-2" style="font-size: 13px;">{{ item.product.producttitle|truncatechars:40 }}</p>
+                                    <h6 class="fw-bold mb-1 text-truncate" style="font-size: 14px;">{{ item.product.productname }}</h6>
+                                    <p class="text-muted small mb-2 text-truncate" style="font-size: 12px;">{{ item.product.producttitle|truncatechars:40 }}</p>
                                 </a>
                                 {% if item.product.color_variants %}
                                     <div class="d-flex align-items-center my-1 gap-1">
@@ -148,37 +148,37 @@
                                     <div class="text-end">
                                         {% with size_val=item.size|default:item.product.productsize %}
                                             {% if size_val and size_val|lower != "none" and size_val != "" %}
-                                                <small class="text-muted d-block">Size: {{ size_val }}</small>
+                                                <small class="text-muted d-block" style="font-size: 11px;">Size: {{ size_val }}</small>
                                             {% endif %}
                                         {% endwith %}
                                         {% with color_val=item.color|default:item.product.productcolor1 %}
                                             {% if color_val and color_val|lower != "none" and color_val != "" %}
-                                                <small class="text-muted d-block">Color: {{ color_val }}</small>
+                                                <small class="text-muted d-block" style="font-size: 11px;">Color: {{ color_val }}</small>
                                             {% endif %}
                                         {% endwith %}
-                                        <small class="text-muted d-block">Qty: {{ item.quantity|default:1 }}</small>
+                                        <small class="text-muted d-block" style="font-size: 11px;">Qty: {{ item.quantity|default:1 }}</small>
                                     </div>
                                 </div>
-                                <div class="d-flex align-items-baseline gap-2 mb-2">
-                                    <span class="fw-bold text-dark fs-5">₹{{ item.calculated_price|format_indian_currency }}</span>
+                                <div class="d-flex align-items-baseline gap-1 gap-md-2 flex-wrap">
+                                    <span class="fw-bold text-dark fs-6 fs-md-5">₹{{ item.calculated_price|format_indian_currency }}</span>
                                     {% if item.calculated_mrp and item.calculated_mrp > item.calculated_price %}
-                                        <del class="text-muted small">₹{{ item.calculated_mrp|format_indian_currency }}</del>
+                                        <del class="text-muted small" style="font-size: 11px;">₹{{ item.calculated_mrp|format_indian_currency }}</del>
                                         {% if item.product.productdiscountrate and item.product.productdiscountrate != '0' %}
-                                            <span class="text-success small fw-bold">{{ item.product.productdiscountrate }}% OFF</span>
+                                            <span class="text-success small fw-bold" style="font-size: 11px;">{{ item.product.productdiscountrate }}% OFF</span>
                                         {% endif %}
                                     {% endif %}
                                 </div>
-                                <div class="mb-3">  
+                                <div class="mb-2 mb-md-3">  
                                     {% if item.product.stock > 10 %}
-                                        <span class="text-success small fw-semibold d-inline-flex align-items-center gap-1">
+                                        <span class="text-success small fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 11px;">
                                             <i class="fa-solid fa-circle-check"></i> In Stock
                                         </span>
                                     {% elif item.product.stock > 0 %}
-                                        <span class="text-warning-emphasis small fw-semibold d-inline-flex align-items-center gap-1">
+                                        <span class="text-warning-emphasis small fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 11px;">
                                             <i class="fa-solid fa-clock"></i> Only {{ item.product.stock }} Stock
                                         </span>
                                     {% else %}
-                                        <span class="text-danger small fw-semibold d-inline-flex align-items-center gap-1">
+                                        <span class="text-danger small fw-semibold d-inline-flex align-items-center gap-1" style="font-size: 11px;">
                                             <i class="fa-solid fa-circle-xmark"></i> Out of Stock
                                         </span>
                                     {% endif %}
@@ -187,11 +187,10 @@
                                     <form method="post" action="{% url 'add_to_cart' item.product.productviewid %}" class="m-0">
                                         {% csrf_token %}
                                         <input type="hidden" name="selected_size" value="{{ item.size|default:item.product.productsize1 }}">
-                                        <button type="submit"  class="btn btn-warning btn-sm w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center" {% if item.product.stock <= 0 %}disabled{% endif %}>
-                                            <i class="fa-solid fa-cart-shopping me-2"></i>Add to Cart
+                                        <button type="submit"  class="btn btn-warning btn-sm w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center py-1" style="font-size: 12px;" {% if item.product.stock <= 0 %}disabled{% endif %}>
+                                            <i class="fa-solid fa-cart-shopping me-1"></i>Add to Cart
                                         </button>
                                     </form>
-                                    
                                 </div>
                             </div> 
                         </div> 

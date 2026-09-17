@@ -399,7 +399,7 @@
                             <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
                             {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
                                 <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
-                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
+                                <span class="badge text-white" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
                                 <span class="text-danger fw-bold small" style="font-size: 15px;">Limited time deal</span>
                             {% endif %}
                         </div>

@@ -1912,6 +1912,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
             request.session.pop("coupon_discount", None)
             request.session.pop("order_just_placed_id", None)
             return redirect("thankyou", order.orderid)
+        is_pending = (order.orderstatus == "Pending" or not order.orderstatus)
         order.orderstatus = "Processing"
         coupon_code = request.session.get("coupon_code", "")
         discount = request.session.get("coupon_discount", 0)
@@ -1924,19 +1925,22 @@ class PlaceOrderView(LoginRequiredMixin, View):
             except Coupon.DoesNotExist:
                 pass
         order.save()
-        for item in order.orderitem_set.all():
-            product = item.productview_id
-            if product:
-                if product.stock is not None:
-                    if product.stock >= item.quantity:
-                        product.stock -= item.quantity
-                        product.sold_count += item.quantity
+        if is_pending:
+            for item in order.orderitem_set.all():
+                product = item.productview_id
+                if product:
+                    if product.stock is not None:
+                        if product.stock >= item.quantity:
+                            product.stock -= item.quantity
+                            product.sold_count += item.quantity
+                        else:
+                            product.stock = 0
+                            product.sold_count += item.quantity
+                        product.save()
                     else:
-                        product.stock = 0
-                        product.sold_count += item.quantity
-                    product.save()
-                    
-        # Email Sending Logic (Fixed with send_async_email target)
+                        product.sold_count = (product.sold_count or 0) + item.quantity
+                        product.save()
+        # Email Sending 
         try:
             recipient_email = order.email or request.user.email
             if recipient_email:
@@ -1949,26 +1953,21 @@ class PlaceOrderView(LoginRequiredMixin, View):
                     "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string("emails/order_confirmation.html", context)
-                
-                # Safe fallback if amazon_order_id is None
                 order_ref = order.amazon_order_id or order.orderid
                 subject = f"Your Order #{order_ref} has been placed!"
-                
                 threading.Thread(
-                    target=send_async_email,  # <-- Yahan send_async_email hona chahiye
+                    target=send_async_email,
                     args=(recipient_email, subject, html_content),
                     daemon=True
                 ).start()
         except Exception:
             print("❌ Order confirmation email error:")
             traceback.print_exc()
-            
         try:
             Cart.objects.filter(userid=request.user).delete()
         except Exception:
             print("CART DELETE ERROR:")
             traceback.print_exc()
-            
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
         request.session.pop("order_just_placed_id", None)
@@ -3344,10 +3343,44 @@ class PickupLogoutView(View):
         logout(request)
         messages.success(request, "Pickup Agent logged out successfully.")
         return redirect("pickup_login")
-class WishlistView(LoginRequiredMixin, View):
-    login_url = "login"
+class WishlistView(View):
     def get(self, request):
-        wishlist_items = (Wishlist.objects.filter(user=request.user).select_related("product", "product__category_id").order_by("-id"))
+        if request.user.is_authenticated:
+            guest_wishlist = request.session.get('guest_wishlist', [])
+            if guest_wishlist:
+                for g_item in guest_wishlist:
+                    prod = Productview.objects.filter(productviewid=g_item['productviewid']).first()
+                    if prod:
+                        wish_item, created = Wishlist.objects.get_or_create(
+                            user=request.user,
+                            product=prod,
+                            size=g_item['size']
+                        )
+                        if hasattr(wish_item, 'price') and g_item.get('price'):
+                            wish_item.price = g_item['price']
+                            wish_item.save()
+                del request.session['guest_wishlist']
+            wishlist_items = list(Wishlist.objects.filter(user=request.user).select_related("product", "product__category_id").order_by("-id"))
+        else:
+            # Agar user logged-in nahi hai, toh session se items fetch karein
+            guest_wishlist = request.session.get('guest_wishlist', [])
+            wishlist_items = []
+            for idx, g_item in enumerate(guest_wishlist):
+                prod = Productview.objects.filter(productviewid=g_item['productviewid']).select_related("category_id").first()
+                if prod:
+                    class TempWishlistItem:
+                        def __init__(self, id, product, size, price):
+                            self.id = id
+                            self.product = product
+                            self.size = size
+                            self.price = price
+                    temp_item = TempWishlistItem(
+                        id=idx, 
+                        product=prod, 
+                        size=g_item['size'], 
+                        price=g_item['price']
+                    )
+                    wishlist_items.append(temp_item)
         for item in wishlist_items:
             item.quantity = getattr(item, "quantity", 1) or 1
             if hasattr(item, "product") and item.product:
@@ -3401,8 +3434,7 @@ class WishlistView(LoginRequiredMixin, View):
                 product.color_variants = variants_list
         context = {"wishlist_items": wishlist_items,"products": wishlist_items,}
         return render(request, "wishlist.html", context)
-class AddWishlistView(LoginRequiredMixin, View):
-    login_url = "login"
+class AddWishlistView(View): 
     def post(self, request, productviewid):
         product = get_object_or_404(Productview, productviewid=productviewid)
         selected_color = (request.POST.get("selected_color") or request.GET.get("color")  or getattr(product, "productcolor1", "")).strip()
@@ -3464,31 +3496,47 @@ class AddWishlistView(LoginRequiredMixin, View):
         else:
             short_title = title_text
         size_text = f" ({selected_size})" if selected_size else ""
-        wishlist_item = Wishlist.objects.filter(user=request.user,product=product,size=selected_size,).first()
-        if wishlist_item:
-            if hasattr(wishlist_item, 'price'):
-                wishlist_item.price = unit_price
-                wishlist_item.save()
-            messages.info(request, f"'{short_title}'{size_text} is already in your wishlist.")
+        # CHECK IF USER IS AUTHENTICATED (
+        if request.user.is_authenticated:
+            wishlist_item = Wishlist.objects.filter(user=request.user,product=product,size=selected_size,).first()
+            if wishlist_item:
+                if hasattr(wishlist_item, 'price'):
+                    wishlist_item.price = unit_price
+                    wishlist_item.save()
+                messages.info(request, f"'{short_title}'{size_text} is already in your wishlist.")
+            else:
+                try:
+                    kwargs = {
+                        "user": request.user,
+                        "product": product,
+                        "size": selected_size,
+                    }
+                    if hasattr(Wishlist, 'price'):
+                        kwargs["price"] = unit_price
+                    Wishlist.objects.create(**kwargs)
+                    messages.success(request, f"'{short_title}'{size_text} has been added to your wishlist.")
+                except Exception:
+                    existing_item = Wishlist.objects.filter(user=request.user, product=product).first()
+                    if existing_item:
+                        existing_item.size = selected_size
+                        if hasattr(existing_item, 'price'):
+                            existing_item.price = unit_price
+                        existing_item.save()
+                        messages.info(request, f"Wishlist updated to size{size_text} for '{short_title}'.")
         else:
-            try:
-                kwargs = {
-                    "user": request.user,
-                    "product": product,
-                    "size": selected_size,
-                }
-                if hasattr(Wishlist, 'price'):
-                    kwargs["price"] = unit_price
-                Wishlist.objects.create(**kwargs)
+            # Guest User ke liye Session mein store karein
+            wishlist_session = request.session.get('guest_wishlist', [])
+            item_data = {
+                'productviewid': product.productviewid,
+                'size': selected_size,
+                'price': float(unit_price) if unit_price else 0.0
+            }
+            if item_data not in wishlist_session:
+                wishlist_session.append(item_data)
+                request.session['guest_wishlist'] = wishlist_session
                 messages.success(request, f"'{short_title}'{size_text} has been added to your wishlist.")
-            except Exception:
-                existing_item = Wishlist.objects.filter(user=request.user, product=product).first()
-                if existing_item:
-                    existing_item.size = selected_size
-                    if hasattr(existing_item, 'price'):
-                        existing_item.price = unit_price
-                    existing_item.save()
-                    messages.info(request, f"Wishlist updated to size{size_text} for '{short_title}'.")
+            else:
+                messages.info(request, f"'{short_title}'{size_text} is already in your wishlist.")
         return redirect("wishlist")
     def get(self, request, productviewid):
         return self.post(request, productviewid)
