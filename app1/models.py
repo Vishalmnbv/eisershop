@@ -219,7 +219,7 @@ class Order(models.Model):
     shipped_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     user_order_seq = models.IntegerField(editable=False, null=True, blank=True)
-    amazon_order_id = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    amazon_order_id = models.CharField(max_length=20, blank=True, null=True)
     stock_updated = models.BooleanField(default=False)
     def __str__(self):
         return self.user_id.username
@@ -237,9 +237,10 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         if is_new:
+            # Uss user ke pehle ke total orders ginkar sequence banayenge
             existing_orders_count = Order.objects.filter(user_id=self.user_id).count()
             self.user_order_seq = existing_orders_count + 1
-            self.amazon_order_id = None
+            self.amazon_order_id = f"{self.user_order_seq:05d}"
             if self.orderstatus == 'Processing' and not self.processing_at:
                 self.processing_at = timezone.now()
         else:
@@ -271,8 +272,6 @@ class Order(models.Model):
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string('emails/order_delivered.html', context)
-                
-                # Background thread ke through Brevo API se delivery email bhejenge
                 threading.Thread(
                     target=send_async_login_email,
                     args=(recipient_email, subject, html_content),

@@ -20,8 +20,6 @@ def apply_rating(product):
     product.full_stars_range = range(full_stars)
     product.half_stars_range = range(half_stars)
     product.empty_stars_range = range(empty_stars)
-    
-    # Yahan productmrp ki jagah productmrpprice kiya gaya hai
     if (
         product.productmrpprice
         and product.productprice
@@ -42,7 +40,6 @@ def send_async_email(recipient_email, subject, html_content):
         api_instance = sib_api_v3_sdk.TransactionalEmailsApi(sib_api_v3_sdk.ApiClient(configuration))
         sender = {"name": "EiserShop", "email": os.getenv("DEFAULT_FROM_EMAIL")}
         to = [{"email": recipient_email}]
-        
         send_smtp_email = sib_api_v3_sdk.SendSmtpEmail(
             to=to,
             sender=sender,

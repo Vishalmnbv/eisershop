@@ -1782,7 +1782,7 @@ class CheckoutView(LoginRequiredMixin, View):
                         unit_price = product.productprice
                 subtotal += unit_price * item.quantity
             else:
-                subtotal += item.subtotal() if hasattr(item, "subtotal") else 0
+                subtotal += item.subtotal() if hasattr(item, "subtotal") else 0     
         deliverycharge = 30 if 0 < subtotal < 300 else 0
         coupon_code = request.session.get("coupon_code", "")
         discount = request.session.get("coupon_discount", 0)
@@ -1822,9 +1822,6 @@ class CheckoutView(LoginRequiredMixin, View):
                 coupon=coupon,
                 coupon_discount=discount,
             )
-            user_order_no = Order.objects.filter(user_id=request.user, orderid__lte=order.orderid).count()
-            order.amazon_order_id = f"{user_order_no:05d}"
-            order.save(update_fields=["amazon_order_id"])
             for item in cartdata:
                 Orderitem.objects.create(
                     status="Pending",
@@ -1835,8 +1832,9 @@ class CheckoutView(LoginRequiredMixin, View):
                 )
                 product = item.product_id
                 if product:
-                    product.sold_count += item.quantity
+                    product.sold_count += item.quantity  
                     product.save()
+            cartdata.delete()
             request.session["order_just_placed_id"] = order.orderid
             messages.info(request, "Please review your order details before placing the order.")
             return redirect("conformorder", order.orderid)
