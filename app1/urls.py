@@ -56,6 +56,7 @@ urlpatterns = [
     path('admin-dashboard/low-stock/',admin_low_stock_view, name='admin_low_stock'),
     path('admin-dashboard/coupons/',admin_coupons_view, name='admin_coupons'),
     path('admin-dashboard/today-sales/',admin_today_sales_view, name='admin_today_sales'),
+    path('admin-dashboard/monthly-sales/', admin_monthly_sales_view, name='admin_monthly_sales'),  
     path("pickup-logout/",PickupLogoutView.as_view(),name="pickup_logout",),
     path("wishlist/",WishlistView.as_view(),name="wishlist",),
     path("wishlist/add/<int:productviewid>/",AddWishlistView.as_view(),name="add_wishlist",),

@@ -2366,24 +2366,21 @@ class AdminDashboardView(LoginRequiredMixin, View):
         today_orders = Order.objects.filter(date__date=today)
         today_sales = sum(order.total for order in today_orders)
         today_orders_count = today_orders.count()
-        monthly_sales = (
-            Order.objects.filter(orderstatus="Delivered")
-            .annotate(month=TruncMonth("date"))
-            .values("month")
-            .annotate(total=Sum("total"))
-            .order_by("month")
-        )
+        monthly_sales = (Order.objects.filter(orderstatus="Delivered").annotate(month=TruncMonth("date")).values("month").annotate(total=Sum("total")).order_by("month"))
         sales_labels = [sale["month"].strftime("%b") for sale in monthly_sales]
         sales_data = [sale["total"] for sale in monthly_sales]
+        #  Monthly Order
+        monthly_orders = (
+            Order.objects.all()
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(total_orders=Count("orderid")) 
+            .order_by("month")
+        )
+        orders_data = [item["total_orders"] for item in monthly_orders]
         return_orders = ReturnRequest.objects.count()
         refunded_orders = ReturnRequest.objects.filter(status="Refunded").count()
-        recent_returns = ReturnRequest.objects.select_related(
-            "order",
-            "orderitem",
-            "orderitem__productview_id",
-            "order__user_id",
-            "delivery_agent",
-        ).order_by("-created_at")
+        recent_returns = ReturnRequest.objects.select_related("order","orderitem","orderitem__productview_id","order__user_id","delivery_agent",).order_by("-created_at")
         for r in recent_returns:
             if r.order and r.order.user_id:
                 user_order_no = Order.objects.filter(user_id=r.order.user_id, orderid__lte=r.order.orderid).count()
@@ -2536,6 +2533,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             'coupons': coupons,
             'today_sales': today_sales,
             'today_orders_count': today_orders_count,
+            "orders_data": orders_data,
         }
         return render(request, "admin_dashboard.html", context)
 class AdminUsersView(LoginRequiredMixin, View):
@@ -3369,6 +3367,18 @@ def admin_today_sales_view(request):
         'today_orders_count': today_orders_count,
     }
     return render(request, 'admin_today_sales.html', context)
+def admin_monthly_sales_view(request):
+    today = timezone.now().date()
+    current_month_start = today.replace(day=1)
+    monthly_orders = Order.objects.filter(date__date__gte=current_month_start).order_by('-date')
+    current_month_sales = sum(order.total for order in monthly_orders.filter(orderstatus="Delivered"))
+    current_month_orders_count = monthly_orders.count()
+    context = {
+        'monthly_orders': monthly_orders,
+        'current_month_sales': current_month_sales,
+        'current_month_orders_count': current_month_orders_count,
+    }
+    return render(request, 'admin_monthly_sales.html', context)
 class PickupLogoutView(View):
     def get(self, request):
         logout(request)
