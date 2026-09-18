@@ -2358,6 +2358,14 @@ class AdminDashboardView(LoginRequiredMixin, View):
         cancelled_orders = Order.objects.filter(orderstatus="Cancelled").count()
         total_revenue = Order.objects.filter(orderstatus="Delivered").aggregate(total=Coalesce(Sum("total"), 0))["total"]
         today_sales = Order.objects.filter(orderstatus="Delivered", date__date=date.today()).aggregate(total=Coalesce(Sum("total"), 0))["total"]
+        low_stock_products = Productview.objects.filter(stock__lte=5)[:10] 
+        out_of_stock_count = Productview.objects.filter(in_stock=False).count()
+        low_stock_count = Productview.objects.filter(stock__lte=5).count()
+        coupons = Coupon.objects.all().order_by('-couponid')
+        today = timezone.now().date()
+        today_orders = Order.objects.filter(date__date=today)
+        today_sales = sum(order.total for order in today_orders)
+        today_orders_count = today_orders.count()
         monthly_sales = (
             Order.objects.filter(orderstatus="Delivered")
             .annotate(month=TruncMonth("date"))
@@ -2522,6 +2530,12 @@ class AdminDashboardView(LoginRequiredMixin, View):
             "review_products": review_products,
             "pickup_agents": pickup_agents,
             "recent_orders": recent_orders,
+            'low_stock_products': low_stock_products,
+            'out_of_stock_count': out_of_stock_count,
+            'low_stock_count': low_stock_count,
+            'coupons': coupons,
+            'today_sales': today_sales,
+            'today_orders_count': today_orders_count,
         }
         return render(request, "admin_dashboard.html", context)
 class AdminUsersView(LoginRequiredMixin, View):
@@ -3336,6 +3350,25 @@ Thank you for shopping with us.
                 fail_silently=True,
             )
         return redirect("admin_refunded_orders")
+def admin_low_stock_view(request):
+    low_stock_products = Productview.objects.filter(stock__lte=5).order_by('stock')
+    context = {'low_stock_products': low_stock_products,}
+    return render(request, 'admin_low_stock.html', context)
+def admin_coupons_view(request):
+    coupons = Coupon.objects.all().order_by('-couponid')
+    context = {'coupons': coupons,}
+    return render(request, 'admin_coupons.html', context)
+def admin_today_sales_view(request):
+    today = timezone.now().date()
+    today_orders = Order.objects.filter(date__date=today).order_by('-date')
+    today_sales = sum(order.total for order in today_orders)
+    today_orders_count = today_orders.count()
+    context = {
+        'today_orders': today_orders,
+        'today_sales': today_sales,
+        'today_orders_count': today_orders_count,
+    }
+    return render(request, 'admin_today_sales.html', context)
 class PickupLogoutView(View):
     def get(self, request):
         logout(request)

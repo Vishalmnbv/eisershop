@@ -237,9 +237,8 @@ class Order(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         if is_new:
-            # Uss user ke pehle ke total orders ginkar sequence banayenge
-            existing_orders_count = Order.objects.filter(user_id=self.user_id).count()
-            self.user_order_seq = existing_orders_count + 1
+            total_orders_count = Order.objects.count()
+            self.user_order_seq = total_orders_count + 1
             self.amazon_order_id = f"{self.user_order_seq:05d}"
             if self.orderstatus == 'Processing' and not self.processing_at:
                 self.processing_at = timezone.now()
