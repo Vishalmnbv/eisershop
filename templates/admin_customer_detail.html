@@ -290,38 +290,33 @@
                             <div class="p-3 text-center text-muted">No products found for this order.</div>
                         {% endfor %}
                         <div class="p-3 px-4 bg-light border-top">
-                                <div class="d-flex justify-content-between text-muted small py-1">
-                                    <span>Subtotal</span>
-                                    <span>₹{{ order.calculated_subtotal|format_indian_currency }}</span>
-                                </div>
-                                {% if order.coupon_code_display and order.coupon_code_display != "None" %}
-                                <div class="d-flex justify-content-between text-muted small py-1">
-                                    <span>Coupon ({{ order.coupon_code_display }})</span>
-                                    <span class="text-success">
-                                        - ₹{{ order.coupon_discount_display|format_indian_currency }}
-                                    </span>
-                                </div>
-                                {% else %}
-                                <div class="d-flex justify-content-between text-muted small py-1">
-                                    <span>Coupon</span>
-                                    <span class="text-dark">None</span>
-                                </div>
-                                {% endif %}
-                                <div class="d-flex justify-content-between text-muted small py-1">
-                                    <span>Delivery Charges</span>
-                                    <span>
-                                        {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}
-                                            ₹{{ order.delivery_charge_display|format_indian_currency }}
-                                        {% else %}
-                                            Free
-                                        {% endif %}
-                                    </span>
-                                </div>
-                                <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.9rem;">
-                                    <span>Total</span>
-                                    <span>₹{{ order.calculated_total|format_indian_currency }}</span>
-                                </div>
+                            <div class="d-flex justify-content-between text-muted small py-1">
+                                <span>Subtotal</span>
+                                <span>₹{{ order.calculated_subtotal|format_indian_currency }}</span>
                             </div>
+                            {% if order.coupon_code_display and order.coupon_code_display != "None" %}
+                            <div class="d-flex justify-content-between text-muted small py-1">
+                                <span>Coupon ({{ order.coupon_code_display }})</span>
+                                <span class="text-success">
+                                    - ₹{{ order.coupon_discount_display|format_indian_currency }}
+                                </span>
+                            </div>
+                            {% endif %}
+                            <div class="d-flex justify-content-between text-muted small py-1">
+                                <span>Delivery Charges</span>
+                                <span>
+                                    {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}
+                                        ₹{{ order.delivery_charge_display|format_indian_currency }}
+                                    {% else %}
+                                        Free
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.9rem;">
+                                <span>Total</span>
+                                <span>₹{{ order.calculated_total|format_indian_currency }}</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             {% empty %}

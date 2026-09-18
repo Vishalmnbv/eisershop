@@ -257,16 +257,11 @@
                             <div class="d-flex justify-content-between mb-2">
                                 <span class="text-muted">Subtotal</span>
                                 <span class="fw-semibold text-dark">₹{{ subtotal|format_indian_currency }}</span>
-                            </div>                        
+                            </div>                                       
                             {% if discount %}
                                 <div class="d-flex justify-content-between mb-2 fw-bold">
                                     <span class="text-success">Coupon ({{ coupon_code }})</span>
                                     <span class="fw-bold text-success">- ₹{{ discount|format_indian_currency }}</span>
-                                </div>
-                            {% else %}
-                                <div class="d-flex justify-content-between mb-2">
-                                    <span class="text-muted">Coupon</span>
-                                    <span class="fw-semibold text-dark">None</span>
                                 </div>
                             {% endif %}
                             <div class="d-flex justify-content-between mb-3">

@@ -181,11 +181,6 @@
                                     <td>Coupon <span class="text-success fw-bold">({{ order.coupon.code }})</span></td>
                                     <td class="text-end text-success">- ₹ {{ order.coupon_discount|format_indian_currency }}</td>
                                 </tr>
-                            {% else %}
-                                <tr>
-                                    <td>Coupon</td>
-                                    <td class="text-end text-dark">None</td>
-                                </tr>
                             {% endif %}
                             <tr>
                                 <td>Delivery Charges</td>
