@@ -74,10 +74,6 @@
                 <p class="text-muted small mb-0">View all orders placed this month, customer details, and total revenue.</p>
             </div>
             <div class="d-flex align-items-center gap-3">
-                <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-2 bg-light border">
-                    <span class="text-dark small fw-semibold"><i class="fa-regular fa-calendar me-1"></i>Date:</span>
-                    <span class="fw-bold fs-6 text-dark">{% now "F Y" %}</span>
-                </div>
                 <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-2" style="background-color: #d4edda; border: 1px solid #c3e6cb;">
                     <span class="text-dark small fw-semibold">Total Monthly Sales:</span>
                     <span class="fw-bold fs-6" style="color: #155724;">₹{{ current_month_sales|format_indian_currency }}</span>
@@ -101,7 +97,7 @@
                             <tr>
                                 <th class="py-3 px-3">Order ID</th>
                                 <th class="py-3 px-3">Customer Name</th>
-                                <th class="py-3 px-3">Contact Email</th>
+                                <th class="py-3 px-3 text-center">Contact Email</th>
                                 <th class="py-3 px-3 text-center">Date & Time</th>
                                 <th class="py-3 px-3 text-end">Total Amount</th>
                                 <th class="py-3 px-3 text-center">Status</th>
@@ -112,13 +108,12 @@
                             {% for order in monthly_orders %}
                                 <tr class="align-middle">
                                     <td class="py-3 px-3">
-                                        <span class="fw-bold font-monospace fs-6 text-dark bg-light px-2 py-1 border rounded">
+                                        <span class="fw-bold font-monospace fs-6 text-dark px-2 py-1">
                                             #{{ order.amazon_order_id }}
                                         </span>
                                     </td>
                                     <td class="py-3 px-3 fw-semibold text-secondary">
-                                        {{ order.firstname }} {{ order.lastname }}
-                                        <div class="text-muted small fw-normal">(@{{ order.username }})</div>
+                                        {{ order.firstname }} {{ order.username }} {{ order.lastname }}                                    
                                     </td>
                                     <td class="py-3 px-3 text-muted">
                                         {{ order.email }}
@@ -140,7 +135,7 @@
                                             </span>
                                         {% elif order.orderstatus == 'Processing' %}
                                             <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
-                                                <i class="fa-solid fa-spinner me-1"></i>Processing
+                                                <i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing
                                             </span>
                                         {% elif order.orderstatus == 'Cancelled' %}
                                             <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
