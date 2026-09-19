@@ -2110,6 +2110,11 @@ class MyOrdersView(LoginRequiredMixin, View):
         orders = Order.objects.filter(user_id=request.user).order_by("-date")
         category = Category.objects.all()
         for order in orders:
+            if order.user_id:
+                user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+                order.amazon_order_id = f"{user_order_no:05d}"
+            else:
+                order.amazon_order_id = "00001"
             pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
@@ -2449,7 +2454,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid" 
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "discount", getattr(order, "coupon_discount", 0))
