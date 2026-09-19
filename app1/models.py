@@ -219,7 +219,7 @@ class Order(models.Model):
     shipped_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     user_order_seq = models.IntegerField(editable=False, null=True, blank=True)
-    amazon_order_id = models.CharField(max_length=20, blank=True, null=True)
+    amazon_order_id = models.CharField(max_length=20, blank=True, null=True, unique=True)
     stock_updated = models.BooleanField(default=False)
     def __str__(self):
         return self.user_id.username
@@ -242,12 +242,11 @@ class Order(models.Model):
                 self.user_order_seq = user_orders_count + 1
             else:
                 self.user_order_seq = 1
-                
-            self.amazon_order_id = f"{self.user_order_seq:05d}"
-            
-            if self.orderstatus == 'Processing' and not self.processing_at:
-                self.processing_at = timezone.now()
-        else:
+        super().save(*args, **kwargs)
+        if not self.amazon_order_id:
+            self.amazon_order_id = f"{self.orderid:05d}"
+            Order.objects.filter(pk=self.pk).update(amazon_order_id=self.amazon_order_id)
+        if not is_new:
             try:
                 original = Order.objects.get(pk=self.pk)
                 if original.orderstatus != 'Processing' and self.orderstatus == 'Processing':
@@ -267,7 +266,6 @@ class Order(models.Model):
                         self.cancelled_at = timezone.now()
             except Order.DoesNotExist:
                 pass
-        super().save(*args, **kwargs)
     def send_delivery_email(self):
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
         if recipient_email:
