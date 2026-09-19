@@ -10,22 +10,6 @@
         .recommendedSwiper{padding:15px 40px;}
         .recommendedSwiper .swiper-slide{height:auto;}
         .recommendedSwiper .card{border-radius:15px;transition:.3s;}
-        .amazon-coupon{display:flex;background:#fff;border:2px dashed #f0c14b;border-radius:15px;overflow:hidden;}
-        .coupon-left{width:110px;background:#ff9900;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;}
-        .coupon-left .discount{font-size:34px;font-weight:700;line-height:1;}
-        .coupon-right{flex:1;padding:20px;}
-        .coupon-code{background:#232f3e;color:#fff;padding:10px 20px;border-radius:6px;font-weight:700;letter-spacing:1px;}
-        .coupon-countdown{background:#ea3b4d;color:#fff;padding:7px 16px;border-radius:20px;font-size:14px;font-weight:600;display:flex;align-items:center;gap:2px;}
-        .coupon-countdown span{font-weight:700;}
-        .amazon-coupon{display:flex;background:#fff;border:2px dashed #ff9900;border-radius:15px;overflow:hidden;transition:.3s;height:100%;}
-        .coupon-left{width:95px;background:#ff9900;color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;}
-        .discount{font-size:22px;font-weight:bold;}
-        .coupon-left small{font-size:15px;font-weight:600;}
-        .coupon-right{flex:1;padding:18px;}
-        .coupon-code{background:#232f3e;color:#fff;padding:8px 18px;border-radius:6px;font-weight:700;letter-spacing:1px;}
-        .amazon-coupon .btn{border-radius:6px;font-weight:600;}
-        .amazon-coupon .product-image-container {width: 100%;height: 105px;display: flex;align-items: center;justify-content: center; border: 1px solid #eee;border-radius: 6px;overflow: hidden;margin: 8px 0;}
-        .amazon-coupon .product-image-container img {max-height: 95px;max-width: 100%;object-fit: contain;mix-blend-mode: multiply;}
         .top-brands{background:#fff;}
         .brand-card{background:#fff;border:1px solid #e6e6e6;border-radius:15px;text-align:center;padding:25px 15px;transition:.3s;cursor:pointer;}
         .brand-card img{width:90px;height:90px;object-fit:contain;margin-bottom:15px;}
@@ -193,51 +177,46 @@
             <div class="d-flex align-items-center justify-content-between flex-wrap mb-4">
                 <h2 class="fw-bold mb-2 mb-md-0">Best Coupons</h2>
             </div>
-            <div class="row g-2">
+            <div class="row g-4">
                 {% for coupon in coupons %}
                     <div class="col-lg-4 col-md-6">
-                        <div class="amazon-coupon">
-                            <div class="coupon-left">
-                                <span class="discount">{{ coupon.discount }}%</span><small>OFF</small>
+                        <div class="card h-100  border rounded p-3 d-flex flex-column justify-content-between bg-white">
+                            <div>
+                                <div class="d-flex align-items-start mb-3">
+                                    <div class="bg-warning text-dark p-2 rounded text-center me-3 flex-shrink-0 d-flex flex-column justify-content-center align-items-center" style="width: 80px; height: 80px;">
+                                        <span class="fw-bold fs-3 lh-1">{{ coupon.discount }}%</span>
+                                        <small class="fw-bold text-uppercase" style="font-size: 11px;">OFF</small>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h5 class="fw-bold text-dark mb-1 text-truncate">{{ coupon.code }}</h5>
+                                        <span class="badge bg-danger mb-2">Limited Time Offer</span>
+                                        <p class="text-muted small mb-1">
+                                            <i class="fas fa-check-circle text-success me-1"></i>{{ coupon.discount }}% Instant Discount
+                                        </p>
+                                        <p class="text-muted small mb-0">
+                                            <i class="fas fa-shopping-bag text-primary me-1"></i>Min Order ₹{{ coupon.minimum_amount }}
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
-                            <div class="coupon-right">
-                                <h5 class="fw-bold">{{ coupon.code }}</h5>
-                                <p class="mb-2">
-                                    <i class="fas fa-check-circle text-success me-1"></i>
-                                    {{ coupon.discount }}% Instant Discount
-                                </p>
-                                <p class="mb-2">
-                                    <i class="fas fa-shopping-bag text-primary me-1"></i>
-                                    Minimum Order ₹{{ coupon.minimum_amount }}
-                                </p>
-                                <div class="product-image-container mb-2">
-                                    <img src="{{ coupon.productimage1 }}" alt="Product Image" class="img-fluid rounded" style="max-height: 120px; object-fit: contain;">
-                                </div>
+                            <div class="d-flex align-items-center justify-content-between pt-3 border-top mt-auto">
+                                <span class="badge  text-dark  fw-bold px-2 py-1 text-uppercase">{{ coupon.code }}</span>
                                 {% if coupon.category %}
-                                    <p class="mb-2">
-                                        <i class="fas fa-tag text-warning me-1"></i>
-                                        {{ coupon.category.categoryname }}
-                                    </p>
+                                    <a href="{% url 'collection' coupon.category.categoryid %}" class="btn btn-warning btn-sm fw-bold px-3">
+                                        Shop Now <i class="fas fa-chevron-right ms-1 small"></i>
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'collection' 1 %}" class="btn btn-warning btn-sm fw-bold px-3">
+                                        Shop Now <i class="fas fa-chevron-right ms-1 small"></i>
+                                    </a>
                                 {% endif %}
-                                <span class="badge bg-danger mb-3">Limited Time Offer</span>
-                                <div class="d-flex justify-content-between align-items-center">
-                                    <div class="coupon-code">{{ coupon.code }}</div>
-                                    {% if coupon.category %}
-                                        <a href="{% url 'collection' coupon.category.categoryid %}"class="btn btn-warning fw-bold">
-                                            <i class="fas fa-chevron-right ms-2 me-1"></i>Shop Now
-                                        </a>
-                                    {% else %}
-                                        <a href="{% url 'collection' 1 %}"class="btn btn-warning fw-bold">
-                                            <i class="fas fa-chevron-right ms-2 me-1"></i>
-                                            Shop Now
-                                        </a>
-                                    {% endif %}
-                                </div>
                             </div>
                         </div>
                     </div>
                 {% empty %}
-                    <div class="col-12 text-center"><h4>No Coupons Available</h4></div>
+                    <div class="col-12 text-center py-4">
+                        <h5 class="text-muted">No Coupons Available</h5>
+                    </div>
                 {% endfor %}
             </div>
         </div>
