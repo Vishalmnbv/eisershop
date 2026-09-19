@@ -1854,7 +1854,13 @@ class ConfirmOrderView(LoginRequiredMixin, View):
     template_name = "conformorder.html"
     def get(self, request, orderid):
         order = get_object_or_404(Order, orderid=orderid, user_id=request.user)
-        order.payment_status_display = order.paymentstatus
+        pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+        if order.orderstatus == "Cancelled":
+            order.payment_status_display = "Cancelled"
+        elif "COD" in pm or "CASH" in pm:
+            order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+        else:
+            order.payment_status_display = order.paymentstatus or "Paid"
         order_items = Orderitem.objects.filter(order_id=order)
         running_total = 0
         for item in order_items:
@@ -1873,6 +1879,7 @@ class ConfirmOrderView(LoginRequiredMixin, View):
             item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             running_total += item.calculated_subtotal
+            
         if order.coupon:
             coupon_code = order.coupon.code
             discount = order.coupon_discount
@@ -2103,7 +2110,13 @@ class MyOrdersView(LoginRequiredMixin, View):
         orders = Order.objects.filter(user_id=request.user).order_by("-date")
         category = Category.objects.all()
         for order in orders:
-            order.payment_status_display = order.paymentstatus
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+            else:
+                order.payment_status_display = order.paymentstatus or "Paid"
             if order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2430,11 +2443,13 @@ class AdminDashboardView(LoginRequiredMixin, View):
         for order in recent_orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            # Updated clean logic using model's own paymentstatus
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "discount", getattr(order, "coupon_discount", 0))
@@ -2571,10 +2586,13 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=customer, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2654,10 +2672,13 @@ class AdminOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2705,10 +2726,13 @@ class ProcessingOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2755,10 +2779,13 @@ class ShippedOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2805,10 +2832,13 @@ class AdminDeliveredOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2855,10 +2885,13 @@ class CancelledOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2905,10 +2938,13 @@ class AdminRevenueView(LoginRequiredMixin, View):
         for order in delivered_orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus
+                order.payment_status_display = order.paymentstatus or "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
