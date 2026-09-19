@@ -65,7 +65,7 @@
             </div>
         </div>
     </nav>
-    <div class="container-fluid px-4 py-4" style="min-height: 100vh;">
+    <div class="container-fluid px-4 py-4" style="background-color: #f3f3f3; min-height: 100vh;">
         <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4 p-3 bg-white rounded border-top border">
             <div>
                 <h4 class="fw-bold mb-1 d-flex align-items-center gap-2" style="color: #0f1111;">
@@ -76,101 +76,170 @@
             <div class="d-flex align-items-center gap-3">
                 <div class="d-flex align-items-center gap-2 px-3 py-2 rounded-2" style="background-color: #d4edda; border: 1px solid #c3e6cb;">
                     <span class="text-dark small fw-semibold">Total Sales:</span>
-                    <span class="fw-bold fs-6" style="color: #155724;">₹{{ current_month_sales|format_indian_currency }}</span>
+                    <span class="fw-bold fs-6" style="color: #155724;">₹{{ today_sales|format_indian_currency }}</span>
                 </div>
                 <a href="{% url 'admin_dashboard' %}" class="btn btn-outline-dark btn-sm rounded-1 fw-bold shadow-sm px-3" style="background-color: #febd69; border-color: #a88734; color: #111;">
                     <i class="fa-solid fa-arrow-left me-1"></i> Dashboard
                 </a>
             </div>
         </div>
-        <div class="card border-1 rounded-2 overflow-hidden mb-4">
+        <div class="card border-1 rounded-2 mb-4">
             <div class="card-header py-3 px-4 d-flex align-items-center justify-content-between" style="background-color: #232f3e; color: #fff;">
                 <h5 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size: 0.95rem;">
                     <i class="fa-solid fa-list-check text-warning"></i> Today's Transactions List
                 </h5>
-                <span class="badge bg-secondary text-light fw-bold">{{ today_orders_count }} Orders Found</span>
+                <span class="badge bg-secondary text-light fw-normal">{{ today_orders_count }} Orders Found</span>
             </div>
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table align-middle mb-0" style="font-size: 0.825rem;">
-                        <thead class="text-uppercase border-bottom" style="background-color: #eaedd1; color: #0f1111; font-size: 0.725rem; letter-spacing: 0.6px;">
-                            <tr>
-                                <th class="py-3 px-3">Order ID</th>
-                                <th class="py-3 px-3">Customer Name</th>
-                                <th class="py-3 px-3 text-center">Contact Email</th>
-                                <th class="py-3 px-3 text-center">Date & Time</th>
-                                <th class="py-3 px-3 text-center">Total Amount</th>
-                                <th class="py-3 px-3 text-center">Status</th>
-                                <th class="py-3 px-3 text-center">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="table-group-divider border-top-0">
-                            {% for order in today_orders %}
-                                <tr class="align-middle">
-                                    <td class="py-3 px-3">
-                                        <span class="fw-bold font-monospace fs-6 text-dark px-2 py-1">
-                                            #{{ order.amazon_order_id }}
-                                        </span>
-                                    </td>
-                                    <td class="py-3 px-3 fw-semibold text-secondary">
-                                        <i class="fa-solid fa-user  me-1"></i>{{ order.firstname }} {{ order.username }} {{ order.lastname }}
-                                    </td>
-                                    <td class="py-3 px-3 text-muted">
-                                        <i class="fa-regular fa-envelope me-1"></i>{{ order.email }}
-                                    </td>
-                                    <td class="py-3 px-3 text-center text-muted" style="font-size: 0.75rem;">
-                                        <i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y, h:i A" }}
-                                    </td>
-                                    <td class="py-3 px-3 text-end text-nowrap fw-bold text-success fs-6">
-                                        ₹{{ order.total|format_indian_currency }}
-                                    </td>
-                                    <td class="py-3 px-3 text-center text-nowrap">
-                                        {% if order.orderstatus == 'Delivered' %}
-                                            <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb;">
-                                                <i class="fa-solid fa-check me-1"></i>Delivered
+            <div class="card-body p-4">
+                {% for order in today_orders %}
+                    <div class="card mb-4">
+                        <div class="card-header py-3 px-4" style="background-color: #f8f9fa;">
+                            <div class="row align-items-center gy-2" style="font-size: 0.8rem;">
+                                <div class="col-6 col-md-2">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">ORDER PLACED</span>
+                                    <span class="fw-bold text-dark">
+                                        <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y, h:i A" }}
+                                    </span>                       
+                                </div>                        
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">Payment</span>
+                                    <div class="fw-semibold text-dark d-flex align-items-center flex-wrap gap-1" style="font-size:0.8rem;">
+                                        <span>{{ order.paymentmethod }}</span>                       
+                                        {% if order.payment_status_display == "Paid" %}
+                                            <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-circle-check me-1"></i> Paid
                                             </span>
-                                        {% elif order.orderstatus == 'Shipped' %}
-                                            <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #cce5ff; color: #004085; border: 1px solid #b8daff;">
-                                                <i class="fa-solid fa-truck me-1"></i>Shipped
-                                            </span>
-                                        {% elif order.orderstatus == 'Processing' %}
-                                            <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba;">
-                                                <i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing
-                                            </span>
-                                        {% elif order.orderstatus == 'Cancelled' %}
-                                            <span class="badge rounded-1 px-2.5 py-1.5" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb;">
-                                                <i class="fa-solid fa-xmark me-1"></i>Cancelled
+                                        {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
+                                            <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.62rem;">
+                                                <i class="fa-solid fa-ban me-1"></i> Cancelled
                                             </span>
                                         {% else %}
-                                            <span class="badge rounded-1 px-2.5 py-1.5 bg-light text-dark border">
-                                                {{ order.orderstatus }}
+                                            <span class="badge rounded-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8;">
+                                                <i class="fa-regular fa-clock me-1"></i>Pending
                                             </span>
                                         {% endif %}
-                                    </td>
-                                    <td class="py-3 px-3 text-center text-nowrap">
-                                        <div class="btn-group shadow-sm">
-                                            <a href="/admin/app1/order/{{ order.orderid }}/change/" class="btn btn-sm" style="background-color: #f0c14b; border-color: #a88734; color: #111;" title="Edit Order in Admin">
-                                                <i class="fa-solid fa-pen"></i>
-                                            </a>
+                                    </div>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <span class="text-muted d-block text-uppercase fw-semibold mb-1" style="font-size: 0.7rem; letter-spacing: 0.5px;">CUSTOMER</span>
+                                    <a href="{% url 'admin_customer_detail' order.user_id.id %}" class="d-flex align-items-center gap-2 text-decoration-none">
+                                        <div class="bg-dark text-warning rounded-circle d-flex align-items-center justify-content-center fw-bold flex-shrink-0" style="width: 32px; height: 32px; font-size: 0.8rem; background-color: #232f3e !important;">
+                                            {{ order.username|default:order.firstname|slice:":1"|upper }}
                                         </div>
-                                    </td>
-                                </tr>
-                            {% empty %}
-                                <tr>
-                                    <td colspan="7" class="text-center py-5">
-                                        <div class="py-4">
-                                            <div class="avatar-lg bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 75px; height: 75px; color: #6c757d;">
-                                                <i class="fa-solid fa-box-open fa-2x"></i>
+                                        <div class="text-truncate">
+                                            <span class="fw-bold text-dark text-uppercase d-block text-truncate" style="max-width: 190px; font-size: 0.8rem;">
+                                                {{ order.firstname }} {{ order.username }}
+                                            </span>
+                                            <small class="text-muted d-block text-truncate" style="max-width: 190px; font-size: 0.7rem;">
+                                                <i class="fa-regular fa-envelope me-1"></i>{{ order.email }}
+                                            </small>
+                                        </div>
+                                    </a>
+                                </div>
+                                <div class="col-12 col-md-2 text-md-end">
+                                    <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.7rem; letter-spacing: 0.5px;">ORDER ID</span>
+                                    <span class="fw-bold font-monospace text-decoration-none text-info">
+                                        #{{ order.amazon_order_id }}
+                                    </span>
+                                </div>
+                                <div class="col-12 col-md-2 text-md-end">
+                                    <a href="/admin/app1/order/{{ order.orderid }}/change/" class="btn btn-sm fw-bold shadow-sm" style="background-color: #f0c14b; border-color: #a88734; color: #111; font-size: 0.75rem;">
+                                        <i class="fa-solid fa-pen me-1"></i> Edit Order
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% for item in order.orderitem_set.all %}
+                                <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-3">
+                                    <div class="d-flex align-items-center me-3">
+                                        <div class="flex-shrink-0 me-3">
+                                            <div class="p-1 bg-white">
+                                                <img src="{{ item.productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain rounded" alt="{{ item.productview_id.producttitle }}">
                                             </div>
-                                            <h5 class="fw-bold text-dark mb-1">No Orders Placed Today</h5>
-                                            <p class="text-muted small mb-3">No transactions have been recorded for today yet.</p>
                                         </div>
-                                    </td>
-                                </tr>
+                                        <div>
+                                            <span class="fw-bold text-decoration-none d-block mb-1 text-truncate" style="color: darkblue; max-width: 500px; font-size: 0.85rem;" title="{{ item.productview_id.producttitle }}">
+                                                {{ item.productview_id.producttitle }}
+                                            </span>
+                                            <div class="text-muted small" style="font-size: 0.75rem;">
+                                                <span class="me-3">
+                                                    <strong>Price:</strong> ₹{{ item.calculated_unit_price|format_indian_currency }}
+                                                    <span class="mx-1">|</span>
+                                                </span>
+                                                <span class="me-3">
+                                                    <strong>Qty:</strong> {{ item.quantity }}
+                                                    <span class="mx-1">|</span>
+                                                </span>
+                                                {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
+                                                    <span class="me-3">
+                                                        <strong>Size:</strong> <span class="badge bg-light text-dark border">{{ item.selected_size }}</span>
+                                                        <span class="mx-1">|</span>
+                                                    </span>
+                                                {% endif %}
+                                                {% if item.productview_id.productcolor1 %}
+                                                    <span class="me-3">
+                                                        <strong>Color:</strong> {{ item.productview_id.productcolor1 }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <span class="badge rounded-1 px-3 py-2 fw-semibold border" style="font-size: 0.75rem; 
+                                            {% if order.orderstatus == 'Delivered' %}background-color: #d4edda; color: #155724; border-color: #c3e6cb;
+                                            {% elif order.orderstatus == 'Shipped' %}background-color: #d1ecf1; color: #0c5460; border-color: #bee5eb;
+                                            {% elif order.orderstatus == 'Processing' %}background-color: #cce5ff; color: #004085; border-color: #b8daff;
+                                            {% elif order.orderstatus == 'Cancelled' %}background-color: #f8d7da; color: #721c24; border-color: #f5c6cb;
+                                            {% else %}background-color: #fff3cd; color: #856404; border-color: #ffeeba;{% endif %}">
+                                            {{ order.orderstatus }}
+                                        </span>
+                                    </div>
+                                </div>
+                            {% empty %}
+                                <div class="p-3 text-center text-muted">No products found for this order.</div>
                             {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+
+                            <!-- Financial Breakdown Footer -->
+                            <div class="p-3 px-4 bg-light border-top">
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Subtotal</span>
+                                    <span>₹{{ order.calculated_subtotal|format_indian_currency }}</span>
+                                </div>
+                                {% if order.coupon_code_display and order.coupon_code_display != "None" %}
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Coupon ({{ order.coupon_code_display }})</span>
+                                    <span class="text-success">- ₹{{ order.coupon_discount_display|format_indian_currency }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="d-flex justify-content-between text-muted small py-1">
+                                    <span>Delivery Charges</span>
+                                    <span>
+                                        {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}
+                                            ₹{{ order.delivery_charge_display|format_indian_currency }}
+                                        {% else %}
+                                            Free
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.9rem;">
+                                    <span>Total</span>
+                                    <span>₹{{ order.calculated_total|format_indian_currency }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% empty %}
+                    <div class="text-center py-5">
+                        <div class="py-4">
+                            <div class="avatar-lg bg-light rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center shadow-sm" style="width: 75px; height: 75px; color: #ff9900;">
+                                <i class="fa-solid fa-box-open fa-2x"></i>
+                            </div>
+                            <h5 class="fw-bold text-dark mb-1">No Orders Placed Today</h5>
+                            <p class="text-muted small mb-0">There are currently no transactions recorded for today.</p>
+                        </div>
+                    </div>
+                {% endfor %}
             </div>
         </div>
     </div>

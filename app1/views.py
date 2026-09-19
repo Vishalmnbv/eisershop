@@ -3304,14 +3304,45 @@ def admin_coupons_view(request):
     context = {'coupons': coupons,}
     return render(request, 'admin_coupons.html', context)
 def admin_today_sales_view(request):
+    if not request.user.is_staff:
+        return redirect("login")
     today = timezone.now().date()
-    today_orders = Order.objects.filter(date__date=today).order_by('-date')
-    today_sales = sum(order.total for order in today_orders)
-    today_orders_count = today_orders.count()
+    today_orders = Order.objects.filter(date__date=today).prefetch_related("orderitem_set__productview_id").order_by('-date')
+    total_sales = 0
+    valid_orders_count = 0
+    for order in today_orders:
+        if order.orderstatus == "Cancelled":
+            continue
+        order_subtotal = 0
+        for item in order.orderitem_set.all():
+            prod = item.productview_id
+            unit_price = prod.productprice
+            item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+            if item_size:
+                s_clean = str(item_size).replace(" ", "").lower()
+                s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                if s1 and s1 == s_clean:
+                    unit_price = prod.productprice1 or prod.productprice
+                elif s2 and s2 == s_clean:
+                    unit_price = prod.productprice2 or prod.productprice
+                elif s3 and s3 == s_clean:
+                    unit_price = prod.productprice3 or prod.productprice
+                elif s0 and s0 == s_clean:
+                    unit_price = prod.productprice
+            item.calculated_subtotal = unit_price * item.quantity
+            order_subtotal += item.calculated_subtotal
+        delivery_charge = getattr(order, "delivery_charge", 0) or 0
+        discount = getattr(order, "coupon_discount", 0) or 0
+        order.calculated_total = (order_subtotal - discount + delivery_charge)
+        total_sales += order.calculated_total
+        valid_orders_count += 1
     context = {
         'today_orders': today_orders,
-        'today_sales': today_sales,
-        'today_orders_count': today_orders_count,
+        'today_sales': total_sales,
+        'today_orders_count': valid_orders_count,
     }
     return render(request, 'admin_today_sales.html', context)
 def admin_monthly_sales_view(request):
@@ -3319,15 +3350,48 @@ def admin_monthly_sales_view(request):
         return redirect("login")
     today = timezone.now().date()
     current_month_start = today.replace(day=1)
-    monthly_orders = Order.objects.filter(date__date__gte=current_month_start).order_by('-date')
-    current_month_sales = sum(order.total for order in monthly_orders.filter(orderstatus="Delivered"))
-    current_month_orders_count = monthly_orders.count()
+    monthly_orders = Order.objects.filter(date__date__gte=current_month_start).prefetch_related("orderitem_set__productview_id").order_by('-date')
+    current_month_sales = 0
     for order in monthly_orders:
         if order.user_id:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
         else:
             order.amazon_order_id = "00001"
+        pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+        if order.orderstatus == "Cancelled":
+            order.payment_status_display = "Cancelled"
+        elif "COD" in pm or "CASH" in pm:
+            order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+        else:
+            order.payment_status_display = "Paid"
+        order_subtotal = 0
+        for item in order.orderitem_set.all():
+            prod = item.productview_id
+            unit_price = prod.productprice
+            item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+            if item_size:
+                s_clean = str(item_size).replace(" ", "").lower()
+                s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                if s1 and s1 == s_clean:
+                    unit_price = prod.productprice1 or prod.productprice
+                elif s2 and s2 == s_clean:
+                    unit_price = prod.productprice2 or prod.productprice
+                elif s3 and s3 == s_clean:
+                    unit_price = prod.productprice3 or prod.productprice
+                elif s0 and s0 == s_clean:
+                    unit_price = prod.productprice
+            item.calculated_subtotal = unit_price * item.quantity
+            order_subtotal += item.calculated_subtotal
+        delivery_charge = getattr(order, "delivery_charge", 0) or 0
+        discount = getattr(order, "coupon_discount", 0) or 0
+        order.calculated_total = (order_subtotal - discount + delivery_charge)
+        if order.orderstatus != "Cancelled":
+            current_month_sales += order.calculated_total
+    current_month_orders_count = monthly_orders.count()
     context = {
         'monthly_orders': monthly_orders,
         'current_month_sales': current_month_sales,
