@@ -85,7 +85,6 @@
                         <small class="text-muted">Payment Method</small>
                         <h6 class="fw-bold d-flex align-items-center flex-wrap gap-2">
                             <span>{{ order.paymentmethod }}</span>
-                            
                             {% if order.payment_status_display == "Paid" or order.paymentmethod == "UPI" or order.paymentmethod == "upi" %}
                                 <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size:0.62rem;">
                                     <i class="fa-solid fa-circle-check me-1"></i> Paid

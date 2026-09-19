@@ -100,7 +100,7 @@
                                 <th class="py-3 px-3">Customer Name</th>
                                 <th class="py-3 px-3 text-center">Contact Email</th>
                                 <th class="py-3 px-3 text-center">Date & Time</th>
-                                <th class="py-3 px-3 text-end">Total Amount</th>
+                                <th class="py-3 px-3 text-center">Total Amount</th>
                                 <th class="py-3 px-3 text-center">Status</th>
                                 <th class="py-3 px-3 text-center">Actions</th>
                             </tr>
@@ -114,13 +114,13 @@
                                         </span>
                                     </td>
                                     <td class="py-3 px-3 fw-semibold text-secondary">
-                                        {{ order.firstname }} {{ order.username }} {{ order.lastname }}                                    
+                                        <i class="fa-solid fa-user me-1"></i>{{ order.firstname }} {{ order.username }} {{ order.lastname }}                                    
                                     </td>
                                     <td class="py-3 px-3 text-center">
-                                        {{ order.email }}
+                                        <i class="fa-regular fa-envelope text-dark me-1"></i>{{ order.email }}
                                     </td>
                                     <td class="py-3 px-3 text-center text-muted" style="font-size: 0.75rem;">
-                                        {{ order.date|date:"d M Y, h:i A" }}
+                                        <i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y, h:i A" }}
                                     </td>
                                     <td class="py-3 px-3 text-center text-nowrap fw-bold text-success fs-6">
                                         ₹{{ order.total|format_indian_currency }}

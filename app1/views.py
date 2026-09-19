@@ -1854,11 +1854,7 @@ class ConfirmOrderView(LoginRequiredMixin, View):
     template_name = "conformorder.html"
     def get(self, request, orderid):
         order = get_object_or_404(Order, orderid=orderid, user_id=request.user)
-        payment_method_str = str(getattr(order, 'paymentmethod', '')).strip().upper()
-        if payment_method_str == 'UPI':
-            order.payment_status_display = "Paid"
-        else:
-            order.payment_status_display = getattr(order, 'payment_status', 'Pending')
+        order.payment_status_display = order.paymentstatus
         order_items = Orderitem.objects.filter(order_id=order)
         running_total = 0
         for item in order_items:
@@ -2058,22 +2054,18 @@ class ViewBillView(LoginRequiredMixin, View):
     template_name = "viewbill.html"
     def get(self, request, orderid):
         order = get_object_or_404(Order, orderid=orderid, user_id=request.user)
-        payment_method_str = str(getattr(order, 'paymentmethod', '')).strip().upper()
-        if payment_method_str == 'UPI':
-            order.payment_status_display = "Paid"
-        else:
-            order.payment_status_display = getattr(order, 'payment_status', 'Pending')
+        order.payment_status_display = order.paymentstatus
         orderitems = Orderitem.objects.filter(order_id=order)
         running_total = 0
         for item in orderitems:
             prod = item.productview_id
-            unit_price = prod.productprice  
-            if hasattr(item, 'selected_size') and item.selected_size:
+            unit_price = prod.productprice
+            if hasattr(item, "selected_size") and item.selected_size:
                 size_clean = str(item.selected_size).replace(" ", "").lower()
-                s0 = str(prod.productsize).replace(" ", "").lower() if prod.productsize else ""
-                s1 = str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else ""
-                s2 = str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else ""
-                s3 = str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else ""
+                s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
                 if s1 and s1 == size_clean:
                     unit_price = prod.productprice1 or prod.productprice
                 elif s2 and s2 == size_clean:
@@ -2081,7 +2073,7 @@ class ViewBillView(LoginRequiredMixin, View):
                 elif s3 and s3 == size_clean:
                     unit_price = prod.productprice3 or prod.productprice
                 elif s0 and s0 == size_clean:
-                    unit_price = prod.productprice    
+                    unit_price = prod.productprice
             item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             running_total += item.calculated_subtotal
@@ -2096,78 +2088,68 @@ class ViewBillView(LoginRequiredMixin, View):
         order.calculated_total = final_total
         user_order_no = Order.objects.filter(user_id=request.user, orderid__lte=order.orderid).count()
         order.amazon_order_id = f"{user_order_no:05d}"
-        context = {
-            "order": order,
-            "orderitems": orderitems,
-            "subtotal": running_total,
-            "coupon_code": coupon_code,
-            "discount": discount,
-        }
+        context = {"order": order, "orderitems": orderitems}
         return render(request, self.template_name, context)
 class MyOrdersView(LoginRequiredMixin, View):
-  login_url = "login"
-  template_name = "myorders.html"
-  def get(self, request):
-    orders = Order.objects.filter(user_id=request.user).order_by("-date")
-    category = Category.objects.all()
-    for order in orders:
-      pm_method = str(getattr(order, "paymentmethod", "")).strip().lower()
-      if pm_method == "upi" or (order.paymentmethod == "Cash on Delivery" and order.orderstatus == "Delivered"):
-        order.payment_status_display = "Paid"
-      else:
-        order.payment_status_display = "Pending"
-      if order.coupon:
-        order.coupon_code_display = order.coupon.code
-        order.coupon_discount_display = getattr(order, "coupon_discount", 0)
-      else:
-        order.coupon_code_display = None
-        order.coupon_discount_display = 0
-      if order.date:
-        order.return_last_date = order.date + timedelta(days=7)
-      else:
-        order.return_last_date = None
-      order_items = Orderitem.objects.filter(order_id=order)
-      running_total = 0
-      for item in order_items:
-        prod = item.productview_id
-        unit_price = prod.productprice
-        item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
-        if item_size:
-          s_clean = str(item_size).replace(" ", "").lower()
-          s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
-          s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
-          s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
-          s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
-          if s1 and s1 == s_clean:
-            unit_price = prod.productprice1 or prod.productprice
-          elif s2 and s2 == s_clean:
-            unit_price = prod.productprice2 or prod.productprice
-          elif s3 and s3 == s_clean:
-            unit_price = prod.productprice3 or prod.productprice
-          elif s0 and s0 == s_clean:
-            unit_price = prod.productprice
-        item.calculated_unit_price = unit_price
-        item.calculated_subtotal = unit_price * item.quantity
-        running_total += item.calculated_subtotal
-        existing_return = ReturnRequest.objects.filter(orderitem=item).first()
-        if existing_return:
-          item.has_return_request = True
-          item.return_status = existing_return.status
-          item.return_date = (
-              getattr(existing_return, "updated_at", None)
-              or getattr(existing_return, "created_at", None)
-              or getattr(existing_return, "date", None)
-          )
-        else:
-          item.has_return_request = False
-          item.return_status = None
-          item.return_date = None
-      discount = getattr(order, "coupon_discount", 0) if order.coupon else 0
-      order.calculated_subtotal = running_total
-      order.calculated_total = running_total - discount
-      order.order_items = order_items
-    context = {"orders": orders, "category": category}
-    return render(request, self.template_name, context)
+    login_url = "login"
+    template_name = "myorders.html"
+    def get(self, request):
+        orders = Order.objects.filter(user_id=request.user).order_by("-date")
+        category = Category.objects.all()
+        for order in orders:
+            order.payment_status_display = order.paymentstatus
+            if order.coupon:
+                order.coupon_code_display = order.coupon.code
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+            else:
+                order.coupon_code_display = None
+                order.coupon_discount_display = 0
+            if order.date:
+                order.return_last_date = order.date + timedelta(days=7)
+            else:
+                order.return_last_date = None
+            order_items = Orderitem.objects.filter(order_id=order)
+            running_total = 0
+            for item in order_items:
+                prod = item.productview_id
+                unit_price = prod.productprice
+                item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                if item_size:
+                    s_clean = str(item_size).replace(" ", "").lower()
+                    s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                    s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                    s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                    s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                    if s1 and s1 == s_clean:
+                        unit_price = prod.productprice1 or prod.productprice
+                    elif s2 and s2 == s_clean:
+                        unit_price = prod.productprice2 or prod.productprice
+                    elif s3 and s3 == s_clean:
+                        unit_price = prod.productprice3 or prod.productprice
+                    elif s0 and s0 == s_clean:
+                        unit_price = prod.productprice
+                item.calculated_unit_price = unit_price
+                item.calculated_subtotal = unit_price * item.quantity
+                running_total += item.calculated_subtotal
+                existing_return = ReturnRequest.objects.filter(orderitem=item).first()
+                if existing_return:
+                    item.has_return_request = True
+                    item.return_status = existing_return.status
+                    item.return_date = (
+                        getattr(existing_return, "updated_at", None)
+                        or getattr(existing_return, "created_at", None)
+                        or getattr(existing_return, "date", None)
+                    )
+                else:
+                    item.has_return_request = False
+                    item.return_status = None
+                    item.return_date = None
+            discount = getattr(order, "coupon_discount", 0) if order.coupon else 0
+            order.calculated_subtotal = running_total
+            order.calculated_total = running_total - discount
+            order.order_items = order_items
+        context = {"orders": orders, "category": category}
+        return render(request, self.template_name, context)
 class UpdateOrderStatusView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, orderid, status):
@@ -2442,32 +2424,11 @@ class AdminDashboardView(LoginRequiredMixin, View):
         for order in recent_orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (
-                str(order.paymentmethod).upper()
-                if getattr(order, "paymentmethod", None)
-                else ""
-            )
-            actual_payment_status = (
-                str(getattr(order, "payment_status", "")).title()
-                if getattr(order, "payment_status", None)
-                else ""
-            )
+            # Updated clean logic using model's own paymentstatus
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
-            elif actual_payment_status in [
-                "Cancelled",
-                "Failed",
-                "Refunded",
-                "Pending",
-            ]:
-                order.payment_status_display = actual_payment_status
-            elif "COD" in pm or "CASH" in pm:
-                if order.orderstatus == "Delivered":
-                    order.payment_status_display = "Paid"
-                else:
-                    order.payment_status_display = "Pending"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "discount", getattr(order, "coupon_discount", 0))
@@ -2604,42 +2565,16 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=customer, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (
-                str(order.paymentmethod).upper()
-                if getattr(order, "paymentmethod", None)
-                else ""
-            )
-            actual_payment_status = (
-                str(getattr(order, "payment_status", "")).title()
-                if getattr(order, "payment_status", None)
-                else ""
-            )
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
-            elif actual_payment_status in [
-                "Cancelled",
-                "Failed",
-                "Refunded",
-                "Pending",
-            ]:
-                order.payment_status_display = actual_payment_status
-            elif "COD" in pm or "CASH" in pm:
-                if order.orderstatus == "Delivered":
-                    order.payment_status_display = "Paid"
-                else:
-                    order.payment_status_display = "Pending"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
-                order.coupon_discount_display = getattr(
-                    order, "coupon_discount", 0
-                )
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
             elif hasattr(order, "coupon_code") and order.coupon_code:
                 order.coupon_code_display = order.coupon_code
-                order.coupon_discount_display = getattr(
-                    order, "coupon_discount", 0
-                )
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
             else:
                 order.coupon_code_display = None
                 order.coupon_discount_display = 0
@@ -2647,31 +2582,13 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
             for item in order.orderitem_set.all():
                 prod = item.productview_id
                 unit_price = prod.productprice
-                item_size = getattr(item, "selected_size", None) or getattr(
-                    item, "size", None
-                )
+                item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
                 if item_size:
                     s_clean = str(item_size).replace(" ", "").lower()
-                    s0 = (
-                        str(prod.productsize).replace(" ", "").lower()
-                        if prod.productsize
-                        else ""
-                    )
-                    s1 = (
-                        str(prod.productsize1).replace(" ", "").lower()
-                        if prod.productsize1
-                        else ""
-                    )
-                    s2 = (
-                        str(prod.productsize2).replace(" ", "").lower()
-                        if prod.productsize2
-                        else ""
-                    )
-                    s3 = (
-                        str(prod.productsize3).replace(" ", "").lower()
-                        if prod.productsize3
-                        else ""
-                    )
+                    s0 = ( str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                    s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                    s2 = ( str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                    s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
                     if s1 and s1 == s_clean:
                         unit_price = prod.productprice1 or prod.productprice
                     elif s2 and s2 == s_clean:
@@ -2731,32 +2648,10 @@ class AdminOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (
-                str(order.paymentmethod).upper()
-                if getattr(order, "paymentmethod", None)
-                else ""
-            )
-            actual_payment_status = (
-                str(getattr(order, "payment_status", "")).title()
-                if getattr(order, "payment_status", None)
-                else ""
-            )
             if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
-            elif actual_payment_status in [
-                "Cancelled",
-                "Failed",
-                "Refunded",
-                "Pending",
-            ]:
-                order.payment_status_display = actual_payment_status
-            elif "COD" in pm or "CASH" in pm:
-                if order.orderstatus == "Delivered":
-                    order.payment_status_display = "Paid"
-                else:
-                    order.payment_status_display = "Pending"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2773,26 +2668,10 @@ class AdminOrdersView(LoginRequiredMixin, View):
                 item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
                 if item_size:
                     s_clean = str(item_size).replace(" ", "").lower()
-                    s0 = (
-                        str(prod.productsize).replace(" ", "").lower()
-                        if prod.productsize
-                        else ""
-                    )
-                    s1 = (
-                        str(prod.productsize1).replace(" ", "").lower()
-                        if prod.productsize1
-                        else ""
-                    )
-                    s2 = (
-                        str(prod.productsize2).replace(" ", "").lower()
-                        if prod.productsize2
-                        else ""
-                    )
-                    s3 = (
-                        str(prod.productsize3).replace(" ", "").lower()
-                        if prod.productsize3
-                        else ""
-                    )
+                    s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                    s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                    s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                    s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
                     if s1 and s1 == s_clean:
                         unit_price = prod.productprice1 or prod.productprice
                     elif s2 and s2 == s_clean:
@@ -2820,11 +2699,10 @@ class ProcessingOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
-            if "COD" in pm or "CASH" in pm:
-                order.payment_status_display = ("Paid" if order.orderstatus == "Delivered" else "Pending")
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2871,11 +2749,10 @@ class ShippedOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else "")
-            if "COD" in pm or "CASH" in pm:
-                order.payment_status_display = ("Paid" if order.orderstatus == "Delivered" else "Pending")
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2922,11 +2799,10 @@ class AdminDeliveredOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else "")
-            if "COD" in pm or "CASH" in pm:
-                order.payment_status_display = ("Paid" if order.orderstatus == "Delivered" else "Pending")
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2973,11 +2849,10 @@ class CancelledOrdersView(LoginRequiredMixin, View):
         for order in orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
-            if "COD" in pm or "CASH" in pm:
+            if order.orderstatus == "Cancelled":
                 order.payment_status_display = "Cancelled"
             else:
-                order.payment_status_display = "Refund Pending / Processed"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -3024,11 +2899,10 @@ class AdminRevenueView(LoginRequiredMixin, View):
         for order in delivered_orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
-            pm = (str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else "")
-            if "COD" in pm or "CASH" in pm:
-                order.payment_status_display = ("Paid" if order.orderstatus == "Delivered" else "Pending")
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
             else:
-                order.payment_status_display = "Paid"
+                order.payment_status_display = order.paymentstatus
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -3066,7 +2940,7 @@ class AdminRevenueView(LoginRequiredMixin, View):
             discount = order.coupon_discount_display or 0
             order.calculated_total = order_subtotal - discount + delivery_charge
         total_revenue = sum(order.calculated_total for order in delivered_orders)
-        context = {"orders": delivered_orders,"total_revenue": total_revenue}
+        context = {"orders": delivered_orders, "total_revenue": total_revenue}
         return render(request, "admin_revenue.html", context)
 class AdminReviewsView(LoginRequiredMixin, View):
     login_url = "login"

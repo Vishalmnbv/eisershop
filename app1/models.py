@@ -254,6 +254,8 @@ class Order(models.Model):
                 if original.orderstatus != 'Delivered' and self.orderstatus == 'Delivered':
                     if not self.delivered_at:
                         self.delivered_at = timezone.now()
+                    if str(self.paymentmethod).strip().lower() == 'cash on delivery' and self.paymentstatus == 'Pending':
+                        self.paymentstatus = 'Paid'
                     self.send_delivery_email()
                 if original.orderstatus != 'Cancelled' and self.orderstatus == 'Cancelled':
                     if not self.cancelled_at:
