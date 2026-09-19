@@ -3333,7 +3333,6 @@ def admin_today_sales_view(request):
         else:
             order.coupon_code_display = None
             order.coupon_discount_display = 0
-
         if order.orderstatus == "Cancelled":
             continue
         order_subtotal = 0
@@ -3423,14 +3422,14 @@ def admin_monthly_sales_view(request):
                     unit_price = prod.productprice3 or prod.productprice
                 elif s0 and s0 == s_clean:
                     unit_price = prod.productprice
-            
             item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             order_subtotal += item.calculated_subtotal
         order.calculated_subtotal = order_subtotal
         delivery_charge = getattr(order, "delivery_charge", 0) or 0
         order.delivery_charge_display = delivery_charge
-        discount = order.coupon_discount_display or `0`
+        # Fixed syntax error here (removed backticks from 0)
+        discount = order.coupon_discount_display or 0
         order.calculated_total = (order_subtotal - discount + delivery_charge)
         current_month_sales += order.calculated_total
         valid_orders_count += 1
