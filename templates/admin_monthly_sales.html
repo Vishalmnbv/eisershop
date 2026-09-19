@@ -1,4 +1,5 @@
 {% load static %}
+{% load humanize %}
 {% load indian_formatting %}
 <!DOCTYPE html>
 <html lang="en">
@@ -115,14 +116,14 @@
                                     <td class="py-3 px-3 fw-semibold text-secondary">
                                         {{ order.firstname }} {{ order.username }} {{ order.lastname }}                                    
                                     </td>
-                                    <td class="py-3 px-3 text-muted">
+                                    <td class="py-3 px-3 text-center">
                                         {{ order.email }}
                                     </td>
                                     <td class="py-3 px-3 text-center text-muted" style="font-size: 0.75rem;">
                                         {{ order.date|date:"d M Y, h:i A" }}
                                     </td>
-                                    <td class="py-3 px-3 text-end text-nowrap fw-bold text-success fs-6">
-                                        ₹{{ order.total }}
+                                    <td class="py-3 px-3 text-center text-nowrap fw-bold text-success fs-6">
+                                        ₹{{ order.total|format_indian_currency }}
                                     </td>
                                     <td class="py-3 px-3 text-center text-nowrap">
                                         {% if order.orderstatus == 'Delivered' %}

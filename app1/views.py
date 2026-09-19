@@ -1782,7 +1782,7 @@ class CheckoutView(LoginRequiredMixin, View):
                         unit_price = product.productprice
                 subtotal += unit_price * item.quantity
             else:
-                subtotal += item.subtotal() if hasattr(item, "subtotal") else 0     
+                subtotal += item.subtotal() if hasattr(item, "subtotal") else 0    
         deliverycharge = 30 if 0 < subtotal < 300 else 0
         coupon_code = request.session.get("coupon_code", "")
         discount = request.session.get("coupon_discount", 0)
@@ -1834,6 +1834,12 @@ class CheckoutView(LoginRequiredMixin, View):
                 if product:
                     product.sold_count += item.quantity  
                     product.save()
+            profile, created = Profile.objects.get_or_create(user=request.user)
+            if address:
+                profile.delivery_address = address
+            if number:
+                profile.mobile = number
+            profile.save()
             cartdata.delete()
             request.session["order_just_placed_id"] = order.orderid
             messages.info(request, "Please review your order details before placing the order.")
@@ -2099,61 +2105,69 @@ class ViewBillView(LoginRequiredMixin, View):
         }
         return render(request, self.template_name, context)
 class MyOrdersView(LoginRequiredMixin, View):
-    login_url = "login"
-    template_name = "myorders.html"
-    def get(self, request):
-        orders = Order.objects.filter(user_id=request.user).order_by("-date")
-        category = Category.objects.all()
-        for order in orders:
-            pm_method = str(getattr(order, 'paymentmethod', '')).strip().lower()
-            if pm_method == 'upi' or (order.paymentmethod == "Cash on Delivery" and order.orderstatus == "Delivered"):
-                order.payment_status_display = "Paid"
-            else:
-                order.payment_status_display = "Pending"
-            if order.coupon:
-                order.coupon_code_display = order.coupon.code
-                order.coupon_discount_display = getattr(order, 'coupon_discount', 0)
-            else:
-                order.coupon_code_display = None
-                order.coupon_discount_display = 0
-            order_items = Orderitem.objects.filter(order_id=order)
-            running_total = 0
-            for item in order_items:
-                prod = item.productview_id
-                unit_price = prod.productprice
-                item_size = getattr(item, 'selected_size', None) or getattr(item, 'size', None)
-                if item_size:
-                    s_clean = str(item_size).replace(" ", "").lower()
-                    s0 = str(prod.productsize).replace(" ", "").lower() if prod.productsize else ""
-                    s1 = str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else ""
-                    s2 = str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else ""
-                    s3 = str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else ""
-                    if s1 and s1 == s_clean:
-                        unit_price = prod.productprice1 or prod.productprice
-                    elif s2 and s2 == s_clean:
-                        unit_price = prod.productprice2 or prod.productprice
-                    elif s3 and s3 == s_clean:
-                        unit_price = prod.productprice3 or prod.productprice
-                    elif s0 and s0 == s_clean:
-                        unit_price = prod.productprice    
-                item.calculated_unit_price = unit_price
-                item.calculated_subtotal = unit_price * item.quantity
-                running_total += item.calculated_subtotal
-                existing_return = ReturnRequest.objects.filter(orderitem=item).first()
-                if existing_return:
-                    item.has_return_request = True
-                    item.return_status = existing_return.status
-                    item.return_date = (getattr(existing_return, 'updated_at', None) or getattr(existing_return, 'created_at', None) or getattr(existing_return, 'date', None))
-                else:
-                    item.has_return_request = False
-                    item.return_status = None
-                    item.return_date = None
-            discount = getattr(order, 'coupon_discount', 0) if order.coupon else 0
-            order.calculated_subtotal = running_total
-            order.calculated_total = running_total - discount
-            order.order_items = order_items
-        context = {"orders": orders, "category": category}
-        return render(request, self.template_name, context)
+  login_url = "login"
+  template_name = "myorders.html"
+  def get(self, request):
+    orders = Order.objects.filter(user_id=request.user).order_by("-date")
+    category = Category.objects.all()
+    for order in orders:
+      pm_method = str(getattr(order, "paymentmethod", "")).strip().lower()
+      if pm_method == "upi" or (order.paymentmethod == "Cash on Delivery" and order.orderstatus == "Delivered"):
+        order.payment_status_display = "Paid"
+      else:
+        order.payment_status_display = "Pending"
+      if order.coupon:
+        order.coupon_code_display = order.coupon.code
+        order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+      else:
+        order.coupon_code_display = None
+        order.coupon_discount_display = 0
+      if order.date:
+        order.return_last_date = order.date + timedelta(days=7)
+      else:
+        order.return_last_date = None
+      order_items = Orderitem.objects.filter(order_id=order)
+      running_total = 0
+      for item in order_items:
+        prod = item.productview_id
+        unit_price = prod.productprice
+        item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+        if item_size:
+          s_clean = str(item_size).replace(" ", "").lower()
+          s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+          s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+          s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+          s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+          if s1 and s1 == s_clean:
+            unit_price = prod.productprice1 or prod.productprice
+          elif s2 and s2 == s_clean:
+            unit_price = prod.productprice2 or prod.productprice
+          elif s3 and s3 == s_clean:
+            unit_price = prod.productprice3 or prod.productprice
+          elif s0 and s0 == s_clean:
+            unit_price = prod.productprice
+        item.calculated_unit_price = unit_price
+        item.calculated_subtotal = unit_price * item.quantity
+        running_total += item.calculated_subtotal
+        existing_return = ReturnRequest.objects.filter(orderitem=item).first()
+        if existing_return:
+          item.has_return_request = True
+          item.return_status = existing_return.status
+          item.return_date = (
+              getattr(existing_return, "updated_at", None)
+              or getattr(existing_return, "created_at", None)
+              or getattr(existing_return, "date", None)
+          )
+        else:
+          item.has_return_request = False
+          item.return_status = None
+          item.return_date = None
+      discount = getattr(order, "coupon_discount", 0) if order.coupon else 0
+      order.calculated_subtotal = running_total
+      order.calculated_total = running_total - discount
+      order.order_items = order_items
+    context = {"orders": orders, "category": category}
+    return render(request, self.template_name, context)
 class UpdateOrderStatusView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, orderid, status):
@@ -2357,30 +2371,40 @@ class AdminDashboardView(LoginRequiredMixin, View):
         shipped_orders = Order.objects.filter(orderstatus="Shipped").count()
         cancelled_orders = Order.objects.filter(orderstatus="Cancelled").count()
         total_revenue = Order.objects.filter(orderstatus="Delivered").aggregate(total=Coalesce(Sum("total"), 0))["total"]
-        today_sales = Order.objects.filter(orderstatus="Delivered", date__date=date.today()).aggregate(total=Coalesce(Sum("total"), 0))["total"]
-        low_stock_products = Productview.objects.filter(stock__lte=5)[:10] 
-        out_of_stock_count = Productview.objects.filter(in_stock=False).count()
-        low_stock_count = Productview.objects.filter(stock__lte=5).count()
-        coupons = Coupon.objects.all().order_by('-couponid')
+        # Today Sales
         today = timezone.now().date()
         today_orders = Order.objects.filter(date__date=today)
         today_sales = sum(order.total for order in today_orders)
         today_orders_count = today_orders.count()
-        monthly_sales = (Order.objects.filter(orderstatus="Delivered").annotate(month=TruncMonth("date")).values("month").annotate(total=Sum("total")).order_by("month"))
+        # Month Sales
+        current_month_start = today.replace(day=1)
+        monthly_orders_query = Order.objects.filter(date__date__gte=current_month_start)
+        current_month_orders_count = monthly_orders_query.count()
+        current_month_sales = sum(order.total for order in monthly_orders_query.filter(orderstatus="Delivered"))
+        # Chart ke liye monthly sales data
+        monthly_sales = (
+            Order.objects.filter(orderstatus="Delivered")
+            .annotate(month=TruncMonth("date"))
+            .values("month")
+            .annotate(total=Sum("total"))
+            .order_by("month")
+        )
         sales_labels = [sale["month"].strftime("%b") for sale in monthly_sales]
         sales_data = [sale["total"] for sale in monthly_sales]
-        #  Monthly Order
-        monthly_orders = (
+        # Chart ke liye monthly orders data
+        monthly_orders_chart = (
             Order.objects.all()
             .annotate(month=TruncMonth("date"))
             .values("month")
             .annotate(total_orders=Count("orderid")) 
             .order_by("month")
         )
-        orders_data = [item["total_orders"] for item in monthly_orders]
+        orders_data = [item["total_orders"] for item in monthly_orders_chart]
         return_orders = ReturnRequest.objects.count()
         refunded_orders = ReturnRequest.objects.filter(status="Refunded").count()
-        recent_returns = ReturnRequest.objects.select_related("order","orderitem","orderitem__productview_id","order__user_id","delivery_agent",).order_by("-created_at")
+        recent_returns = ReturnRequest.objects.select_related(
+            "order", "orderitem", "orderitem__productview_id", "order__user_id", "delivery_agent"
+        ).order_by("-created_at")
         for r in recent_returns:
             if r.order and r.order.user_id:
                 user_order_no = Order.objects.filter(user_id=r.order.user_id, orderid__lte=r.order.orderid).count()
@@ -2390,7 +2414,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             if r.orderitem:
                 unit_price, refund_total = get_calculated_price(r.orderitem)
                 r.calculated_unit_price = unit_price
-                r.calculated_refund = refund_total
+                r.calculated_refund = refund_total   
         try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
@@ -2410,7 +2434,11 @@ class AdminDashboardView(LoginRequiredMixin, View):
         total_reviews = Review.objects.count()
         review_products = Review.objects.values("product").distinct().count()
         pickup_agents = PickupAgent.objects.filter(is_active=True)
-        recent_orders = (Order.objects.select_related("user_id").prefetch_related("orderitem_set__productview_id", "orderitem_set__returnrequest").order_by("-orderid")[:10])
+        recent_orders = (
+            Order.objects.select_related("user_id")
+            .prefetch_related("orderitem_set__productview_id", "orderitem_set__returnrequest")
+            .order_by("-orderid")[:10]
+        )
         for order in recent_orders:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
             order.amazon_order_id = f"{user_order_no:05d}"
@@ -2448,14 +2476,12 @@ class AdminDashboardView(LoginRequiredMixin, View):
                 order.coupon_discount_display = getattr(order, "discount", getattr(order, "coupon_discount", 0))
             else:
                 order.coupon_code_display = None
-                order.coupon_discount_display = getattr(order, "discount", 0)
+                order.coupon_discount_display = getattr(order, "discount", 0)  
             order_subtotal = 0
             for item in order.orderitem_set.all():
                 prod = item.productview_id
                 unit_price = prod.productprice
-                item_size = getattr(item, "selected_size", None) or getattr(
-                    item, "size", None
-                )
+                item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
                 if item_size:
                     s_clean = str(item_size).replace(" ", "").lower()
                     s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
@@ -2502,6 +2528,10 @@ class AdminDashboardView(LoginRequiredMixin, View):
             order.delivery_charge_display = delivery_charge
             discount = order.coupon_discount_display or 0
             order.calculated_total = (order_subtotal - discount + delivery_charge)
+        low_stock_products = Productview.objects.filter(stock__lte=5)[:10] 
+        out_of_stock_count = Productview.objects.filter(in_stock=False).count()
+        low_stock_count = Productview.objects.filter(stock__lte=5).count()
+        coupons = Coupon.objects.all().order_by('-couponid')
         context = {
             "total_products": total_products,
             "total_orders": total_orders,
@@ -2513,9 +2543,9 @@ class AdminDashboardView(LoginRequiredMixin, View):
             "shipped_orders": shipped_orders,
             "cancelled_orders": cancelled_orders,
             "total_revenue": total_revenue,
-            "today_sales": today_sales,
             "sales_labels": sales_labels,
             "sales_data": sales_data,
+            "orders_data": orders_data,
             "return_orders": return_orders,
             "refunded_orders": refunded_orders,
             "recent_returns": recent_returns,
@@ -2527,13 +2557,14 @@ class AdminDashboardView(LoginRequiredMixin, View):
             "review_products": review_products,
             "pickup_agents": pickup_agents,
             "recent_orders": recent_orders,
-            'low_stock_products': low_stock_products,
-            'out_of_stock_count': out_of_stock_count,
-            'low_stock_count': low_stock_count,
-            'coupons': coupons,
-            'today_sales': today_sales,
-            'today_orders_count': today_orders_count,
-            "orders_data": orders_data,
+            "low_stock_products": low_stock_products,
+            "out_of_stock_count": out_of_stock_count,
+            "low_stock_count": low_stock_count,
+            "coupons": coupons,
+            "today_sales": today_sales,
+            "today_orders_count": today_orders_count,
+            "current_month_sales": current_month_sales,
+            "current_month_orders_count": current_month_orders_count,
         }
         return render(request, "admin_dashboard.html", context)
 class AdminUsersView(LoginRequiredMixin, View):
@@ -3368,11 +3399,19 @@ def admin_today_sales_view(request):
     }
     return render(request, 'admin_today_sales.html', context)
 def admin_monthly_sales_view(request):
+    if not request.user.is_staff:
+        return redirect("login")
     today = timezone.now().date()
     current_month_start = today.replace(day=1)
     monthly_orders = Order.objects.filter(date__date__gte=current_month_start).order_by('-date')
     current_month_sales = sum(order.total for order in monthly_orders.filter(orderstatus="Delivered"))
     current_month_orders_count = monthly_orders.count()
+    for order in monthly_orders:
+        if order.user_id:
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+        else:
+            order.amazon_order_id = "00001"
     context = {
         'monthly_orders': monthly_orders,
         'current_month_sales': current_month_sales,

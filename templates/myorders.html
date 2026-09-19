@@ -103,7 +103,7 @@
                 {% for order in orders %}
                     <div class="amazon-order-card w-100 mb-4 border rounded bg-white overflow-hidden">
                         <div class="amazon-card-header p-3 border-bottom bg-light">
-                            <div class="row g-3">                            
+                            <div class="row g-3">                           
                                 <div class="col-6 col-md-3">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Order Placed</small>
                                     <span class="fw-bold text-dark d-block mt-1" style="font-size: 0.85rem;"><i class="fa-regular fa-calendar me-1 text-secondary"></i>{{ order.date|date:"d M Y" }}</span>
@@ -129,7 +129,7 @@
                                             <span class="text-success">Free</span>
                                         {% endif %}
                                     </span>
-                                </div>                        
+                                </div>                       
                                 <div class="col-6 col-md-3 pt-2 border-top">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Total</small>
                                     <span class="fw-bold text-dark d-block mt-1" style="font-size: 0.85rem;">₹{{ order.calculated_total|format_indian_currency }}</span>
@@ -146,7 +146,7 @@
                                             <span class="badge ms-1 px-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8; font-size: 0.60rem;">Pending</span>
                                         {% endif %}
                                     </span>
-                                </div>                            
+                                </div>                        
                                 <div class="col-6 col-md-3 pt-2 border-top">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Ship To</small>
                                     <span class="fw-semibold text-dark d-block mt-1 text-truncate" title="{{ order.firstname }} {{ order.lastname }}" style="font-size: 0.85rem;">
@@ -236,7 +236,7 @@
                                                     {% csrf_token %}
                                                     <input type="hidden" name="selected_size" value="{{ item.selected_size }}">
                                                     <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" style="background-color: #ffd814; border-color: #fcd200;"><i class="fa-solid fa-cart-shopping me-1"></i>Buy it Again</button>
-                                                </form>                                                        
+                                                </form>                                                                             
                                                 {% if item.has_return_request %}
                                                     <div class="badge {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}bg-success text-white{% elif item.return_status == 'Rejected' %}bg-danger text-white{% else %}bg-info text-dark{% endif %} px-3 py-2 fs-6 d-inline-flex align-items-center gap-1 shadow-sm">
                                                         <i class="fa-solid fa-rotate-left"></i>
@@ -253,7 +253,7 @@
                                                         </div>
                                                     </div>
                                                     <a href="{% url 'return_order' item.orderitemid %}" id="returnBtn{{ item.orderitemid }}" class="btn btn-secondary btn-sm px-3">
-                                                        <i class="fa-solid fa-rotate-left me-1">Char</i>Return Item
+                                                        <i class="fa-solid fa-rotate-left me-1"></i>Return Item
                                                     </a>
                                                 {% endif %}
                                             </div>
