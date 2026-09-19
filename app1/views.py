@@ -2054,7 +2054,13 @@ class ViewBillView(LoginRequiredMixin, View):
     template_name = "viewbill.html"
     def get(self, request, orderid):
         order = get_object_or_404(Order, orderid=orderid, user_id=request.user)
-        order.payment_status_display = order.paymentstatus
+        pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+        if order.orderstatus == "Cancelled":
+            order.payment_status_display = "Cancelled"
+        elif "COD" in pm or "CASH" in pm:
+            order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+        else:
+            order.payment_status_display = order.paymentstatus or "Paid"
         orderitems = Orderitem.objects.filter(order_id=order)
         running_total = 0
         for item in orderitems:
