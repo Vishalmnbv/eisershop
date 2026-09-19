@@ -152,7 +152,7 @@
                                         <div class="flex-shrink-0 me-3">
                                             <div class="p-1 bg-white">
                                                 {% if item.productview_id.productimage1 %}
-                                                    <img src="{{ item..productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain rounded border" alt="">
+                                                    <img src="{{ item.productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain" alt="{{ item.productview_id.producttitle }}" referrerpolicy="no-referrer">
                                                 {% endif %}
                                             </div>
                                         </div>

@@ -1913,6 +1913,11 @@ class PlaceOrderView(LoginRequiredMixin, View):
             messages.error(request, "No order found.")
             return redirect("cart")
         order = get_object_or_404(Order, orderid=order_id, user_id=request.user)
+        if order.user_id:
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+        else:
+            order.amazon_order_id = "00001"
         if order.orderstatus and order.orderstatus != "Pending":
             Cart.objects.filter(userid_id=request.user.id).delete()
             request.session.pop("coupon_code", None)
