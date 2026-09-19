@@ -3332,13 +3332,14 @@ def admin_today_sales_view(request):
                     unit_price = prod.productprice3 or prod.productprice
                 elif s0 and s0 == s_clean:
                     unit_price = prod.productprice
+            item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             order_subtotal += item.calculated_subtotal
         delivery_charge = getattr(order, "delivery_charge", 0) or 0
         discount = getattr(order, "coupon_discount", 0) or 0
         order.calculated_total = (order_subtotal - discount + delivery_charge)
         total_sales += order.calculated_total
-        valid_orders_count += 1
+        valid_orders_count += 1 
     context = {
         'today_orders': today_orders,
         'today_sales': total_sales,
