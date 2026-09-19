@@ -3311,6 +3311,29 @@ def admin_today_sales_view(request):
     total_sales = 0
     valid_orders_count = 0
     for order in today_orders:
+        if order.user_id:
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+        else:
+            order.amazon_order_id = "00001"
+        pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+        if order.orderstatus == "Cancelled":
+            order.payment_status_display = "Cancelled"
+        elif "COD" in pm or "CASH" in pm:
+            order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+        else:
+            order.payment_status_display = "Paid"
+        # Coupon Details Calculation
+        if hasattr(order, "coupon") and order.coupon:
+            order.coupon_code_display = order.coupon.code
+            order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+        elif hasattr(order, "coupon_code") and order.coupon_code:
+            order.coupon_code_display = order.coupon_code
+            order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+        else:
+            order.coupon_code_display = None
+            order.coupon_discount_display = 0
+
         if order.orderstatus == "Cancelled":
             continue
         order_subtotal = 0
@@ -3335,8 +3358,10 @@ def admin_today_sales_view(request):
             item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             order_subtotal += item.calculated_subtotal
+        order.calculated_subtotal = order_subtotal
         delivery_charge = getattr(order, "delivery_charge", 0) or 0
-        discount = getattr(order, "coupon_discount", 0) or 0
+        order.delivery_charge_display = delivery_charge
+        discount = order.coupon_discount_display or 0
         order.calculated_total = (order_subtotal - discount + delivery_charge)
         total_sales += order.calculated_total
         valid_orders_count += 1 
@@ -3353,6 +3378,7 @@ def admin_monthly_sales_view(request):
     current_month_start = today.replace(day=1)
     monthly_orders = Order.objects.filter(date__date__gte=current_month_start).prefetch_related("orderitem_set__productview_id").order_by('-date')
     current_month_sales = 0
+    valid_orders_count = 0
     for order in monthly_orders:
         if order.user_id:
             user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
@@ -3366,6 +3392,18 @@ def admin_monthly_sales_view(request):
             order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
         else:
             order.payment_status_display = "Paid"
+        # Coupon Details Calculation
+        if hasattr(order, "coupon") and order.coupon:
+            order.coupon_code_display = order.coupon.code
+            order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+        elif hasattr(order, "coupon_code") and order.coupon_code:
+            order.coupon_code_display = order.coupon_code
+            order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+        else:
+            order.coupon_code_display = None
+            order.coupon_discount_display = 0
+        if order.orderstatus == "Cancelled":
+            continue
         order_subtotal = 0
         for item in order.orderitem_set.all():
             prod = item.productview_id
@@ -3385,18 +3423,21 @@ def admin_monthly_sales_view(request):
                     unit_price = prod.productprice3 or prod.productprice
                 elif s0 and s0 == s_clean:
                     unit_price = prod.productprice
+            
+            item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             order_subtotal += item.calculated_subtotal
+        order.calculated_subtotal = order_subtotal
         delivery_charge = getattr(order, "delivery_charge", 0) or 0
-        discount = getattr(order, "coupon_discount", 0) or 0
+        order.delivery_charge_display = delivery_charge
+        discount = order.coupon_discount_display or `0`
         order.calculated_total = (order_subtotal - discount + delivery_charge)
-        if order.orderstatus != "Cancelled":
-            current_month_sales += order.calculated_total
-    current_month_orders_count = monthly_orders.count()
+        current_month_sales += order.calculated_total
+        valid_orders_count += 1
     context = {
         'monthly_orders': monthly_orders,
         'current_month_sales': current_month_sales,
-        'current_month_orders_count': current_month_orders_count,
+        'current_month_orders_count': valid_orders_count,
     }
     return render(request, 'admin_monthly_sales.html', context)
 class PickupLogoutView(View):

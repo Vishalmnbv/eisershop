@@ -142,11 +142,6 @@
                                     <span class="fw-bold font-monospace text-decoration-none text-info">
                                         #{{ order.amazon_order_id }}
                                     </span>
-                                    <div class="mt-1">
-                                        <a href="/admin/app1/order/{{ order.orderid }}/change/" class="btn btn-sm py-0 px-2 fw-bold shadow-sm" style="background-color: #f0c14b; border-color: #a88734; color: #111; font-size: 0.75rem;">
-                                            Edit Order
-                                        </a>
-                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -157,13 +152,13 @@
                                         <div class="flex-shrink-0 me-3">
                                             <div class="p-1 bg-white">
                                                 {% if item.productview_id.productimage %}
-                                                    <img src="{{ item.productview_id.productimage.url }}" width="50" height="50" class="object-fit-contain rounded border" alt="">
+                                                    <img src="{{ item..productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain rounded border" alt="">
                                                 {% endif %}
                                             </div>
                                         </div>
                                         <div>
                                             <span class="fw-bold text-decoration-none d-block mb-1 text-truncate" style="color: darkblue; max-width: 500px; font-size: 0.85rem;" title="{{ item.productview_id.productname }}">
-                                                {{ item.productview_id.productname }}
+                                                {{ item.productview_id.producttitle }}
                                             </span>
                                             <div class="text-muted small" style="font-size: 0.75rem;">
                                                 <span class="me-3">
@@ -182,7 +177,7 @@
                                                 {% endif %}
                                                 {% if item.productview_id.productcolor %}
                                                     <span class="me-3">
-                                                        <strong>Color:</strong> {{ item.productview_id.productcolor }}
+                                                        <strong>Color:</strong> {{ item.productview_id.productcolor1 }}
                                                     </span>
                                                 {% endif %}
                                             </div>
