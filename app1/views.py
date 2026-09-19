@@ -2678,7 +2678,7 @@ class AdminOrdersView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2732,7 +2732,7 @@ class ProcessingOrdersView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2785,7 +2785,7 @@ class ShippedOrdersView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2838,7 +2838,7 @@ class AdminDeliveredOrdersView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2891,7 +2891,7 @@ class CancelledOrdersView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2944,7 +2944,7 @@ class AdminRevenueView(LoginRequiredMixin, View):
             elif "COD" in pm or "CASH" in pm:
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
-                order.payment_status_display = order.paymentstatus or "Paid"
+                order.payment_status_display = "Paid"
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
