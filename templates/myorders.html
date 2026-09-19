@@ -130,11 +130,11 @@
                                         {% endif %}
                                     </span>
                                 </div>                       
-                                <div class="col-6 col-md-3 pt-2 border-top">
+                                <div class="col-6 col-md-3 pt-2">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Total</small>
                                     <span class="fw-bold text-dark d-block mt-1" style="font-size: 0.85rem;">₹{{ order.calculated_total|format_indian_currency }}</span>
                                 </div>
-                                <div class="col-6 col-md-3 pt-2 border-top">
+                                <div class="col-6 col-md-3 pt-2">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Payment</small>
                                     <span class="fw-semibold text-dark d-block mt-1" style="font-size: 0.8rem;">
                                         {{ order.paymentmethod }}
@@ -147,13 +147,13 @@
                                         {% endif %}
                                     </span>
                                 </div>                        
-                                <div class="col-6 col-md-3 pt-2 border-top">
+                                <div class="col-6 col-md-3 pt-2">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Ship To</small>
                                     <span class="fw-semibold text-dark d-block mt-1 text-truncate" title="{{ order.firstname }} {{ order.lastname }}" style="font-size: 0.85rem;">
                                         <i class="fa-solid fa-user me-1 text-secondary"></i>{{ order.firstname }} {{ order.username }} {{ order.lastname }}
                                     </span>
                                 </div>
-                                <div class="col-6 col-md-3 pt-2 border-top text-md-end">
+                                <div class="col-6 col-md-3 pt-2 text-md-end">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Order ID</small>
                                     <span class="fw-bold font-monospace text-dark d-block mt-1" style="font-size: 0.85rem;">#{{ order.amazon_order_id }}</span>
                                 </div>
