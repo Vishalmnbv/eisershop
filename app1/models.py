@@ -220,7 +220,7 @@ class Order(models.Model):
     shipped_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
     user_order_seq = models.IntegerField(editable=False, null=True, blank=True)
-    amazon_order_id = models.CharField(max_length=20, blank=True, null=True, unique=True)
+    amazon_order_id = models.CharField(max_length=20, blank=True, null=True)
     stock_updated = models.BooleanField(default=False)
     def __str__(self):
         return self.user_id.username
