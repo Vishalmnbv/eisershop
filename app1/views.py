@@ -382,26 +382,13 @@ class LoginView(View):
                     "ip_address": ip_address,
                     "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string(
-                    "emails/login_success.html",
-                    email_context
-                )
-                email_thread = threading.Thread(
-                    target=send_async_login_email,
-                    args=(
-                        user,
-                        html_content,
-                    ),
-                    daemon=True,
-                )
+                html_content = render_to_string("emails/login_success.html",email_context)
+                email_thread = threading.Thread(target=send_async_login_email,args=(user,html_content,),daemon=True,)
                 email_thread.start()
             except Exception as e:
                 print("Login email setup error:", str(e))
                 traceback.print_exc()
-        messages.success(
-            request,
-            f"Welcome back, {user.username}! You have successfully logged in."
-        )
+        messages.success(request,f"Welcome back, {user.username}! You have successfully logged in.")
         return redirect("home")
 class LogoutView(View):
     def get(self,request):
@@ -1951,17 +1938,18 @@ class PlaceOrderView(LoginRequiredMixin, View):
         try:
             recipient_email = order.email or request.user.email
             if recipient_email:
+                formatted_order_ref = f"{order.id:05d}"
                 context = {
                     "user": request.user,
                     "order": order,
+                    "formatted_order_id": formatted_order_ref,  
                     "order_items": order.orderitem_set.all(),
                     "coupon_code": coupon_code,
                     "discount": discount,
                     "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string("emails/order_confirmation.html", context)
-                order_ref = order.amazon_order_id or order.orderid
-                subject = f"Your Order #{order_ref} has been placed!"
+                subject = f"Your Order #{formatted_order_ref} has been placed!"
                 threading.Thread(
                     target=send_async_email,
                     args=(recipient_email, subject, html_content),
@@ -1977,7 +1965,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
             traceback.print_exc()
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
-        request.session.pop("order_just_placed_id", None)
+        request.session.pop("order_just_places_id", None)
         return redirect("thankyou", order.orderid)
 class CancelProductView(LoginRequiredMixin, View):
     login_url = "login"
@@ -2179,14 +2167,12 @@ class UpdateOrderStatusView(LoginRequiredMixin, View):
     def post(self, request, orderid, status):
         if not request.user.is_staff:
             return redirect("login")
-        order = get_object_or_404(Order,orderid=orderid)
+        order = get_object_or_404(Order, orderid=orderid)
         old_status = order.orderstatus
         order.orderstatus = status
         if status == "Processing" and old_status != "Processing":
             order.processing_at = timezone.now()
-        elif (
-            status == "Order Approved & Processing"
-            and old_status != "Order Approved & Processing"):
+        elif status == "Order Approved & Processing" and old_status != "Order Approved & Processing":
             order.processing_at = timezone.now()
         elif status == "Shipped" and old_status != "Shipped":
             if not order.processing_at:
@@ -2210,67 +2196,63 @@ class UpdateOrderStatusView(LoginRequiredMixin, View):
                     quantity = item.quantity or 0
                     if quantity <= 0:
                         continue
-                    product.stock = max(0,product.stock - quantity)
+                    product.stock = max(0, product.stock - quantity)
                     product.sold_count = (product.sold_count or 0) + quantity
                     product.in_stock = (product.stock > 0)
-                    product.save(update_fields=["stock","sold_count","in_stock",])
+                    product.save(update_fields=["stock", "sold_count", "in_stock"])
                 order.stock_updated = True
                 order.save()
         else:
             order.save()
-        if (
-            status == "Delivered"
-            and old_status != "Delivered"
-            and order.user_id
-            and order.user_id.email
-        ):
+        # SHIPPED EMAIL 
+        if status == "Shipped" and old_status != "Shipped":
             try:
-                user = order.user_id
-                context = {
-                    "user": user,
-                    "username": user.username,
-                    "order": order,
-                    "order_items": order.orderitem_set.all(),
-                }
-                html_content = render_to_string("emails/order_delivered.html",context)
-                email = EmailMultiAlternatives(
-                    subject=(
-                        f"Your Order #{order.amazon_order_id} "
-                        f"has been delivered!"
-                    ),
-                    body=(
-                        f"Hello {user.username},\n\n"
-                        f"Your order #{order.amazon_order_id} "
-                        "has been successfully delivered.\n\n"
-                        "Thank you for shopping with EiserShop.\n\n"
-                        "Regards,\n"
-                        "EiserShop Team"
-                    ),
-                    from_email=settings.DEFAULT_FROM_EMAIL,
-                    to=[order.email],
-                )
-                email.attach_alternative(html_content,"text/html")
-                logo_path = os.path.join(
-                    settings.BASE_DIR,
-                    "static",
-                    "IMAGES",
-                    "79e44a35-def7-4146-8642-961f01c9dea4.png",
-                )
-                if os.path.exists(logo_path):
-                    with open(
-                        logo_path,
-                        "rb"
-                    ) as f:
-                        logo = MIMEImage(f.read())
-                    logo.add_header(
-                        "Content-ID",
-                        "<logo>"
-                    )
-                    logo.add_header("Content-Disposition","inline",filename="logo.png")
-                    email.attach(logo)
-                email.send(fail_silently=False)
-            except Exception as e:
-                print("Delivered order email error:",str(e))
+                recipient_email = order.email or (order.user_id.email if order.user_id else None)
+                if recipient_email:
+                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count() if order.user_id else 1
+                    formatted_order_ref = getattr(order, 'amazon_order_id', f"{user_order_no:05d}")
+                    context = {
+                        "user": order.user_id,
+                        "username": order.user_id.username if order.user_id else "",
+                        "order": order,
+                        "formatted_order_id": formatted_order_ref,
+                        "order_items": order.orderitem_set.all(),
+                        "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                    }
+                    html_content = render_to_string("emails/order_shipped.html", context)
+                    subject = f"Your Order #{formatted_order_ref} has been shipped!"
+                    threading.Thread(
+                        target=send_async_email,
+                        args=(recipient_email, subject, html_content),
+                        daemon=True
+                    ).start()
+            except Exception:
+                print("❌ Shipped order email error:")
+                traceback.print_exc()
+        # DELIVERED EMAIL 
+        if status == "Delivered" and old_status != "Delivered":
+            try:
+                recipient_email = order.email or (order.user_id.email if order.user_id else None)
+                if recipient_email:
+                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count() if order.user_id else 1
+                    formatted_order_ref = getattr(order, 'amazon_order_id', f"{user_order_no:05d}")
+                    context = {
+                        "user": order.user_id,
+                        "username": order.user_id.username if order.user_id else "",
+                        "order": order,
+                        "formatted_order_id": formatted_order_ref,
+                        "order_items": order.orderitem_set.all(),
+                        "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                    }
+                    html_content = render_to_string("emails/order_delivered.html", context)
+                    subject = f"Your Order #{formatted_order_ref} has been delivered!"
+                    threading.Thread(
+                        target=send_async_email,
+                        args=(recipient_email, subject, html_content),
+                        daemon=True
+                    ).start()
+            except Exception:
+                print("❌ Delivered order email error:")
                 traceback.print_exc()
         return redirect("admin_dashboard")
 class ReturnOrderView(LoginRequiredMixin, View):
@@ -2384,9 +2366,42 @@ class AdminDashboardView(LoginRequiredMixin, View):
         today_orders_count = today_orders.count()
         # Month Sales
         current_month_start = today.replace(day=1)
-        monthly_orders_query = Order.objects.filter(date__date__gte=current_month_start)
+        monthly_orders_query = Order.objects.filter(date__date__gte=current_month_start).exclude(orderstatus="Cancelled").prefetch_related("orderitem_set__productview_id")
         current_month_orders_count = monthly_orders_query.count()
-        current_month_sales = sum(order.total for order in monthly_orders_query.filter(orderstatus="Delivered"))
+        current_month_sales = 0
+        for order in monthly_orders_query:
+            order_subtotal = 0
+            for item in order.orderitem_set.all():
+                prod = item.productview_id
+                if prod:
+                    unit_price = prod.productprice
+                    item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                    if item_size:
+                        s_clean = str(item_size).replace(" ", "").lower()
+                        s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                        s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                        s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                        s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                        if s1 and s1 == s_clean:
+                            unit_price = prod.productprice1 or prod.productprice
+                        elif s2 and s2 == s_clean:
+                            unit_price = prod.productprice2 or prod.productprice
+                        elif s3 and s3 == s_clean:
+                            unit_price = prod.productprice3 or prod.productprice
+                        elif s0 and s0 == s_clean:
+                            unit_price = prod.productprice
+                    order_subtotal += (unit_price * item.quantity)
+            delivery_charge = getattr(order, "delivery_charge", 0) or 0
+            # Discount calculation
+            discount = 0
+            if hasattr(order, "coupon") and order.coupon:
+                discount = getattr(order, "coupon_discount", 0) or getattr(order, "discount", 0)
+            elif hasattr(order, "coupon_discount") and order.coupon_discount:
+                discount = order.coupon_discount
+            elif hasattr(order, "discount") and order.discount:
+                discount = order.discount
+            order_total = (order_subtotal - discount + delivery_charge)
+            current_month_sales += order_total
         # Chart ke liye monthly sales data
         monthly_sales = (
             Order.objects.filter(orderstatus="Delivered")
@@ -2408,9 +2423,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
         orders_data = [item["total_orders"] for item in monthly_orders_chart]
         return_orders = ReturnRequest.objects.count()
         refunded_orders = ReturnRequest.objects.filter(status="Refunded").count()
-        recent_returns = ReturnRequest.objects.select_related(
-            "order", "orderitem", "orderitem__productview_id", "order__user_id", "delivery_agent"
-        ).order_by("-created_at")
+        recent_returns = ReturnRequest.objects.select_related("order", "orderitem", "orderitem__productview_id", "order__user_id", "delivery_agent").order_by("-created_at")
         for r in recent_returns:
             if r.order and r.order.user_id:
                 user_order_no = Order.objects.filter(user_id=r.order.user_id, orderid__lte=r.order.orderid).count()
@@ -2420,7 +2433,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             if r.orderitem:
                 unit_price, refund_total = get_calculated_price(r.orderitem)
                 r.calculated_unit_price = unit_price
-                r.calculated_refund = refund_total   
+                r.calculated_refund = refund_total     
         try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
@@ -3396,7 +3409,7 @@ def admin_monthly_sales_view(request):
             order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
         else:
             order.payment_status_display = "Paid"
-        # Coupon Details Calculation
+        # Coupon 
         if hasattr(order, "coupon") and order.coupon:
             order.coupon_code_display = order.coupon.code
             order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -3433,7 +3446,6 @@ def admin_monthly_sales_view(request):
         order.calculated_subtotal = order_subtotal
         delivery_charge = getattr(order, "delivery_charge", 0) or 0
         order.delivery_charge_display = delivery_charge
-        # Fixed syntax error here (removed backticks from 0)
         discount = order.coupon_discount_display or 0
         order.calculated_total = (order_subtotal - discount + delivery_charge)
         current_month_sales += order.calculated_total

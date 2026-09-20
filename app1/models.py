@@ -242,30 +242,60 @@ class Order(models.Model):
                 self.user_order_seq = user_orders_count + 1
             else:
                 self.user_order_seq = 1
+            if not self.amazon_order_id:
+                pass
+        old_orderstatus = None
+        if not is_new:
+            try:
+                original = Order.objects.get(pk=self.pk)
+                old_orderstatus = original.orderstatus
+            except Order.DoesNotExist:
+                pass
+        if not is_new and old_orderstatus != self.orderstatus:
+            if self.orderstatus == 'Processing' and not self.processing_at:
+                self.processing_at = timezone.now()
+            elif self.orderstatus == 'Shipped' and not self.shipped_at:
+                if not self.processing_at:
+                    self.processing_at = timezone.now()
+                self.shipped_at = timezone.now()
+            elif self.orderstatus == 'Delivered' and not self.delivered_at:
+                if not self.processing_at:
+                    self.processing_at = timezone.now()
+                if not self.shipped_at:
+                    self.shipped_at = timezone.now()
+                self.delivered_at = timezone.now()
+                if str(self.paymentmethod).strip().lower() == 'cash on delivery' and self.paymentstatus == 'Pending':
+                    self.paymentstatus = 'Paid'
+            elif self.orderstatus == 'Cancelled' and not self.cancelled_at:
+                self.cancelled_at = timezone.now()
         super().save(*args, **kwargs)
         if not self.amazon_order_id:
             self.amazon_order_id = f"{self.orderid:05d}"
             Order.objects.filter(pk=self.pk).update(amazon_order_id=self.amazon_order_id)
-        if not is_new:
+        if not is_new and old_orderstatus != self.orderstatus:
+            if self.orderstatus == 'Shipped':
+                self.send_shipped_email()
+            elif self.orderstatus == 'Delivered':
+                self.send_delivery_email()
+    def send_shipped_email(self):
+        recipient_email = self.email or (self.user_id.email if self.user_id else None)
+        if recipient_email:
             try:
-                original = Order.objects.get(pk=self.pk)
-                if original.orderstatus != 'Processing' and self.orderstatus == 'Processing':
-                    if not self.processing_at:
-                        self.processing_at = timezone.now()
-                if original.orderstatus != 'Shipped' and self.orderstatus == 'Shipped':
-                    if not self.shipped_at:
-                        self.shipped_at = timezone.now()
-                if original.orderstatus != 'Delivered' and self.orderstatus == 'Delivered':
-                    if not self.delivered_at:
-                        self.delivered_at = timezone.now()
-                    if str(self.paymentmethod).strip().lower() == 'cash on delivery' and self.paymentstatus == 'Pending':
-                        self.paymentstatus = 'Paid'
-                    self.send_delivery_email()
-                if original.orderstatus != 'Cancelled' and self.orderstatus == 'Cancelled':
-                    if not self.cancelled_at:
-                        self.cancelled_at = timezone.now()
-            except Order.DoesNotExist:
-                pass
+                subject = f"Your Order #{self.amazon_order_id or self.orderid} has been shipped!"
+                context = {
+                    'order': self,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/order_shipped.html', context)
+                threading.Thread(
+                    target=send_async_login_email, 
+                    args=(recipient_email, subject, html_content),
+                    daemon=True
+                ).start()
+                print(f"✅ Shipped email thread triggered for {recipient_email}")
+            except Exception:
+                print("❌ Error triggering shipped email thread:")
+                traceback.print_exc()
     def send_delivery_email(self):
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
         if recipient_email:
@@ -277,7 +307,7 @@ class Order(models.Model):
                 }
                 html_content = render_to_string('emails/order_delivered.html', context)
                 threading.Thread(
-                    target=send_async_login_email,
+                    target=send_async_login_email, 
                     args=(recipient_email, subject, html_content),
                     daemon=True
                 ).start()
