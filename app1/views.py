@@ -1918,6 +1918,7 @@ class PlaceOrderView(LoginRequiredMixin, View):
             except Coupon.DoesNotExist:
                 pass
         order.save()
+        # Stock update logic
         if is_pending:
             for item in order.orderitem_set.all():
                 product = item.productview_id
@@ -1933,35 +1934,13 @@ class PlaceOrderView(LoginRequiredMixin, View):
                     else:
                         product.sold_count = (product.sold_count or 0) + item.quantity
                         product.save()
-        # Email Sending 
-        try:
-            recipient_email = order.email or request.user.email
-            if recipient_email:
-                formatted_order_ref = f"{order.orderid:05d}"
-                context = {
-                    "user": request.user,
-                    "order": order,
-                    "formatted_order_id": formatted_order_ref,  
-                    "order_items": order.orderitem_set.all(),
-                    "coupon_code": coupon_code,
-                    "discount": discount,
-                    "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-                }
-                html_content = render_to_string("emails/order_confirmation.html", context)
-                subject = f"Your Order #{formatted_order_ref} has been placed!"
-                threading.Thread(
-                    target=send_async_email,
-                    args=(recipient_email, subject, html_content),
-                    daemon=True
-                ).start()
-        except Exception:
-            print("❌ Order confirmation email error:")
-            traceback.print_exc()
+        # Cart cleanup
         try:
             Cart.objects.filter(userid=request.user).delete()
         except Exception:
             print("CART DELETE ERROR:")
             traceback.print_exc()
+        # Session cleanup
         request.session.pop("coupon_code", None)
         request.session.pop("coupon_discount", None)
         request.session.pop("order_just_placed_id", None)
