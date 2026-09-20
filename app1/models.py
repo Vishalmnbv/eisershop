@@ -227,10 +227,10 @@ class Order(models.Model):
     def status_step(self):
         mapping = {
             'Pending': 1,
-            'Paid': 1,
-            'Processing': 2,
-            'Shipped': 3,
-            'Delivered': 4,
+            'Paid': 2,        
+            'Processing': 3, 
+            'Shipped': 4,    
+            'Delivered': 5,   
             'Cancelled': 0, 
         }
         return mapping.get(self.orderstatus, 1)
@@ -266,17 +266,28 @@ class Order(models.Model):
                     self.paymentstatus = 'Paid'
             elif self.orderstatus == 'Cancelled' and not self.cancelled_at:
                 self.cancelled_at = timezone.now()
+        send_processing = False
+        send_shipped = False
+        send_delivered = False
+        if is_new and self.orderstatus == 'Processing':
+            send_processing = True
+        elif not is_new and old_orderstatus != self.orderstatus:
+            if self.orderstatus == 'Processing':
+                send_processing = True
+            elif self.orderstatus == 'Shipped':
+                send_shipped = True
+            elif self.orderstatus == 'Delivered':
+                send_delivered = True
         super().save(*args, **kwargs)
         if not self.amazon_order_id:
             self.amazon_order_id = f"{self.orderid:05d}"
             Order.objects.filter(pk=self.pk).update(amazon_order_id=self.amazon_order_id)
-        if not is_new and old_orderstatus != self.orderstatus:
-            if self.orderstatus == 'Processing':
-                self.send_processing_email()
-            elif self.orderstatus == 'Shipped':
-                self.send_shipped_email()
-            elif self.orderstatus == 'Delivered':
-                self.send_delivery_email()
+        if send_processing:
+            self.send_processing_email()
+        elif send_shipped:
+            self.send_shipped_email()
+        elif send_delivered:
+            self.send_delivery_email()
     def send_processing_email(self):
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
         if recipient_email:
