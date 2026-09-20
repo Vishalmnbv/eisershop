@@ -1841,6 +1841,15 @@ class ConfirmOrderView(LoginRequiredMixin, View):
     template_name = "conformorder.html"
     def get(self, request, orderid):
         order = get_object_or_404(Order, orderid=orderid, user_id=request.user)
+        status_mapping = {
+            'Ordered': 1,
+            'Confirmed': 2,
+            'Processing': 3,
+            'Shipped': 4,
+            'Delivered': 5
+        }
+        if order.orderstatus in status_mapping:
+            order.status_step = status_mapping[order.orderstatus]
         pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
         if order.orderstatus == "Cancelled":
             order.payment_status_display = "Cancelled"
@@ -1866,7 +1875,6 @@ class ConfirmOrderView(LoginRequiredMixin, View):
             item.calculated_unit_price = unit_price
             item.calculated_subtotal = unit_price * item.quantity
             running_total += item.calculated_subtotal
-            
         if order.coupon:
             coupon_code = order.coupon.code
             discount = order.coupon_discount
