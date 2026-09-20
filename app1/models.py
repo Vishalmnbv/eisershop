@@ -289,61 +289,58 @@ class Order(models.Model):
         elif send_delivered:
             self.send_delivery_email()
     def send_processing_email(self):
-        recipient_email = self.email or (self.user_id.email if self.user_id else None)
-        if recipient_email:
+        if self.user_id and self.user_id.email:
             try:
-                subject = f"Your Order #{self.amazon_order_id or self.orderid} is now Processing!"
-                context = {
+                email_context = {
                     'order': self,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string('emails/order_processing.html', context)
-                threading.Thread(
+                html_content = render_to_string('emails/order_processing.html', email_context)
+                email_thread = threading.Thread(
                     target=send_async_login_email, 
-                    args=(recipient_email, subject, html_content),
+                    args=(self.user_id, html_content), 
                     daemon=True
-                ).start()
-                print(f"✅ Processing email thread triggered for {recipient_email}")
-            except Exception:
-                print("❌ Error triggering processing email thread:")
+                )
+                email_thread.start()
+                print(f"✅ Processing email thread triggered for {self.user_id.email}")
+            except Exception as e:
+                print("❌ Error triggering processing email thread:", str(e))
                 traceback.print_exc()
     def send_shipped_email(self):
-        recipient_email = self.email or (self.user_id.email if self.user_id else None)
-        if recipient_email:
+        if self.user_id and self.user_id.email:
             try:
-                subject = f"Your Order #{self.amazon_order_id or self.orderid} has been shipped!"
-                context = {
+                email_context = {
                     'order': self,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string('emails/order_shipped.html', context)
-                threading.Thread(
+                html_content = render_to_string('emails/order_shipped.html', email_context)
+                email_thread = threading.Thread(
                     target=send_async_login_email, 
-                    args=(recipient_email, subject, html_content),
+                    args=(self.user_id, html_content), 
                     daemon=True
-                ).start()
-                print(f"✅ Shipped email thread triggered for {recipient_email}")
-            except Exception:
-                print("❌ Error triggering shipped email thread:")
+                )
+                email_thread.start()
+                print(f"✅ Shipped email thread triggered for {self.user_id.email}")
+            except Exception as e:
+                print("❌ Error triggering shipped email thread:", str(e))
                 traceback.print_exc()
     def send_delivery_email(self):
-        recipient_email = self.email or (self.user_id.email if self.user_id else None)
-        if recipient_email:
+        if self.user_id and self.user_id.email:
             try:
-                subject = f"Order Delivered - EiserShop (#{self.amazon_order_id or self.orderid})"
-                context = {
+                email_context = {
                     'order': self,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string('emails/order_delivered.html', context)
-                threading.Thread(
+                html_content = render_to_string('emails/order_delivered.html', email_context)
+                email_thread = threading.Thread(
                     target=send_async_login_email, 
-                    args=(recipient_email, subject, html_content),
+                    args=(self.user_id, html_content), 
                     daemon=True
-                ).start()
-                print(f"✅ Delivery email thread triggered for {recipient_email}")
-            except Exception:
-                print("❌ Error triggering delivery email thread:")
+                )
+                email_thread.start()
+                print(f"✅ Delivery email thread triggered for {self.user_id.email}")
+            except Exception as e:
+                print("❌ Error triggering delivery email thread:", str(e))
                 traceback.print_exc()
 class Orderitem(models.Model):
     STATUS_CHOICES = [

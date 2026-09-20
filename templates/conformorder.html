@@ -102,13 +102,7 @@
                 <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-route text-primary me-2"></i>Order Shipment Journey</h5>
                 <div class="position-relative px-2 py-3">
                     <div style="position: absolute; top: 40%; left: 10%; right: 10%; height: 5px; background-color: #e9ecef; transform: translateY(-50%); z-index: 1; border-radius: 10px;">
-                        <div style="height: 100%; background-color: #198754; border-radius: 10px; width: 
-                            {% if order.status_step == 1 %}0%
-                            {% elif order.status_step == 2 %}25%
-                            {% elif order.status_step == 3 %}50%
-                            {% elif order.status_step == 4 %}75%
-                            {% elif order.status_step == 5 %}100%
-                            {% else %}0%{% endif %}; transition: width 0.4s ease;">
+                        <div style="height: 100%; background-color: #198754; border-radius: 10px; width: {% if order.status_step == 1 %}0%{% elif order.status_step == 2 %}25%{% elif order.status_step == 3 %}50%{% elif order.status_step == 4 %}75%{% elif order.status_step == 5 %}100%{% else %}0%{% endif %}; transition: width 0.4s ease;">
                         </div>
                     </div>
                     <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
