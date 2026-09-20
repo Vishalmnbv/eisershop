@@ -55,3 +55,6 @@ def send_async_email(recipient_email, subject, html_content):
         traceback.print_exc()
 def send_async_login_email(user, html_content):
     send_async_email(user.email, "Login Successful - EiserShop", html_content)
+
+def send_async_order_email(user, html_content, subject):
+    send_async_email(user.email, subject, html_content)
