@@ -241,9 +241,7 @@ class Order(models.Model):
                 user_orders_count = Order.objects.filter(user_id=self.user_id).count()
                 self.user_order_seq = user_orders_count + 1
             else:
-                self.user_order_seq = 1
-            if not self.amazon_order_id:
-                pass
+                self.user_order_seq = 1   
         old_orderstatus = None
         if not is_new:
             try:
@@ -273,10 +271,31 @@ class Order(models.Model):
             self.amazon_order_id = f"{self.orderid:05d}"
             Order.objects.filter(pk=self.pk).update(amazon_order_id=self.amazon_order_id)
         if not is_new and old_orderstatus != self.orderstatus:
-            if self.orderstatus == 'Shipped':
+            if self.orderstatus == 'Processing':
+                self.send_processing_email()
+            elif self.orderstatus == 'Shipped':
                 self.send_shipped_email()
             elif self.orderstatus == 'Delivered':
                 self.send_delivery_email()
+    def send_processing_email(self):
+        recipient_email = self.email or (self.user_id.email if self.user_id else None)
+        if recipient_email:
+            try:
+                subject = f"Your Order #{self.amazon_order_id or self.orderid} is now Processing!"
+                context = {
+                    'order': self,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/order_processing.html', context)
+                threading.Thread(
+                    target=send_async_login_email, 
+                    args=(recipient_email, subject, html_content),
+                    daemon=True
+                ).start()
+                print(f"✅ Processing email thread triggered for {recipient_email}")
+            except Exception:
+                print("❌ Error triggering processing email thread:")
+                traceback.print_exc()
     def send_shipped_email(self):
         recipient_email = self.email or (self.user_id.email if self.user_id else None)
         if recipient_email:

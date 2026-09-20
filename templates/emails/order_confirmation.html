@@ -1,10 +1,10 @@
 {% load humanize %}
+{% load indian_formatting %}
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>Order Confirmation</title>
-{% load indian_formatting %}
 </head>
     <body style="margin:0;padding:0;background:#EAEDED;font-family:Arial,Helvetica,sans-serif;">
         <table width="100%" cellpadding="0" cellspacing="0" bgcolor="#EAEDED">
@@ -13,15 +13,60 @@
                     <table width="700" cellpadding="0" cellspacing="0" style="background:#ffffff;margin:30px auto;border-radius:8px;overflow:hidden;">
                         <tr>
                             <td bgcolor="#131921" style="padding:22px;text-align:center;">
-                                <img src="{{ logo_url}}"  alt="EiserShop Logo" width="180">
+                                <img src="{{ logo_url }}" alt="EiserShop Logo" width="180">
                                 <p style="color:#ffffff;margin-top:10px;font-size:15px;">✔ Order Confirmation</p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 20px 35px 0 35px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto; text-align: center;">
+                                    <tr>
+                                        <td align="center">
+                                            <table cellpadding="0" cellspacing="0" border="0" style="margin: 0 auto;">
+                                                <tr> 
+                                                    <td align="center" style="width: 65px; vertical-align: top;">
+                                                        <div style="width: 30px; height: 30px; line-height: 30px; background-color: #067d62; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">✓</div>
+                                                        <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: #067d62;">Ordered</p>
+                                                    </td>
+                                                    <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
+                                                        <div style="height: 3px; background-color: {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
+                                                    </td> 
+                                                    <td align="center" style="width: 65px; vertical-align: top;">
+                                                        <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
+                                                            {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}✓{% else %}2{% endif %}
+                                                        </div>
+                                                        <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Processing</p>
+                                                    </td> 
+                                                    <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
+                                                        <div style="height: 3px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
+                                                    </td> 
+                                                    <td align="center" style="width: 65px; vertical-align: top;">
+                                                        <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
+                                                            {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}✓{% else %}3{% endif %}
+                                                        </div>
+                                                        <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Shipped</p>
+                                                    </td>
+                                                    <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
+                                                        <div style="height: 3px; background-color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
+                                                    </td>
+                                                    <td align="center" style="width: 65px; vertical-align: top;">
+                                                        <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
+                                                            {% if order.orderstatus == 'Delivered' %}✓{% else %}4{% endif %}
+                                                        </div>
+                                                        <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Delivered</p>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
                             </td>
                         </tr>
                         <tr>
                             <td style="padding:35px;">
                                 <h2 style="margin:0;color:#067D62;">✔ Your order has been placed!</h2>
-                                <p style="font-size:16px;color:#444;margin-top:18px;">Hello<strong>{{ order.firstname }} {{ order.username }} {{ order.lastname }}</strong>,</p>
-                                <p style="line-height:28px;color:#555;">Thank you for shopping with<b>Eiser Shop.</b>We've received your order and will notify you once it has been shipped.</p>
+                                <p style="font-size:16px;color:#444;margin-top:18px;">Hello <strong>{{ order.firstname }} {{ order.username }} {{ order.lastname }}</strong>,</p>
+                                <p style="line-height:28px;color:#555;">Thank you for shopping with <b>Eiser Shop.</b> We've received your order and will notify you once it has been shipped.</p>
                             </td>
                         </tr>
                         <tr>
@@ -112,7 +157,7 @@
                                     </tr>
                                     <tr>
                                         <td>
-                                            <strong>{{ order.firstname }}{{ order.username }}{{ order.lastname }}</strong>
+                                            <strong>{{ order.firstname }} {{ order.username }} {{ order.lastname }}</strong>
                                             <br><br>
                                             {{ order.address }}
                                         </td>
@@ -130,7 +175,7 @@
                             <td bgcolor="#131A22" style="padding:35px;text-align:center;">
                                 <p style="color:#ffffff;font-size:18px;margin:0;">Thank you for shopping with Eiser Shop ❤️</p>
                                 <p style="color:#BBBBBB;font-size:13px;margin-top:15px;line-height:22px;">
-                                    This email confirms that we've received your order.
+                                    This email confirms that we've received your order.<br>
                                     You'll receive another email once your order has been shipped.
                                 </p>
                                 <hr style="border:none;border-top:1px solid #444;margin:25px 0;">

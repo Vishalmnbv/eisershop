@@ -101,35 +101,47 @@
             <div class="card-body">
                 <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-route text-primary me-2"></i>Order Shipment Journey</h5>
                 <div class="position-relative px-2 py-3">
-                    <div style="position: absolute; top: 40%; left: 12%; right: 12%; height: 5px; background-color: #e9ecef; transform: translateY(-50%); z-index: 1; border-radius: 10px;">
+                    <div style="position: absolute; top: 40%; left: 10%; right: 10%; height: 5px; background-color: #e9ecef; transform: translateY(-50%); z-index: 1; border-radius: 10px;">
                         <div style="height: 100%; background-color: #198754; border-radius: 10px; width: 
                             {% if order.status_step == 1 %}0%
-                            {% elif order.status_step == 2 %}33.33%
-                            {% elif order.status_step == 3 %}66.66%
-                            {% elif order.status_step == 4 %}100%
+                            {% elif order.status_step == 2 %}25%  <!-- Confirmed/Paid -->
+                            {% elif order.status_step == 3 %}50%  <!-- Processing -->
+                            {% elif order.status_step == 4 %}75%  <!-- Shipped -->
+                            {% elif order.status_step == 5 %}100% <!-- Delivered -->
                             {% else %}0%{% endif %}; transition: width 0.4s ease;">
                         </div>
                     </div>
                     <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
-                        <div class="text-center bg-white px-1" style="width: 25%;">
+                        <div class="text-center bg-white px-1" style="width: 20%;">
                             <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
                             <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Ordered
                                 <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{{ order.date|date:"d M Y" }}</small>
                             </div>
                         </div>
-                        <div class="text-center bg-white px-1" style="width: 25%;">
-                            {% if order.orderstatus == 'Processing' or order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
+                        <div class="text-center bg-white px-1" style="width: 20%;">
+                            {% if order.status_step >= 2 %}
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
+                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Confirmed
+                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.date %}{{ order.date|date:"d M Y" }}{% endif %}</small>
+                                </div>
+                            {% else %}
+                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
+                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Confirmed</div>
+                            {% endif %}
+                        </div>
+                        <div class="text-center bg-white px-1" style="width: 20%;">
+                            {% if order.status_step >= 3 %}
                                 <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
                                 <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Processing
-                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.processing_at %}{{ order.processing_at|date:"d M Y" }}{% else %}{{ order.date|date:"d M Y" }}{% endif %}</small>
+                                    <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.processing_at %}{{ order.processing_at|date:"d M Y" }}{% else %}--{% endif %}</small>
                                 </div>
                             {% else %}
                                 <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
                                 <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Processing</div>
                             {% endif %}
                         </div>
-                        <div class="text-center bg-white px-1" style="width: 25%;">
-                            {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}
+                        <div class="text-center bg-white px-1" style="width: 20%;">
+                            {% if order.status_step >= 4 %}
                                 <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
                                 <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Shipped
                                     <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.shipped_at %}{{ order.shipped_at|date:"d M Y" }}{% else %}--{% endif %}</small>
@@ -139,8 +151,8 @@
                                 <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Shipped</div>
                             {% endif %}
                         </div>
-                        <div class="text-center bg-white px-1" style="width: 25%;">
-                            {% if order.orderstatus == 'Delivered' %}
+                        <div class="text-center bg-white px-1" style="width: 20%;">
+                            {% if order.status_step == 5 %}
                                 <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;"><i class="fa-solid fa-circle-check"></i></div>
                                 <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Delivered
                                     <br><small class="text-muted fw-normal" style="font-size: 9px;"><i class="fa-regular fa-calendar me-1"></i>{% if order.delivered_at %}{{ order.delivered_at|date:"d M Y" }}{% else %}--{% endif %}</small>
