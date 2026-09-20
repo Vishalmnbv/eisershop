@@ -267,6 +267,7 @@ class Order(models.Model):
                     self.paymentstatus = 'Paid'
             elif self.orderstatus == 'Cancelled' and not self.cancelled_at:
                 self.cancelled_at = timezone.now()
+
         send_processing = False
         send_shipped = False
         send_delivered = False
@@ -281,7 +282,11 @@ class Order(models.Model):
                 send_delivered = True
         super().save(*args, **kwargs)
         if not self.amazon_order_id:
-            self.amazon_order_id = f"{self.orderid:05d}"
+            if self.user_id:
+                user_order_no = Order.objects.filter(user_id=self.user_id, orderid__lte=self.orderid).count()
+                self.amazon_order_id = f"{user_order_no:05d}"
+            else:
+                self.amazon_order_id = f"{self.orderid:05d}"
             Order.objects.filter(pk=self.pk).update(amazon_order_id=self.amazon_order_id)
         if send_processing:
             self.send_processing_email()
@@ -308,7 +313,6 @@ class Order(models.Model):
             except Exception as e:
                 print("❌ Error triggering processing email thread:", str(e))
                 traceback.print_exc()
-
     def send_shipped_email(self):
         if self.user_id and self.user_id.email:
             try:
