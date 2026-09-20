@@ -3,7 +3,6 @@ import os
 import traceback
 import sib_api_v3_sdk
 from sib_api_v3_sdk.rest import ApiException
-
 def apply_rating(product):
     raw_rating = float(product.productrating or 4.0)
     product.rating = raw_rating

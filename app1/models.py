@@ -10,6 +10,7 @@ from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
 from .utils import apply_rating, send_async_login_email
+from .utils import send_async_order_email
 from django.utils.html import strip_tags
 import threading
 import traceback
@@ -200,8 +201,8 @@ class Order(models.Model):
     paymentstatus = models.CharField(max_length=20, choices=STATUS_CHOICES, default="Pending")
     cancelled_at = models.DateTimeField(null=True, blank=True)
     orderid = models.AutoField(primary_key=True)
-    otracker_id = models.ForeignKey(Otracker, on_delete=models.CASCADE)
-    user_id = models.ForeignKey(User, on_delete=models.CASCADE)
+    otracker_id = models.ForeignKey('Otracker', on_delete=models.CASCADE)
+    user_id = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     firstname = models.CharField(max_length=100)
     lastname = models.CharField(max_length=100)
     email = models.EmailField()
@@ -214,7 +215,7 @@ class Order(models.Model):
     paymentmethod = models.CharField(max_length=40)
     date = models.DateTimeField(auto_now_add=True)
     processing_at = models.DateTimeField(null=True, blank=True)
-    coupon = models.ForeignKey(Coupon, on_delete=models.SET_NULL, null=True, blank=True)
+    coupon = models.ForeignKey('Coupon', on_delete=models.SET_NULL, null=True, blank=True)
     coupon_discount = models.IntegerField(default=0)
     shipped_at = models.DateTimeField(null=True, blank=True)
     delivered_at = models.DateTimeField(null=True, blank=True)
@@ -296,9 +297,10 @@ class Order(models.Model):
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string('emails/order_processing.html', email_context)
+                subject = f"Order Confirmation & Processing - EiserShop (#{self.amazon_order_id})"
                 email_thread = threading.Thread(
-                    target=send_async_login_email, 
-                    args=(self.user_id, html_content), 
+                    target=send_async_order_email, 
+                    args=(self.user_id, html_content, subject), 
                     daemon=True
                 )
                 email_thread.start()
@@ -306,6 +308,7 @@ class Order(models.Model):
             except Exception as e:
                 print("❌ Error triggering processing email thread:", str(e))
                 traceback.print_exc()
+
     def send_shipped_email(self):
         if self.user_id and self.user_id.email:
             try:
@@ -314,9 +317,11 @@ class Order(models.Model):
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string('emails/order_shipped.html', email_context)
+                subject = f"Your Order has been Shipped - EiserShop (#{self.amazon_order_id})"
+                
                 email_thread = threading.Thread(
-                    target=send_async_login_email, 
-                    args=(self.user_id, html_content), 
+                    target=send_async_order_email, 
+                    args=(self.user_id, html_content, subject), 
                     daemon=True
                 )
                 email_thread.start()
@@ -332,9 +337,10 @@ class Order(models.Model):
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string('emails/order_delivered.html', email_context)
+                subject = f"Order Delivered Successfully - EiserShop (#{self.amazon_order_id})"
                 email_thread = threading.Thread(
-                    target=send_async_login_email, 
-                    args=(self.user_id, html_content), 
+                    target=send_async_order_email, 
+                    args=(self.user_id, html_content, subject), 
                     daemon=True
                 )
                 email_thread.start()
