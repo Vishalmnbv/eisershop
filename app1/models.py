@@ -270,11 +270,11 @@ class Order(models.Model):
                 pm = str(self.paymentmethod).strip().lower()
                 if ('cod' in pm or 'cash' in pm) and self.paymentstatus == 'Pending':
                     self.paymentstatus = 'Paid'
-                    
             elif self.orderstatus == 'Cancelled' and not self.cancelled_at:
                 self.cancelled_at = timezone.now()
         send_processing = False
         send_shipped = False
+        send_out_for_delivery = False
         send_delivered = False
         if is_new and self.orderstatus == 'Processing':
             send_processing = True
@@ -283,6 +283,8 @@ class Order(models.Model):
                 send_processing = True
             elif self.orderstatus == 'Shipped':
                 send_shipped = True
+            elif self.orderstatus == 'Out for Delivery':
+                send_out_for_delivery = True
             elif self.orderstatus == 'Delivered':
                 send_delivered = True
         super().save(*args, **kwargs)
@@ -297,6 +299,8 @@ class Order(models.Model):
             self.send_processing_email()
         elif send_shipped:
             self.send_shipped_email()
+        elif send_out_for_delivery:
+            self.send_out_for_delivery_email()
         elif send_delivered:
             self.send_delivery_email()
     def send_processing_email(self):
@@ -340,7 +344,7 @@ class Order(models.Model):
                     'order': self,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
-                html_content = render_to_string('emails/order_out_for_delivery', email_context)
+                html_content = render_to_string('emails/order_out_for_delivery.html', email_context)
                 subject = f"Your Order is Out for Delivery - EiserShop (#{self.amazon_order_id})"
                 email_thread = threading.Thread(
                     target=send_async_order_email, 

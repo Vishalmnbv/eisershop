@@ -205,6 +205,19 @@
                                                             </button>
                                                         </form>
                                                     {% elif status == "Shipped" %}
+                                                        <form method="post" action="{% url 'update_order_status' order.orderid 'Out for Delivery' %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">
+                                                                Out for Delivery
+                                                            </button>
+                                                        </form>
+                                                        <form method="post" action="{% url 'update_order_status' order.orderid 'Cancelled' %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #e7e9ec; color: #0f1111; border: 1px solid #adb1b8; font-size: 0.7rem;">
+                                                                Cancel
+                                                            </button>
+                                                        </form>
+                                                    {% elif status == "Out for Delivery" %}
                                                         <form method="post" action="{% url 'update_order_status' order.orderid 'Delivered' %}">
                                                             {% csrf_token %}
                                                             <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">
