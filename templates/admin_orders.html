@@ -103,7 +103,7 @@
                         <tbody class="bg-white">
                             {% for order in orders %}
                                 {% for item in order.orderitem_set.all %}
-                                    <tr class="border-bottom">                        
+                                    <tr class="border-bottom">        
                                         <td class="px-3 text-nowrap">
                                             <span class="fw-bold text-dark d-block">
                                                 <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y, h:i A" }}
@@ -211,6 +211,8 @@
                                                                 Deliver
                                                             </button>
                                                         </form>
+                                                    {% else %}
+                                                        <span class="text-muted" style="font-size: 0.75rem;">Completed</span>
                                                     {% endif %}
                                                 {% endwith %}
                                             </div>
