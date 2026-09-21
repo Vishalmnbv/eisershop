@@ -2153,6 +2153,11 @@ class UpdateOrderStatusView(LoginRequiredMixin, View):
             if not order.processing_at:
                 order.processing_at = timezone.now()
             order.shipped_at = timezone.now()
+        elif status == "Out for Delivery" and old_status != "Out for Delivery":
+            if not order.processing_at:
+                order.processing_at = timezone.now()
+            if not order.shipped_at:
+                order.shipped_at = timezone.now()
         elif status == "Delivered" and old_status != "Delivered":
             if not order.processing_at:
                 order.processing_at = timezone.now()

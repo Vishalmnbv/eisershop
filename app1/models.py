@@ -333,6 +333,23 @@ class Order(models.Model):
                 email_thread.start()
             except Exception as e:
                 traceback.print_exc()
+    def send_out_for_delivery_email(self):
+        if self.user_id and self.user_id.email:
+            try:
+                email_context = {
+                    'order': self,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/order_out_for_delivery', email_context)
+                subject = f"Your Order is Out for Delivery - EiserShop (#{self.amazon_order_id})"
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.user_id, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
     def send_delivery_email(self):
         if self.user_id and self.user_id.email:
             try:

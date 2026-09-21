@@ -533,6 +533,10 @@
                                                     <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-truck-fast me-1"></i>Shipped
                                                     </span>
+                                                {% elif status == "Out for Delivery" %}
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
+                                                        <i class="fa-solid fa-person-biking me-1"></i>Out for Delivery
+                                                    </span>
                                                 {% elif status == "Delivered" %}
                                                     <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-circle-check me-1"></i>Delivered
@@ -565,6 +569,13 @@
                                                             </button>
                                                         </form>
                                                     {% elif status == "Shipped" %}
+                                                        <form method="post" action="{% url 'update_order_status' order.orderid 'Out for Delivery' %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">
+                                                                Out for Delivery
+                                                            </button>
+                                                        </form>
+                                                    {% elif status == "Out for Delivery" %}
                                                         <form method="post" action="{% url 'update_order_status' order.orderid 'Delivered' %}">
                                                             {% csrf_token %}
                                                             <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">

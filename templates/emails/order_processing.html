@@ -37,20 +37,29 @@
                                                     <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: #067d62;">Processing</p>
                                                 </td> 
                                                 <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
-                                                    <div style="height: 3px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
+                                                    <div style="height: 3px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
                                                 </td> 
                                                 <td align="center" style="width: 65px; vertical-align: top;">
-                                                    <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
-                                                        {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}✓{% else %}3{% endif %}
+                                                    <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
+                                                        {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}✓{% else %}3{% endif %}
                                                     </div>
-                                                    <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Shipped</p>
+                                                    <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Shipped' or order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Shipped</p>
+                                                </td>
+                                                <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
+                                                    <div style="height: 3px; background-color: {% if order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
+                                                </td>
+                                                <td align="center" style="width: 65px; vertical-align: top;">
+                                                    <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
+                                                        {% if order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}✓{% else %}4{% endif %}
+                                                    </div>
+                                                    <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Out for Delivery' or order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Out for Delivery</p>
                                                 </td>
                                                 <td style="width: 35px; vertical-align: middle; padding-bottom: 20px;">
                                                     <div style="height: 3px; background-color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; width: 35px; margin: 0 auto;"></div>
                                                 </td>
                                                 <td align="center" style="width: 65px; vertical-align: top;">
                                                     <div style="width: 30px; height: 30px; line-height: 30px; background-color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#ccc{% endif %}; color: #ffffff; border-radius: 50%; font-size: 14px; font-weight: bold; margin: 0 auto;">
-                                                        {% if order.orderstatus == 'Delivered' %}✓{% else %}4{% endif %}
+                                                        {% if order.orderstatus == 'Delivered' %}✓{% else %}5{% endif %}
                                                     </div>
                                                     <p style="margin: 5px 0 0 0; font-size: 11px; font-weight: bold; color: {% if order.orderstatus == 'Delivered' %}#067d62{% else %}#888{% endif %};">Delivered</p>
                                                 </td>
