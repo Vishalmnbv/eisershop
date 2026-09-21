@@ -161,136 +161,130 @@
                 </div>
             </div>
         </div>
-        <div class="card border-1 rounded-top-3 overflow-hidden" style="background-color: #2b3847;">
-            <div class="card-body py-3 px-4 d-flex align-items-center justify-content-between text-white">
-                <h5 class="fw-bold mb-0 d-flex align-items-center gap-2" style="font-size: 1rem;">
-                    <i class="fa-solid fa-boxes-packing text-warning"></i> Customer Order History
-                </h5>
-                <a href="{% url 'admin_users' %}" class="btn btn-warning btn-sm fw-bold px-3 text-dark border-0" style="background-color: #febd69; font-size: 0.8rem;">
-                    Back to List
-                </a>
-            </div>
-        </div>
-        <div class="card border-1 rounded-bottom-3 mb-4 shadow-sm bg-white overflow-hidden">
-            <div class="card-header py-2 px-4 bg-light border-bottom d-none d-md-block">
-                <div class="row align-items-center text-uppercase text-muted" style="font-size: 0.675rem; font-weight: 700; letter-spacing: 0.5px;">
-                    <div class="col-md-2">Order Date & ID</div>
-                    <div class="col-md-2">Customer & Payment</div>
-                    <div class="col-md-3">Product Info</div>
-                    <div class="col-md-3">Price Breakdown</div>
-                    <div class="col-md-1">Status</div>
-                    <div class="col-md-1 text-end">Action</div>
+        <div class="card border-0 shadow-sm rounded-3 overflow-hidden mb-4">
+                <div class="card-header bg-white py-3 px-4 d-flex align-items-center justify-content-between border-bottom">
+                    <h5 class="fw-bold mb-0 text-dark" style="font-size: 1rem;">
+                        <i class="fa-solid fa-list-check text-warning me-2"></i> Customer Order History
+                    </h5>
+                    <a href="{% url 'admin_users' %}" class="btn btn-outline-secondary btn-sm fw-bold px-3" style="font-size: 0.8rem;">
+                        <i class="fa-solid fa-arrow-left me-1"></i> Back to Users
+                    </a>
                 </div>
-            </div>
-            {% for order in orders %}
-                <div class="p-3 px-4 border-bottom bg-white align-items-center">
-                    <div class="row align-items-center g-3">
-                        <div class="col-6 col-md-2">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Order Date & ID</div>
-                            <div class="text-dark fw-bold" style="font-size: 0.8rem;">
-                                <i class="fa-regular fa-calendar text-warning me-1"></i>{{ order.date|date:"d M Y" }}
-                            </div>
-                            <div class="text-info mt-1" style="font-family: monospace; font-size: 0.75rem;">
-                                #{{ order.amazon_order_id }}
-                            </div>
-                        </div>
-                        <div class="col-6 col-md-2">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Customer & Payment</div>
-                            <div class="fw-semibold text-dark text-uppercase" style="font-size: 0.75rem;">{{ order.username }}</div>
-                            <div class="text-muted mt-1" style="font-size: 0.75rem;">{{ order.paymentmethod }}</div>
-                            <div class="mt-1">
-                                {% if order.payment_status_display == "Paid" %}
-                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size:0.6rem;">
-                                        <i class="fa-solid fa-circle-check me-1"></i> Paid
-                                    </span>
-                                {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
-                                    <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle" style="font-size:0.6rem;">
-                                        <i class="fa-solid fa-ban me-1"></i> Cancelled
-                                    </span>
-                                {% else %}
-                                    <span class="badge rounded-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8; font-size: 0.6rem;">
-                                        <i class="fa-regular fa-clock me-1"></i>Pending
-                                    </span>
-                                {% endif %}
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-3">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Product Info</div>
-                            {% for item in order.orderitem_set.all %}
-                                <div class="d-flex align-items-center gap-2 {% if not forloop.last %}mb-2 pb-2 border-bottom border-light{% endif %}">
-                                    <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}" class="flex-shrink-0">
-                                        <img src="{{ item.productview_id.productimage1 }}" width="40" height="40" class="object-fit-contain border rounded bg-light p-1" alt="{{ item.productview_id.producttitle }}">
-                                    </a>
-                                    <div>
-                                        <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}" class="fw-bold text-decoration-none d-block text-truncate" style="color: darkblue; max-width: 180px; font-size: 0.75rem;" title="{{ item.productview_id.producttitle }}">
-                                            {{ item.productview_id.producttitle }}
-                                        </a>
-                                        <div class="text-muted mt-1" style="font-size: 0.68rem;">
-                                            Qty: {{ item.quantity }}
-                                            {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
-                                                | Size: {{ item.selected_size }}
-                                            {% elif item.size and item.size|lower != "standard" and item.size|lower != "none" %}
-                                                | Size: {{ item.size }}
-                                            {% endif %}
-                                            {% if item.productview_id.productcolor1 %}
-                                                | Color: {{ item.productview_id.productcolor1 }}
-                                            {% endif %}
-                                        </div>
-                                    </div>
-                                </div>
-                            {% empty %}
-                                <div class="text-muted small">No items</div>
-                            {% endfor %}
-                        </div>
-                        <div class="col-6 col-md-3" style="font-size: 0.75rem;">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Price Breakdown</div>
-                            <div class="text-muted">Subtotal: ₹{{ order.calculated_subtotal|format_indian_currency }}</div>
-                            {% if order.coupon_code_display and order.coupon_code_display != "None" %}
-                            <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
-                            {% endif %}
-                            <div class="text-muted">Delivery: {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}₹{{ order.delivery_charge_display|format_indian_currency }}{% else %}Free{% endif %}</div>
-                            <div class="fw-bold text-dark mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
-                        </div>
-                        <div class="col-6 col-md-1">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Status</div>
-                            {% if order.orderstatus == "Delivered" %}
-                                <span class="badge rounded-1 px-2 py-1 fw-semibold bg-success-subtle text-success border border-success-subtle" style="font-size: 0.7rem;">
-                                    Delivered
-                                </span>
-                            {% elif order.orderstatus == "Shipped" %}
-                                <span class="badge rounded-1 px-2 py-1 fw-semibold bg-info-subtle text-info border border-info-subtle" style="font-size: 0.7rem;">
-                                    Shipped
-                                </span>
-                            {% elif order.orderstatus == "Cancelled" %}
-                                <span class="badge rounded-1 px-2 py-1 fw-semibold bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.7rem;">
-                                    Cancelled
-                                </span>
-                            {% elif order.orderstatus == "Processing" %}
-                                <span class="badge rounded-1 px-2 py-1 fw-semibold bg-primary-subtle text-primary border border-primary-subtle" style="font-size: 0.7rem;">
-                                    Processing
-                                </span>
-                            {% else %}
-                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeba8; font-size: 0.7rem;">
-                                    {{ order.orderstatus|default:"Pending" }}
-                                </span>
-                            {% endif %}
-                        </div>
-                        <div class="col-12 col-md-1 text-md-end">
-                            <div class="d-md-none text-uppercase text-muted fw-bold mb-1" style="font-size: 0.65rem;">Action</div>
-                        </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                            <thead class="table-light text-uppercase text-secondary border-bottom" style="font-size: 0.75rem; letter-spacing: 0.5px;">
+                                <tr>
+                                    <th class="py-3 px-3">Order Date & ID</th>
+                                    <th class="py-3 px-3">Customer & Payment</th>
+                                    <th class="py-3 px-3">Product Details</th>
+                                    <th class="py-3 px-3">Price Info</th>
+                                    <th class="py-3 px-3">Status</th>
+                                    <th class="py-3 px-3 text-end">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in orders %}
+                                    {% for item in order.orderitem_set.all %}
+                                        <tr>                                    
+                                            <td class="px-3 text-nowrap">
+                                                <span class="fw-bold text-dark d-block">
+                                                    {{ order.date|date:"d M, Y" }}
+                                                </span>
+                                                <span class="text-muted font-monospace" style="font-size: 0.75rem;">
+                                                    #{{ order.amazon_order_id }}
+                                                </span>
+                                            </td>                                                                       
+                                            <td class="px-3 text-nowrap">
+                                                <span class="fw-semibold text-dark d-block" style="font-size: 0.8rem;">
+                                                    {{ order.username }}
+                                                </span>
+                                                <div class="text-muted" style="font-size: 0.75rem;">
+                                                    <span>{{ order.paymentmethod }}</span>
+                                                    {% if order.payment_status_display == "Paid" %}
+                                                        <span class="badge bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.65rem;">Paid</span>
+                                                    {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
+                                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-1 ms-1" style="font-size: 0.65rem;">Cancelled</span>
+                                                    {% else %}
+                                                        <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-1 ms-1" style="font-size: 0.65rem;">Pending</span>
+                                                    {% endif %}
+                                                </div>
+                                            </td>                                        
+                                            <td class="px-3" style="min-width: 250px;">
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}" class="flex-shrink-0">
+                                                        <img src="{{ item.productview_id.productimage1 }}" width="42" height="42" class="object-fit-contain p-1 border rounded bg-light" alt="{{ item.productview_id.producttitle }}">
+                                                    </a>
+                                                    <div>
+                                                        <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}" class="fw-semibold text-decoration-none text-dark text-truncate d-block" style="max-width: 200px; font-size: 0.8rem;" title="{{ item.productview_id.producttitle }}">
+                                                            {{ item.productview_id.producttitle }}
+                                                        </a>
+                                                        <div class="text-muted" style="font-size: 0.7rem;">
+                                                            <span>Qty: {{ item.quantity }}</span>
+                                                            {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
+                                                                <span class="ms-1">| Size: {{ item.selected_size }}</span>
+                                                            {% elif item.size and item.size|lower != "standard" and item.size|lower != "none" %}
+                                                                <span class="ms-1">| Size: {{ item.size }}</span>
+                                                            {% endif %}
+                                                            {% if item.productview_id.productcolor1 %}
+                                                                <span class="ms-1">| Color: {{ item.productview_id.productcolor1 }}</span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="px-3 text-nowrap" style="font-size: 0.75rem;">
+                                                <div class="text-muted">Sub: ₹{{ order.calculated_subtotal|format_indian_currency }}</div>
+                                                {% if order.coupon_code_display and order.coupon_code_display != "None" %}
+                                                    <div class="text-success">Off: -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
+                                                {% endif %}
+                                                <div class="fw-bold text-dark mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
+                                            </td>                                                               
+                                            <td class="px-3 text-nowrap">
+                                                {% if order.orderstatus == "Delivered" %}
+                                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                        Delivered
+                                                    </span>
+                                                {% elif order.orderstatus == "Shipped" %}
+                                                    <span class="badge bg-info-subtle text-info border border-info-subtle px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                        Shipped
+                                                    </span>
+                                                {% elif order.orderstatus == "Cancelled" %}
+                                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                        Cancelled
+                                                    </span>
+                                                {% elif order.orderstatus == "Processing" %}
+                                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                        Processing
+                                                    </span>
+                                                {% else %}
+                                                    <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                        {{ order.orderstatus|default:"Pending" }}
+                                                    </span>
+                                                {% endif %}
+                                            </td>
+                                            <td class="px-3 text-end text-nowrap">
+                                                <a href="#" class="btn btn-sm btn-light border" style="font-size: 0.75rem;" title="View Details">
+                                                    <i class="fa-solid fa-eye text-secondary"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <div class="rounded-circle mx-auto mb-2 d-flex align-items-center justify-content-center bg-light" style="width: 45px; height: 45px; color: #ff9900;">
+                                                <i class="fa-solid fa-box-open"></i>
+                                            </div>
+                                            <h6 class="fw-bold text-dark mb-1" style="font-size: 0.9rem;">No Orders Found</h6>
+                                            <p class="text-muted small mb-0">This user hasn't placed any orders yet.</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            {% empty %}
-                <div class="text-center py-5">
-                    <div class="py-4">
-                        <div class="rounded-circle mx-auto mb-3 d-flex align-items-center justify-content-center" style="width: 50px; height: 50px; background-color: #fff3cd; color: #ff9900;">
-                            <i class="fa-solid fa-box-open fa-lg"></i>
-                        </div>
-                        <h5 class="fw-bold text-dark mb-1" style="font-size: 1rem;">No Orders Found</h5>
-                        <p class="text-muted small mb-0">This customer account has no recorded purchases.</p>
-                    </div>
-                </div>
-            {% endfor %}
         </div>
     </div>
     <footer class="bg-dark text-light mt-3">
