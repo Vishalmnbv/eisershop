@@ -157,7 +157,7 @@
                                                 <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
                                             {% endif %}
                                             <div class="text-muted">Delivery: {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}₹{{ order.delivery_charge_display|format_indian_currency }}{% else %}Free{% endif %}</div>
-                                            <div class="fw-bold text-dark pt-1 mt-1 border-top">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
+                                            <div class="fw-bold text-dark pt-1 mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
                                         </td>
                                         <td class="px-3 text-nowrap">
                                             {% with status=item.item_status|default:order.orderstatus %}
