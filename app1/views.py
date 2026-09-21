@@ -2144,7 +2144,7 @@ class UpdateOrderStatusView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, orderid, status):
         if not request.user.is_staff:
-            return redirect("login")
+            return redirect("login")   
         order = get_object_or_404(Order, orderid=orderid)
         old_status = order.orderstatus
         order.orderstatus = status
@@ -2179,84 +2179,9 @@ class UpdateOrderStatusView(LoginRequiredMixin, View):
                     product.in_stock = (product.stock > 0)
                     product.save(update_fields=["stock", "sold_count", "in_stock"])
                 order.stock_updated = True
-                order.save()
+                order.save() 
         else:
-            order.save()
-        # PROCESSING EMAIL 
-        if (status == "Processing" or status == "Order Approved & Processing") and old_status not in ["Processing", "Order Approved & Processing"]:
-            try:
-                recipient_email = order.email or (order.user_id.email if order.user_id else None)
-                if recipient_email:
-                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count() if order.user_id else 1
-                    formatted_order_ref = getattr(order, 'amazon_order_id', f"{user_order_no:05d}")
-                    context = {
-                        "user": order.user_id,
-                        "username": order.user_id.username if order.user_id else "",
-                        "order": order,
-                        "formatted_order_id": formatted_order_ref,
-                        "order_items": order.orderitem_set.all(),
-                        "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-                    }
-                    html_content = render_to_string("emails/order_processing.html", context)
-                    subject = f"Your Order #{formatted_order_ref} is now Processing!"
-                    threading.Thread(
-                        target=send_async_email,
-                        args=(recipient_email, subject, html_content),
-                        daemon=True
-                    ).start()
-            except Exception:
-                print("❌ Processing order email error:")
-                traceback.print_exc()
-        # SHIPPED EMAIL 
-        if status == "Shipped" and old_status != "Shipped":
-            try:
-                recipient_email = order.email or (order.user_id.email if order.user_id else None)
-                if recipient_email:
-                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count() if order.user_id else 1
-                    formatted_order_ref = getattr(order, 'amazon_order_id', f"{user_order_no:05d}")
-                    context = {
-                        "user": order.user_id,
-                        "username": order.user_id.username if order.user_id else "",
-                        "order": order,
-                        "formatted_order_id": formatted_order_ref,
-                        "order_items": order.orderitem_set.all(),
-                        "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-                    }
-                    html_content = render_to_string("emails/order_shipped.html", context)
-                    subject = f"Your Order #{formatted_order_ref} has been shipped!"
-                    threading.Thread(
-                        target=send_async_email,
-                        args=(recipient_email, subject, html_content),
-                        daemon=True
-                    ).start()
-            except Exception:
-                print("❌ Shipped order email error:")
-                traceback.print_exc()
-        # DELIVERED EMAIL 
-        if status == "Delivered" and old_status != "Delivered":
-            try:
-                recipient_email = order.email or (order.user_id.email if order.user_id else None)
-                if recipient_email:
-                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count() if order.user_id else 1
-                    formatted_order_ref = getattr(order, 'amazon_order_id', f"{user_order_no:05d}")
-                    context = {
-                        "user": order.user_id,
-                        "username": order.user_id.username if order.user_id else "",
-                        "order": order,
-                        "formatted_order_id": formatted_order_ref,
-                        "order_items": order.orderitem_set.all(),
-                        "logo_url": "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-                    }
-                    html_content = render_to_string("emails/order_delivered.html", context)
-                    subject = f"Your Order #{formatted_order_ref} has been delivered!"
-                    threading.Thread(
-                        target=send_async_email,
-                        args=(recipient_email, subject, html_content),
-                        daemon=True
-                    ).start()
-            except Exception:
-                print("❌ Delivered order email error:")
-                traceback.print_exc()
+            order.save() 
         return redirect("admin_dashboard")
 class ReturnOrderView(LoginRequiredMixin, View):
     login_url = "login"
@@ -2614,6 +2539,7 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
                 order.payment_status_display = "Paid"
+                
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2630,9 +2556,9 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
                 item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
                 if item_size:
                     s_clean = str(item_size).replace(" ", "").lower()
-                    s0 = ( str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                    s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
                     s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
-                    s2 = ( str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                    s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
                     s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
                     if s1 and s1 == s_clean:
                         unit_price = prod.productprice1 or prod.productprice
@@ -2650,11 +2576,12 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
             order.delivery_charge_display = delivery_charge
             discount = order.coupon_discount_display or 0
             order.calculated_total = (order_subtotal - discount + delivery_charge)
+        vendor_products = Productview.objects.filter(vendor=customer).select_related('category_id').order_by('-created_at')
         context = {
-            "vendor": customer,          
+            "vendor": customer,         
             "customer": customer,
             "orders": orders,
-            "products": [],              
+            "products": vendor_products, 
             "total_orders": total_orders,
             "delivered_orders": delivered_orders,
             "processing_orders": processing_orders,

@@ -263,11 +263,12 @@ class Order(models.Model):
                 if not self.shipped_at:
                     self.shipped_at = timezone.now()
                 self.delivered_at = timezone.now()
-                if str(self.paymentmethod).strip().lower() == 'cash on delivery' and self.paymentstatus == 'Pending':
+                pm = str(self.paymentmethod).strip().lower()
+                if ('cod' in pm or 'cash' in pm) and self.paymentstatus == 'Pending':
                     self.paymentstatus = 'Paid'
+                    
             elif self.orderstatus == 'Cancelled' and not self.cancelled_at:
                 self.cancelled_at = timezone.now()
-
         send_processing = False
         send_shipped = False
         send_delivered = False
@@ -309,9 +310,7 @@ class Order(models.Model):
                     daemon=True
                 )
                 email_thread.start()
-                print(f"✅ Processing email thread triggered for {self.user_id.email}")
             except Exception as e:
-                print("❌ Error triggering processing email thread:", str(e))
                 traceback.print_exc()
     def send_shipped_email(self):
         if self.user_id and self.user_id.email:
@@ -322,16 +321,13 @@ class Order(models.Model):
                 }
                 html_content = render_to_string('emails/order_shipped.html', email_context)
                 subject = f"Your Order has been Shipped - EiserShop (#{self.amazon_order_id})"
-                
                 email_thread = threading.Thread(
                     target=send_async_order_email, 
                     args=(self.user_id, html_content, subject), 
                     daemon=True
                 )
                 email_thread.start()
-                print(f"✅ Shipped email thread triggered for {self.user_id.email}")
             except Exception as e:
-                print("❌ Error triggering shipped email thread:", str(e))
                 traceback.print_exc()
     def send_delivery_email(self):
         if self.user_id and self.user_id.email:
@@ -348,9 +344,7 @@ class Order(models.Model):
                     daemon=True
                 )
                 email_thread.start()
-                print(f"✅ Delivery email thread triggered for {self.user_id.email}")
             except Exception as e:
-                print("❌ Error triggering delivery email thread:", str(e))
                 traceback.print_exc()
 class Orderitem(models.Model):
     STATUS_CHOICES = [
