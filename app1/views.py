@@ -2896,7 +2896,7 @@ class AdminDeliveredOrdersView(LoginRequiredMixin, View):
             order.delivery_charge_display = delivery_charge
             discount = order.coupon_discount_display or 0
             order.calculated_total = order_subtotal - discount + delivery_charge
-        return render(request, "admin_delivered_orders.html", {"orders": orders})
+        return render(request, "admin_delivered_orders.html", {"delivered_orders": orders})
 class CancelledOrdersView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request):

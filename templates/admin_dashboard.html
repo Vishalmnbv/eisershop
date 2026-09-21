@@ -494,7 +494,7 @@
                                             </div>
                                         </td>
                                         <td class="px-3 text-nowrap" style="font-size: 0.75rem;">
-                                            <div class="text-muted">Price: ₹{% if order.calculated_unit_price %}{{ order.calculated_unit_price|format_indian_currency }}{% else %}{{ order.productview_id.productprice|format_indian_currency }}{% endif %}</div>
+                                            <div class="text-muted">Price: ₹{% if item.calculated_unit_price %}{{ item.calculated_unit_price|format_indian_currency }}{% else %}{{ item.productview_id.productprice|format_indian_currency }}{% endif %}</div>
                                             <div class="text-muted">Subtotal: ₹{{ order.calculated_subtotal|format_indian_currency }}</div>
                                             {% if order.coupon_code_display and order.coupon_code_display != "None" %}
                                                 <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
