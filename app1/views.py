@@ -2651,13 +2651,16 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
             discount = order.coupon_discount_display or 0
             order.calculated_total = (order_subtotal - discount + delivery_charge)
         context = {
+            "vendor": customer,          
             "customer": customer,
             "orders": orders,
+            "products": [],              
             "total_orders": total_orders,
             "delivered_orders": delivered_orders,
             "processing_orders": processing_orders,
             "cancelled_orders": cancelled_orders,
             "return_orders": return_orders,
+            "total_revenue": total_spent, 
             "total_spent": total_spent,
             "users": users,
         }
