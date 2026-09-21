@@ -432,13 +432,13 @@
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="font-size: 0.85rem;">
+                    <table class="table align-middle mb-0" style="font-size: 0.85rem;">
                         <thead style="background-color: #232f3e; color: #fff; font-size: 0.75rem; text-transform: uppercase;">
                             <tr>
                                 <th class="py-3 px-3">Order Date & ID</th>
                                 <th class="py-3 px-3">Customer & Payment</th>
                                 <th class="py-3 px-3">Product Info</th>
-                                <th class="py-3 px-3">Price Breakdown</th>
+                                <th class="py-3 px-3">Price</th>
                                 <th class="py-3 px-3">Status</th>
                                 <th class="py-3 px-3 text-end">Action</th>
                             </tr>
@@ -499,7 +499,7 @@
                                                 <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
                                             {% endif %}
                                             <div class="text-muted">Delivery: {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}₹{{ order.delivery_charge_display|format_indian_currency }}{% else %}Free{% endif %}</div>
-                                            <div class="fw-bold text-dark border-top pt-1 mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
+                                            <div class="fw-bold text-dark pt-1 mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
                                         </td>
                                         <td class="px-3 text-nowrap">
                                             {% if item.item_status == "Pending" or item.item_status == "Processing" %}
@@ -512,7 +512,7 @@
                                                 </span>
                                             {% elif item.item_status == "Delivered" %}
                                                 <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
-                                                    Delivered
+                                                    <i class="fa-solid fa-circle-check me-1"></i>Delivered
                                                 </span>
                                             {% elif item.item_status == "Cancelled" %}
                                                 <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
@@ -546,8 +546,6 @@
                                                             Deliver
                                                         </button>
                                                     </form>
-                                                {% else %}
-                                                    <span class="text-muted small">-</span>
                                                 {% endif %}
                                             </div>
                                         </td>
