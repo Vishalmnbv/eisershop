@@ -436,7 +436,6 @@
                         <div class="col-12 col-xl-6 mb-4">
                             <div class="card h-100 mb-0">
                                 <div class="card-header py-3 px-3" style="background-color: #f8f9fa;">
-                                    <!-- Header elements organized nicely in a single row -->
                                     <div class="row align-items-center g-2" style="font-size: 0.75rem;">           
                                         <div class="col-3">
                                             <span class="text-muted d-block text-uppercase fw-semibold" style="font-size: 0.65rem; letter-spacing: 0.5px;">ORDER DATE</span>
@@ -478,85 +477,82 @@
                                 </div>
                                 <div class="card-body p-0">
                                     {% for item in order.orderitem_set.all %}
-                                        <div class="p-3 px-4 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-3">                                                                                                                                                 
-                                            <div class="d-flex align-items-center me-3">
-                                                <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="flex-shrink-0 me-3">
+                                        <div class="p-3 px-3 d-flex align-items-center justify-content-between border-bottom flex-wrap gap-2">                                                                                                                                                 
+                                            <div class="d-flex align-items-center me-2">
+                                                <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="flex-shrink-0 me-2">
                                                     <div class="p-1 bg-white">
-                                                        <img src="{{ item.productview_id.productimage1 }}" width="50" height="50" class="object-fit-contain" alt="{{ item.productview_id.producttitle }}">
+                                                        <img src="{{ item.productview_id.productimage1 }}" width="45" height="45" class="object-fit-contain" alt="{{ item.productview_id.producttitle }}">
                                                     </div>
                                                 </a>
                                                 <div>
-                                                    <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="fw-bold text-decoration-none d-block mb-1 text-truncate" style="color: darkblue; max-width: 400px; font-size: 0.85rem;" title="{{ item.productview_id.producttitle }}">
+                                                    <a href="{% url 'productview' item.productview_id.category_id.categoryid item.productview_id.productviewid %}?ref_page={{ page_obj.number }}" class="fw-bold text-decoration-none d-block mb-1 text-truncate" style="color: darkblue; max-width: 220px; font-size: 0.8rem;" title="{{ item.productview_id.producttitle }}">
                                                         {{ item.productview_id.producttitle }}
                                                     </a>
-                                                    <div class="text-muted small" style="font-size: 0.75rem;">
-                                                        <span class="me-3">
-                                                            <strong>Price:</strong> 
-                                                            ₹{% if item.calculated_unit_price %}{{ item.calculated_unit_price|format_indian_currency }}{% else %}{{ item.productview_id.productprice|format_indian_currency }}{% endif %}
+                                                    <div class="text-muted small" style="font-size: 0.7rem;">
+                                                        <span class="me-2">
+                                                            <strong>Price:</strong> ₹{% if item.calculated_unit_price %}{{ item.calculated_unit_price|format_indian_currency }}{% else %}{{ item.productview_id.productprice|format_indian_currency }}{% endif %}
                                                             <span class="mx-1">|</span>
                                                         </span>
-                                                        <span class="me-3">
+                                                        <span class="me-2">
                                                             <strong>Qty:</strong> {{ item.quantity }}
                                                             <span class="mx-1">|</span>
                                                         </span>
                                                         {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
-                                                            <span class="me-3">
-                                                                <strong>Size:</strong> <span class="badge bg-light text-dark border">{{ item.selected_size }}</span>
+                                                            <span class="me-2">
+                                                                <strong>Size:</strong> {{ item.selected_size }}
                                                                 <span class="mx-1">|</span>
                                                             </span>
                                                         {% elif item.size and item.size|lower != "standard" and item.size|lower != "none" %}
-                                                            <span class="me-3">
-                                                                <strong>Size:</strong> <span class="badge bg-light text-dark border">{{ item.size }}</span>
+                                                            <span class="me-2">
+                                                                <strong>Size:</strong> {{ item.size }}
                                                                 <span class="mx-1">|</span>
                                                             </span>
                                                         {% endif %}
                                                         {% if item.productview_id.productcolor1 %}
-                                                            <span class="me-3">
-                                                                <strong>Color:</strong> {{ item.productview_id.productcolor1 }}             
-                                                            </span>
+                                                            <span><strong>Color:</strong> {{ item.productview_id.productcolor1 }}</span>
                                                         {% endif %} 
                                                     </div>     
                                                 </div>
                                             </div>                                                                                                                                                                                                                                                                  
-                                            <div class="text-md-end d-flex flex-column align-items-md-end justify-content-between">
+                                            <div class="d-flex flex-column align-items-end justify-content-between">
                                                 {% if item.item_status == "Pending" or item.item_status == "Processing" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold mb-2" style="background-color: #fef8f2; color: #c45500; border: 1px solid #fbd8b4; font-size: 0.75rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold mb-1" style="background-color: #fef8f2; color: #c45500; border: 1px solid #fbd8b4; font-size: 0.7rem;">
                                                         <i class="fa-regular fa-clock me-1"></i> {{ item.item_status|default:"Pending" }}
                                                     </span>
-                                                    <div class="d-flex gap-2 w-100 justify-content-md-end">
+                                                    <div class="d-flex gap-1">
                                                         <form method="post" action="{% url 'update_order_status' order.orderid 'Shipped' %}">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="btn btn-sm rounded-1 px-3 fw-semibold shadow-sm" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.75rem;">
-                                                                Mark Shipped
+                                                            <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold shadow-sm" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">
+                                                                Ship
                                                             </button>
                                                         </form>
                                                         <form method="post" action="{% url 'update_order_status' order.orderid 'Cancelled' %}">
                                                             {% csrf_token %}
-                                                            <button type="submit" class="btn btn-sm rounded-1 px-3 fw-semibold shadow-sm" style="background-color: #e7e9ec; color: #0f1111; border: 1px solid #adb1b8; font-size: 0.75rem;">
+                                                            <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold shadow-sm" style="background-color: #e7e9ec; color: #0f1111; border: 1px solid #adb1b8; font-size: 0.7rem;">
                                                                 Cancel
                                                             </button>
                                                         </form>
                                                     </div>
                                                 {% elif item.item_status == "Shipped" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold mb-2" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.75rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold mb-1" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-truck-fast me-1"></i> Shipped
                                                     </span>
-                                                    <form method="post" action="{% url 'update_order_status' order.orderid 'Delivered' %}" class="w-100">
+                                                    <form method="post" action="{% url 'update_order_status' order.orderid 'Delivered' %}">
                                                         {% csrf_token %}
-                                                        <button type="submit" class="btn btn-sm rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.75rem;">
-                                                            Mark Delivered
+                                                        <button type="submit" class="btn btn-sm py-1 px-2 rounded-1 fw-semibold" style="background-color: #ffd814; color: #0f1111; border: 1px solid #fcd200; font-size: 0.7rem;">
+                                                            Deliver
                                                         </button>
                                                     </form>
                                                 {% elif item.item_status == "Delivered" %}
-                                                    <span class="badge rounded-1 px-3 py-2 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.75rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-circle-check me-1"></i> Delivered
                                                     </span>
                                                 {% elif item.item_status == "Cancelled" %}
-                                                    <span class="badge rounded-1 px-3 py-2 fw-semibold" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.75rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-ban me-1"></i> Cancelled
                                                     </span>
                                                 {% else %}
-                                                    <span class="badge rounded-1 px-3 py-2 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.75rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
                                                         <i class="fa-regular fa-clock me-1"></i> {{ item.item_status|default:"Pending" }}
                                                     </span>
                                                 {% endif %}
@@ -566,7 +562,7 @@
                                         <div class="p-3 text-center text-muted">No products found for this order.</div>
                                     {% endfor %} 
                                     
-                                    <div class="p-3 px-4 bg-light border-top">
+                                    <div class="p-3 bg-light border-top">
                                         <div class="d-flex justify-content-between text-muted small py-1">
                                             <span>Subtotal</span>
                                             <span>₹{{ order.calculated_subtotal|format_indian_currency }}</span>
@@ -574,9 +570,7 @@
                                         {% if order.coupon_code_display and order.coupon_code_display != "None" %}
                                         <div class="d-flex justify-content-between text-muted small py-1">
                                             <span>Coupon ({{ order.coupon_code_display }})</span>
-                                            <span class="text-success">
-                                                - ₹{{ order.coupon_discount_display|format_indian_currency }}
-                                            </span>
+                                            <span class="text-success">- ₹{{ order.coupon_discount_display|format_indian_currency }}</span>
                                         </div>
                                         {% endif %}
                                         <div class="d-flex justify-content-between text-muted small py-1">
@@ -589,7 +583,7 @@
                                                 {% endif %}
                                             </span>
                                         </div>
-                                        <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.9rem;">
+                                        <div class="d-flex justify-content-between fw-bold text-dark py-1 border-top mt-1 pt-2" style="font-size: 0.85rem;">
                                             <span>Total</span>
                                             <span>₹{{ order.calculated_total|format_indian_currency }}</span>
                                         </div>
