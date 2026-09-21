@@ -194,6 +194,7 @@ class Order(models.Model):
         ("Paid", "Paid"),
         ("Processing", "Processing"),
         ("Shipped", "Shipped"),
+        ('Out for Delivery', 'Out for Delivery'),
         ("Delivered", "Delivered"),
         ("Cancelled", "Cancelled"),
     )
@@ -228,11 +229,14 @@ class Order(models.Model):
     def status_step(self):
         mapping = {
             'Pending': 1,
-            'Paid': 2,        
-            'Processing': 3, 
-            'Shipped': 4,    
-            'Delivered': 5,   
-            'Cancelled': 0, 
+            'Ordered': 1,
+            'Paid': 2,
+            'Confirmed': 2,
+            'Processing': 3,
+            'Shipped': 4,
+            'Out for Delivery': 5,
+            'Delivered': 6,
+            'Cancelled': 0,
         }
         return mapping.get(self.orderstatus, 1)
     def save(self, *args, **kwargs):

@@ -100,54 +100,71 @@
         <div class="card premium-card mb-4 p-3 border">
             <div class="card-body">
                 <h5 class="fw-bold mb-4 text-dark"><i class="fa-solid fa-route text-primary me-2"></i>Order Shipment Journey</h5>
-                <div class="position-relative px-2 py-3">
-                    <div style="position: absolute; top: 40%; left: 10%; right: 10%; height: 5px; background-color: #e9ecef; transform: translateY(-50%); z-index: 1; border-radius: 10px;">
-                        <div style="height: 100%; background-color: #198754; border-radius: 10px; width: {% if order.status_step == 1 %}0%{% elif order.status_step == 2 %}25%{% elif order.status_step == 3 %}50%{% elif order.status_step == 4 %}75%{% elif order.status_step == 5 %}100%{% else %}0%{% endif %}; transition: width 0.4s ease;">
+                {% if order.orderstatus == "Cancelled" %}
+                    <div class="alert alert-danger d-flex align-items-center gap-2 py-2 my-3" role="alert" style="font-size: 0.85rem;">
+                        <i class="fa-solid fa-ban fs-5"></i>
+                        <div>
+                            <strong>Order Cancelled:</strong> This order has been cancelled and is no longer active.
                         </div>
                     </div>
-                    <div class="d-flex justify-content-between position-relative" style="z-index: 2;">
-                        <div class="text-center bg-white px-1" style="width: 20%;">
-                            <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;">✓</div>
-                            <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Ordered</div>
+                {% else %}
+                    <div class="position-relative my-4 px-3">
+                        <div class="position-absolute top-50 translate-middle-y bg-light border rounded" style="height: 4px; left: 35px; right: 35px; z-index: 1;">
+                            <div class="bg-success rounded h-100" style="transition: width 0.4s ease; width: {% if order.status_step == 1 %}0%{% elif order.status_step == 2 %}20%{% elif order.status_step == 3 %}40%{% elif order.status_step == 4 %}60%{% elif order.status_step == 5 %}80%{% elif order.status_step == 6 %}100%{% else %}0%{% endif %};"></div>
                         </div>
-                        <div class="text-center bg-white px-1" style="width: 20%;">
-                            {% if order.status_step >= 2 %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;">✓</div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Confirmed</div>
-                            {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Confirmed</div>
-                            {% endif %}
-                        </div>
-                        <div class="text-center bg-white px-1" style="width: 20%;">
-                            {% if order.status_step >= 3 %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;">✓</div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Processing</div>
-                            {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Processing</div>
-                            {% endif %}
-                        </div>
-                        <div class="text-center bg-white px-1" style="width: 20%;">
-                            {% if order.status_step >= 4 %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;">✓</div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Shipped</div>
-                            {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Shipped</div>
-                            {% endif %}
-                        </div>
-                        <div class="text-center bg-white px-1" style="width: 20%;">
-                            {% if order.status_step == 5 %}
-                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%; font-size: 14px;">✓</div>
-                                <div class="timeline-text fw-bold text-success mt-2" style="font-size: 11px;">Delivered</div>
-                            {% else %}
-                                <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm" style="width: 35px; height: 35px; border-radius: 50%;"></div>
-                                <div class="timeline-text text-muted mt-2" style="font-size: 11px;">Delivered</div>
-                            {% endif %}
+                        <div class="d-flex justify-content-between align-items-center position-relative text-center" style="z-index: 2;">
+                            <div class="bg-white px-1">
+                                <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                <div class="timeline-text fw-bold text-success mt-1" style="font-size: 9px;">Ordered</div>
+                            </div>
+                            <div class="bg-white px-1">
+                                {% if order.status_step >= 2 %}
+                                    <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                    <div class="timeline-text fw-bold text-success mt-1" style="font-size: 9px;">Confirmed</div>
+                                {% else %}
+                                    <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px;"></div>
+                                    <div class="timeline-text text-muted mt-1" style="font-size: 9px;">Confirmed</div>
+                                {% endif %}
+                            </div>
+                            <div class="bg-white px-1">
+                                {% if order.status_step >= 3 %}
+                                    <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                    <div class="timeline-text fw-bold text-success mt-1" style="font-size: 9px;">Processing</div>
+                                {% else %}
+                                    <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px;"></div>
+                                    <div class="timeline-text text-muted mt-1" style="font-size: 9px;">Processing</div>
+                                {% endif %}
+                            </div>
+                            <div class="bg-white px-1">
+                                {% if order.status_step >= 4 %}
+                                    <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                    <div class="timeline-text fw-bold text-success mt-1" style="font-size: 9px;">Shipped</div>
+                                {% else %}
+                                    <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px;"></div>
+                                    <div class="timeline-text text-muted mt-1" style="font-size: 9px;">Shipped</div>
+                                {% endif %}
+                            </div>
+                            <div class="bg-white px-1">
+                                {% if order.status_step >= 5 %}
+                                    <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                    <div class="timeline-text fw-bold text-success mt-1" style="font-size: 8px;">Out for Delivery</div>
+                                {% else %}
+                                    <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px;"></div>
+                                    <div class="timeline-text text-muted mt-1" style="font-size: 8px;">Out for Delivery</div>
+                                {% endif %}
+                            </div>
+                            <div class="bg-white px-1">
+                                {% if order.status_step >= 6 %}
+                                    <div class="timeline-circle bg-success text-white d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px; font-size: 11px;">✓</div>
+                                    <div class="timeline-text fw-bold text-success mt-1" style="font-size: 9px;">Delivered</div>
+                                {% else %}
+                                    <div class="timeline-circle bg-white border text-muted d-inline-flex align-items-center justify-content-center shadow-sm rounded-circle" style="width: 28px; height: 28px;"></div>
+                                    <div class="timeline-text text-muted mt-1" style="font-size: 9px;">Delivered</div>
+                                {% endif %}
+                            </div>
                         </div>
                     </div>
-                </div>
+                {% endif %}
                 <div class="alert alert-warning mt-4 mb-3 text-center py-2" style="font-size: 12px;">
                     <i class="fa-solid fa-circle-info me-2"></i>
                     <strong>This is your Order Confirm Order page.</strong><br>

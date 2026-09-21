@@ -36,6 +36,7 @@ urlpatterns = [
     path("admin-dashboard/orders/",AdminOrdersView.as_view(),name="admin_orders",),
     path("processing-orders/",ProcessingOrdersView.as_view(),name="processing_orders",),
     path("shipped-orders/",ShippedOrdersView.as_view(),name="shipped_orders",),
+    path("out-for-delivery-orders/", AdminOutForDeliveryOrdersView.as_view(), name="out_for_delivery_orders"),
     path("admin-dashboard/delivered-orders/",AdminDeliveredOrdersView.as_view(),name="admin_delivered_orders",),
     path("cancelled-orders/",CancelledOrdersView.as_view(),name="cancelled_orders",),
     path("admin-dashboard/revenue/",AdminRevenueView.as_view(),name="admin_revenue",),

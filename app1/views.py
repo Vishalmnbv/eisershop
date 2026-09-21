@@ -488,14 +488,11 @@ class EditProfileView(LoginRequiredMixin, View):
     template_name = "editprofile.html"
     def get(self, request):
         profile, created = Profile.objects.get_or_create(user=request.user)
-        if not profile.delivery_address:
-            last_order = Order.objects.filter(user_id=request.user).order_by("-date").first()
-            if last_order and last_order.address:
-                profile.delivery_address = last_order.address
-        if not profile.mobile:
-            last_order = Order.objects.filter(user_id=request.user).order_by("-date").first()
-            if last_order and hasattr(last_order, 'mobile') and last_order.mobile:
-                profile.mobile = last_order.mobile
+        last_order = Order.objects.filter(user_id=request.user).order_by("-date").first()
+        if last_order and hasattr(last_order, 'address') and last_order.address:
+            profile.delivery_address = last_order.address
+        else:
+            profile.delivery_address = ""
         context = {"category": Category.objects.all(), "profile": profile}
         return render(request, self.template_name, context)
     def post(self, request):
@@ -2285,6 +2282,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
         pending_orders = Order.objects.filter(orderstatus="Pending").count()
         processing_orders = Order.objects.filter(orderstatus="Processing").count()
         shipped_orders = Order.objects.filter(orderstatus="Shipped").count()
+        out_for_delivery_orders = Order.objects.filter(orderstatus="Out for Delivery").count()
         cancelled_orders = Order.objects.filter(orderstatus="Cancelled").count()
         total_revenue = Order.objects.filter(orderstatus="Delivered").aggregate(total=Coalesce(Sum("total"), 0))["total"]
         # Today Sales
@@ -2469,6 +2467,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             "pending_orders": pending_orders,
             "processing_orders": processing_orders,
             "shipped_orders": shipped_orders,
+            "out_for_delivery_orders": out_for_delivery_orders,
             "cancelled_orders": cancelled_orders,
             "total_revenue": total_revenue,
             "sales_labels": sales_labels,
@@ -2539,7 +2538,6 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
                 order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
             else:
                 order.payment_status_display = "Paid"
-                
             if hasattr(order, "coupon") and order.coupon:
                 order.coupon_code_display = order.coupon.code
                 order.coupon_discount_display = getattr(order, "coupon_discount", 0)
@@ -2552,36 +2550,36 @@ class AdminCustomerDetailView(LoginRequiredMixin, View):
             order_subtotal = 0
             for item in order.orderitem_set.all():
                 prod = item.productview_id
-                unit_price = prod.productprice
-                item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
-                if item_size:
-                    s_clean = str(item_size).replace(" ", "").lower()
-                    s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
-                    s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
-                    s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
-                    s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
-                    if s1 and s1 == s_clean:
-                        unit_price = prod.productprice1 or prod.productprice
-                    elif s2 and s2 == s_clean:
-                        unit_price = prod.productprice2 or prod.productprice
-                    elif s3 and s3 == s_clean:
-                        unit_price = prod.productprice3 or prod.productprice
-                    elif s0 and s0 == s_clean:
-                        unit_price = prod.productprice
-                item.calculated_unit_price = unit_price
-                item.calculated_subtotal = unit_price * item.quantity
-                order_subtotal += item.calculated_subtotal
+                if prod:
+                    unit_price = prod.productprice
+                    item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                    if item_size:
+                        s_clean = str(item_size).replace(" ", "").lower()
+                        s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                        s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                        s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                        s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                        if s1 and s1 == s_clean:
+                            unit_price = prod.productprice1 or prod.productprice
+                        elif s2 and s2 == s_clean:
+                            unit_price = prod.productprice2 or prod.productprice
+                        elif s3 and s3 == s_clean:
+                            unit_price = prod.productprice3 or prod.productprice
+                        elif s0 and s0 == s_clean:
+                            unit_price = prod.productprice
+                    item.calculated_unit_price = unit_price
+                    item.calculated_subtotal = unit_price * item.quantity
+                    order_subtotal += item.calculated_subtotal 
             order.calculated_subtotal = order_subtotal
             delivery_charge = getattr(order, "delivery_charge", 0) or 0
             order.delivery_charge_display = delivery_charge
             discount = order.coupon_discount_display or 0
             order.calculated_total = (order_subtotal - discount + delivery_charge)
-        vendor_products = Productview.objects.filter(vendor=customer).select_related('category_id').order_by('-created_at')
+        products = []
         context = {
-            "vendor": customer,         
             "customer": customer,
             "orders": orders,
-            "products": vendor_products, 
+            "products": products,  
             "total_orders": total_orders,
             "delivered_orders": delivered_orders,
             "processing_orders": processing_orders,
@@ -2774,6 +2772,60 @@ class ShippedOrdersView(LoginRequiredMixin, View):
             discount = order.coupon_discount_display or 0
             order.calculated_total = order_subtotal - discount + delivery_charge
         return render(request, "shipped_orders.html", {"orders": orders})
+class AdminOutForDeliveryOrdersView(LoginRequiredMixin, View):
+    login_url = "login"
+    def get(self, request):
+        if not request.user.is_staff:
+            return redirect("login") 
+        orders = (Order.objects.filter(orderstatus="Out for Delivery").select_related("user_id").prefetch_related("orderitem_set__productview_id").order_by("-date"))
+        for order in orders:
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+            else:
+                order.payment_status_display = "Paid"
+            if hasattr(order, "coupon") and order.coupon:
+                order.coupon_code_display = order.coupon.code
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+            elif hasattr(order, "coupon_code") and order.coupon_code:
+                order.coupon_code_display = order.coupon_code
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+            else:
+                order.coupon_code_display = None
+                order.coupon_discount_display = 0
+            order_subtotal = 0
+            for item in order.orderitem_set.all():
+                prod = item.productview_id
+                if prod:
+                    unit_price = prod.productprice
+                    item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                    if item_size:
+                        s_clean = str(item_size).replace(" ", "").lower()
+                        s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                        s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                        s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                        s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                        if s1 and s1 == s_clean:
+                            unit_price = prod.productprice1 or prod.productprice
+                        elif s2 and s2 == s_clean:
+                            unit_price = prod.productprice2 or prod.productprice
+                        elif s3 and s3 == s_clean:
+                            unit_price = prod.productprice3 or prod.productprice
+                        elif s0 and s0 == s_clean:
+                            unit_price = prod.productprice
+                    item.calculated_unit_price = unit_price
+                    item.calculated_subtotal = unit_price * item.quantity
+                    order_subtotal += item.calculated_subtotal
+            order.calculated_subtotal = order_subtotal
+            delivery_charge = getattr(order, "delivery_charge", 0) or 0
+            order.delivery_charge_display = delivery_charge
+            discount = order.coupon_discount_display or 0
+            order.calculated_total = order_subtotal - discount + delivery_charge
+        return render(request, "admin_out_for_delivery_orders.html", {"orders": orders})
 class AdminDeliveredOrdersView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request):
