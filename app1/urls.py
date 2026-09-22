@@ -9,6 +9,7 @@ urlpatterns = [
     path("editprofile/",EditProfileView.as_view(),name='editprofile'),
     path("collection/<int:categoryid>/",CollectionView.as_view(),name="collection",),
     path("productview/<int:categoryid>/<int:productviewid>/",ProductDetailView.as_view(),name="productview",),
+    path('add-review/<int:productviewid>/',add_review_view, name='add_review_page'),
     path("delete-review/<int:reviewid>/",DeleteReviewView.as_view(),name="delete_review",),
     path("profile/<int:user_id>/<int:categoryid>/<int:productviewid>/",ProfileView.as_view(),name="profile",),
     path("customerreview/<int:categoryid>/<int:productviewid>/",CustomerReviewView.as_view(),name="customerreview",),

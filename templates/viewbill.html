@@ -109,6 +109,8 @@
                                 <span class="badge bg-info text-dark px-3 py-1.5  p-2"><i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing</span>
                             {% elif order.orderstatus == "Shipped" %}
                                 <span class="badge bg-primary px-3 py-1.5 p-2"><i class="fa-solid fa-truck me-1"></i>Shipped</span>
+                            {% elif order.orderstatus == "Out for Delivery" %}
+                            <span class="badge bg-info text-white status-badge p-2"><i class="fa-solid fa-person-biking me-1"></i>Out for Delivery</span>
                             {% elif order.orderstatus == "Delivered" %}
                                 <span class="badge bg-success px-3 py-1.5 p-2"><i class="fa-solid fa-circle-check me-1"></i>Delivered</span>
                             {% elif order.orderstatus == "Cancelled" %}

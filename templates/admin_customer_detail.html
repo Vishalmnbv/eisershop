@@ -156,7 +156,7 @@
                 <div class="card border-1 rounded-3 text-center h-100 py-1 bg-white">
                     <div class="card-body p-3">
                         <div class="text-uppercase text-muted fw-bold" style="font-size: 0.65rem; letter-spacing: 0.8px;">Total Spent</div>
-                        <h3 class="fw-bold text-dark mb-0 mt-1">₹{{ total_spent|default:"0" }}</h3>
+                        <h3 class="fw-bold text-dark mb-0 mt-1">₹{{ total_spent|format_indian_currency }}</h3>
                     </div>
                 </div>
             </div>
@@ -239,7 +239,7 @@
                                             <div class="text-muted">Price: ₹{% if item.calculated_unit_price %}{{ item.calculated_unit_price|format_indian_currency }}{% else %}{{ item.productview_id.productprice|format_indian_currency }}{% endif %}</div>
                                             <div class="text-muted">Subtotal: ₹{{ order.calculated_subtotal|default:order.subtotal }}</div>
                                             {% if order.coupon_code_display and order.coupon_code_display != "None" %}
-                                                <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display }}</div>
+                                                <div class="text-success">Coupon ({{ order.coupon_code_display }}): -₹{{ order.coupon_discount_display|format_indian_currency }}</div>
                                             {% endif %}
                                             <div class="text-muted">Delivery: {% if order.delivery_charge_display and order.delivery_charge_display > 0 %}₹{{ order.delivery_charge_display }}{% else %}Free{% endif %}</div>
                                             <div class="fw-bold text-dark pt-1 mt-1">Total: ₹{{ order.calculated_total|default:order.total }}</div>

@@ -89,7 +89,7 @@
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label">Phone</label>
-                                    <input type="tel" name="number" id="number" value="{% if last_order %}{{ last_order.mobile }}{% elif user.profile.mobile %}{{ user.profile.mobile }}{% endif %}" maxlength="10" minlength="10" pattern="[0-9]{10}" class="form-control shadow-none" placeholder="Enter 10-digit mobile number" required >
+                                    <input type="tel" name="number" id="number" value="{% if last_order %}{{ last_order.number }}{% elif user.profile.mobile %}{{ user.profile.mobile }}{% endif %}" maxlength="10" minlength="10" pattern="[0-9]{10}" class="form-control shadow-none" placeholder="Enter 10-digit mobile number" required>
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label">Username</label>

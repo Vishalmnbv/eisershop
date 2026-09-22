@@ -83,13 +83,13 @@
                                 </div>
                                 <div>
                                     <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
-                                        {{ order.orderstatus }}
+                                       <i class="fa-solid fa-circle-check me-1"></i>{{ order.orderstatus }}
                                     </span>
                                 </div>
                             </div>
                             <div class="row align-items-center g-3 pt-1">
                                 <div class="col-3 col-sm-2 text-center">
-                                    <img src="{{ order_item.productview_id.productimage1 }}" class="img-fluid rounded border bg-white p-1" style="max-height: 75px; object-fit: contain;">
+                                    <img src="{{ order_item.productview_id.productimage1 }}" class="img-fluid  p-1" style="max-height: 75px; object-fit: contain;">
                                 </div>
                                 <div class="col-9 col-sm-7">
                                     <h6 class="fw-semibold text-dark mb-1 text-truncate" style="font-size: 0.9rem;" title="{{ order_item.productview_id.producttitle }}">

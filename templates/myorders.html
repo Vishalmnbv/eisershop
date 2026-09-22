@@ -167,6 +167,8 @@
                                     <span class="badge bg-info text-dark px-3 py-2"><i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing</span>
                                 {% elif order.orderstatus == "Shipped" %}
                                     <span class="badge bg-primary px-3 py-2"><i class="fa-solid fa-truck me-1"></i> Shipped</span>
+                                {% elif order.orderstatus == "Out for Delivery" %}
+                                    <span class="badge bg-info text-white status-badge p-2"><i class="fa-solid fa-person-biking me-1"></i>Out for Delivery</span>
                                 {% elif order.orderstatus == "Delivered" %}
                                     <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i> Delivered</span>
                                     {% if order.paymentmethod == "Cash on Delivery" %}
@@ -255,6 +257,17 @@
                                                     <a href="{% url 'return_order' item.orderitemid %}" id="returnBtn{{ item.orderitemid }}" class="btn btn-secondary btn-sm px-3">
                                                         <i class="fa-solid fa-rotate-left me-1"></i>Return Item
                                                     </a>
+                                                {% endif %}
+                                                {% if order.orderstatus == "Delivered" %}
+                                                    {% if item.has_reviewed %}
+                                                        <span class="badge bg-secondary px-3 py-2 fw-bold text-white">
+                                                            <i class="fa-solid fa-check me-1"></i>Reviewed
+                                                        </span>
+                                                    {% else %}
+                                                        <a href="{% url 'add_review_page' item.productview_id.productviewid %}" class="btn btn-primary btn-sm px-3 fw-bold">
+                                                            <i class="fa-solid fa-star me-1 text-warning"></i>Rate & Review
+                                                        </a>
+                                                    {% endif %}
                                                 {% endif %}
                                             </div>
                                         </div>

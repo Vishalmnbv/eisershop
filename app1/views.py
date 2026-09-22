@@ -30,6 +30,7 @@ from django.http import Http404
 from django.urls import reverse
 from django.contrib import auth
 from .utils import apply_rating, send_async_login_email, send_async_email
+from django.contrib.auth.decorators import login_required
 from urllib.parse import quote
 from django.views import View
 from user_agents import parse
@@ -50,6 +51,7 @@ import re
 import base64
 import resend
 from django.contrib.staticfiles import finders
+from django.utils.safestring import mark_safe
 # Create your views here.
 def send_email_thread(email):
     try:
@@ -516,7 +518,8 @@ class EditProfileView(LoginRequiredMixin, View):
             if uploaded_image:
                 profile.image = uploaded_image
             profile.save()  
-            messages.success(request, f"Hello {user.username}, your profile has been updated successfully.")
+            success_msg = f'<div class="d-flex align-items-center"><img src="/static/IMAGES/favicon.png" style="width: 40px; height: 40px; object-fit: contain;" class="me-2"> Hello {user.username}, your profile has been updated successfully.</div>'
+            messages.success(request, mark_safe(success_msg))
             return redirect("home")
         except IntegrityError:
             messages.error(request, "Username or Email already exists.")
@@ -1424,6 +1427,33 @@ class ProductDetailView(DetailView):
         context["reviews"] = reviews
         context["all_reviews_count"] = Review.objects.filter(product=product).count()
         return context
+@login_required
+def add_review_view(request, productviewid):
+    product = get_object_or_404(Productview, productviewid=productviewid)
+    if request.method == 'POST':
+        rating = request.POST.get("rating")
+        review_text = request.POST.get("review")
+        size = request.POST.get("size")
+        color = request.POST.get("color")
+        country = request.POST.get("country")
+        image = request.FILES.get("image")
+        if rating and review_text:
+            Review.objects.create(
+                product=product,
+                user=request.user,
+                rating=rating,
+                review=review_text,
+                size=size,
+                color=color,
+                country=country,
+                image=image if image else None
+            )
+            messages.success(request, "Your review has been submitted successfully.")
+            return redirect('productview', categoryid=product.category_id.categoryid, productviewid=product.productviewid)
+        else:
+            messages.error(request, "Please provide both rating and review text.")
+    context = {'productview': product}
+    return render(request, 'add_review.html', context)
 class DeleteReviewView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, reviewid):
@@ -2118,6 +2148,7 @@ class MyOrdersView(LoginRequiredMixin, View):
                 item.calculated_unit_price = unit_price
                 item.calculated_subtotal = unit_price * item.quantity
                 running_total += item.calculated_subtotal
+                item.has_reviewed = Review.objects.filter(user=request.user, product=prod).exists()
                 existing_return = ReturnRequest.objects.filter(orderitem=item).first()
                 if existing_return:
                     item.has_return_request = True
