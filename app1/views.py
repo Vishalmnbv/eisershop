@@ -1466,6 +1466,17 @@ def add_review_view(request, productviewid):
             messages.error(request, "Please provide both rating and review text.")
     context = {'productview': product}
     return render(request, 'add_review.html', context)
+def edit_review_view(request, reviewid):
+    review = get_object_or_404(Review, reviewid=reviewid, user=request.user)
+    if request.user != review.user:
+        return redirect('my_orders') 
+    if request.method == 'POST':
+        review.rating = request.POST.get('rating')
+        review.review = request.POST.get('review')
+        review.save()
+        return redirect('productview', category_id=review.product.category_id.categoryid, productview_id=review.product.productviewid)
+    context = {'review': review, 'productview': review.product}
+    return render(request, 'app1/edit_review.html', context)
 class DeleteReviewView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, reviewid):
