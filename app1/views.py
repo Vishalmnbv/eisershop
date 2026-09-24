@@ -1493,13 +1493,32 @@ class CustomerReviewView(DetailView):
     context_object_name = "productview"
     pk_url_kwarg = "productviewid"
     def get_object(self):
-        return get_object_or_404(Productview,productviewid=self.kwargs["productviewid"])
+        return get_object_or_404(Productview, productviewid=self.kwargs["productviewid"])
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        product = self.object
         context["category"] = Category.objects.all()
-        context["categories"] = get_object_or_404(Category,categoryid=self.kwargs["categoryid"])
-        context["reviews"] = (
-            Review.objects.filter(product=self.object).select_related("user").order_by("-created_at"))
+        context["categories"] = get_object_or_404(Category, categoryid=self.kwargs["categoryid"])
+        similar_variant_ids = Productview.objects.filter(producttitle__iexact=product.producttitle).values_list('productviewid', flat=True)
+        reviews = list(Review.objects.filter(product_id__in=similar_variant_ids).select_related("user").order_by("-created_at"))
+        verified_user_ids = set()
+        if reviews:
+            review_user_ids = [r.user.id for r in reviews if r.user_id]
+            if review_user_ids:
+                try:
+                    verified_user_ids = set(
+                        Orderitem.objects.filter(
+                            order_id__orderstatus="Delivered",
+                            productview_id__in=similar_variant_ids,
+                            order_id__user_id__in=review_user_ids
+                        ).values_list("order_id__user_id", flat=True)
+                    )
+                except Exception:
+                    pass
+        for review in reviews:
+            review.verified_purchase = (review.user_id in verified_user_ids if review.user else False)
+        context["reviews"] = reviews
+        context["all_reviews_count"] = len(reviews)
         return context
 class ApplyCouponView(View):
     def post(self, request):

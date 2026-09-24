@@ -6,6 +6,12 @@
 <title>eiser - Customerreview</title>
 {% endblock title %}
 {% block body %}
+    <style>
+        .breadcrumb a {transition: all .3s ease;}
+        .breadcrumb a:hover {color: red !important;text-decoration: underline !important;}
+        .breadcrumb-active {cursor: default;transition: all .3s ease;}
+        .breadcrumb-item:hover {color: red !important;text-decoration: underline !important;}
+    </style>
     <div class="container-fluid p-0">
         <nav class="navbar navbar-dark bg-dark px-3">
             <div class="d-flex align-items-center w-100">
@@ -50,9 +56,9 @@
     <div class="container py-4">
         <nav aria-label="breadcrumb">
             <ol class="breadcrumb small mb-0">
-                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary fw-bold"><i class="fa-solid fa-house me-1"></i>Home</a></li>
-                <li class="breadcrumb-item text-secondary fw-semibold"><a href="/productview/{{ categories.categoryid}}/{{ productview.productviewid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{productview.producttitle}}</a></li>
-                <li class="breadcrumb-item active breadcrumb-active text-secondary fw-semibold me-1">Customer reviews</li>
+                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                <li class="breadcrumb-item text-secondary"><a href="/productview/{{ categories.categoryid}}/{{ productview.productviewid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{productview.producttitle}}</a></li>
+                <li class="breadcrumb-item active breadcrumb-active text-secondary me-1">Customer reviews</li>
             </ol>
         </nav>
     </div>
@@ -69,7 +75,7 @@
                         <h6 class="mb-1">{{ productview.producttitle }}</h6>
                         <small class="text-muted d-block mb-2">By {{ productview.productname }}</small>
                         <p class="mb-0 text-muted">
-                            <strong>Size:</strong> {{ productview.productsize1 }} | <strong>Color:</strong> {{ productview.productcolor1 }}
+                            <strong>Color:</strong> {{ productview.productcolor1 }}
                         </p>
                     </div>
                 </div>
