@@ -116,7 +116,7 @@
                     </div>
                     <form method="post" action="{% url 'home' %}">
                         {% csrf_token %}
-                        <button type="submit" class="btn btn-danger btn-sm rounded-pill px-3">
+                        <button type="submit" class="btn btn-danger btn-sm px-3">
                             <i class="fa-solid fa-trash me-1"></i>Clear
                         </button>
                     </form>
@@ -125,13 +125,13 @@
                     <div class="d-flex flex-wrap gap-2">
                         {% if user.is_authenticated %}
                             {% for item in search_history %}
-                                <a href="{% url 'search' %}?q={{ item.keyword|urlencode }}" class="btn btn-light border rounded-pill px-3 py-2">
+                                <a href="{% url 'search' %}?q={{ item.keyword|urlencode }}" class="btn btn-light border px-3 py-2">
                                     <i class="fa-solid fa-clock text-secondary me-2"></i>{{ item.keyword }}
                                 </a>
                             {% endfor %}
                             {% else %}
                             {% for item in search_history %}
-                                <a href="{% url 'search' %}?q={{ item|urlencode }}" class="btn btn-light border rounded-pill px-3 py-2">
+                                <a href="{% url 'search' %}?q={{ item|urlencode }}" class="btn btn-light border px-3 py-2">
                                     <i class="fa-solid fa-clock text-secondary me-2"></i>{{ item }}
                                 </a>
                             {% endfor %}
@@ -340,7 +340,7 @@
                                         </span>
                                     </div>
                                 </div>
-                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
                                     <i class="fa fa-eye mr-2 me-1"></i> View Product
                                 </a>
                             </div>
@@ -434,7 +434,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
                                         <i class="fa fa-eye mr-2 me-1"></i> View Product
                                     </a>
                                 </div>
@@ -533,7 +533,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
                                         <i class="fa fa-eye mr-2 me-1"></i> View Product
                                     </a>
                                 </div>
@@ -627,7 +627,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center rounded-pill" style="border-radius: 6px; font-size: 13px;">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
                                         <i class="fa fa-eye mr-2 me-1"></i>View Product
                                     </a>
                                 </div>

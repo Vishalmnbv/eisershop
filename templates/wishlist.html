@@ -187,7 +187,7 @@
                                     <form method="post" action="{% url 'add_to_cart' item.product.productviewid %}" class="m-0">
                                         {% csrf_token %}
                                         <input type="hidden" name="selected_size" value="{{ item.size|default:item.product.productsize1 }}">
-                                        <button type="submit"  class="btn btn-warning btn-sm w-100 rounded-pill fw-semibold d-flex align-items-center justify-content-center py-1" style="font-size: 12px;" {% if item.product.stock <= 0 %}disabled{% endif %}>
+                                        <button type="submit"  class="btn btn-warning btn-sm w-100  fw-semibold d-flex align-items-center justify-content-center py-1" style="font-size: 12px;" {% if item.product.stock <= 0 %}disabled{% endif %}>
                                             <i class="fa-solid fa-cart-shopping me-1"></i>Add to Cart
                                         </button>
                                     </form>

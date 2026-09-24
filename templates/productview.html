@@ -589,7 +589,7 @@
                                             </div>
                                         {% endif %}
                                     </div>                                                  
-                                    <a href="" class="btn btn-warning btn-sm rounded-pill w-100">
+                                    <a href="" class="btn btn-warning btn-sm w-100">
                                         <i class="fa-solid fa-eye me-1"></i>View Product
                                     </a>
                                 </div>
@@ -640,29 +640,29 @@
             </div>
         </div>
     {% endif %}
-    <div class="container my-4">
+    <div class="container my-2">
         <div class="row justify-content-center">
             <div class="col-lg-12">
-                <div class="card border rounded-4 mb-4 bg-white">
-                    <div class="card-body p-4 p-lg-5">
-                        <h4 class="fw-bold mb-4 text-dark">Customer Reviews</h4>
+                <div class="card border rounded-4 mb-2 bg-white">
+                    <div class="card-body p-2 p-lg-3">
+                        <h5 class="fw-bold mb-2 text-dark">Customer Reviews</h5>
                         {% for r in reviews %}
-                            <div class="mb-4 pb-4 ">
-                                <div class="d-flex align-items-center mb-3">
+                            <div class="mb-2 pb-2">
+                                <div class="d-flex align-items-center mb-1">
                                     <a href="{% url 'profile' r.user.id productview.category_id.categoryid productview.productviewid %}" class="d-flex text-decoration-none text-dark align-items-center">
                                         {% if r.user.profile.image %}
-                                            <img src="{{ r.user.profile.image.url }}" class="rounded-circle border me-3" style="width:45px; height:45px; object-fit:cover;">
+                                            <img src="{{ r.user.profile.image.url }}" class="rounded-circle border me-2" style="width:32px; height:32px; object-fit:cover;">
                                         {% else %}
-                                            <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle border me-3" style="width:45px; height:45px; object-fit:cover;">
+                                            <img src="{% static 'IMAGES/default.png' %}" class="rounded-circle border me-2" style="width:32px; height:32px; object-fit:cover;">
                                         {% endif %}
                                         <div>
-                                            <h6 class="fw-bold mb-0 text-dark">{{ r.user.username }}</h6>
-                                            <small class="text-muted">Reviewed in {{ r.country }} on {{ r.created_at }}</small>
+                                            <h6 class="fw-bold mb-0 text-dark" style="font-size: 0.9rem;">{{ r.user.username }}</h6>
+                                            <small class="text-muted" style="font-size: 0.7rem;">Reviewed in {{ r.country }} on {{ r.created_at }}</small>
                                         </div>
                                     </a>
                                 </div>
-                                <div class="d-flex align-items-center flex-wrap gap-3 mb-2">
-                                    <div class="text-warning fs-6">
+                                <div class="d-flex align-items-center flex-wrap gap-2 mb-1">
+                                    <div class="text-warning small" style="font-size: 0.85rem;">
                                         {% for i in "12345"|make_list %}
                                             {% if forloop.counter <= r.rating %}
                                                 <i class="fa-solid fa-star"></i>
@@ -673,39 +673,39 @@
                                         <span class="fw-bold text-dark small ms-1">{{ r.rating }}/5</span>
                                     </div>
                                     {% if r.verified_purchase %}
-                                        <div class="text-success small fw-semibold">
+                                        <div class="text-success small fw-semibold" style="font-size: 0.8rem;">
                                             <i class="fa-solid fa-circle-check me-1"></i>Verified Purchase
                                         </div>
                                     {% endif %}
                                 </div>
-                                <p class="small text-muted mb-2">
+                                <p class="small text-muted mb-1" style="font-size: 0.8rem;">
                                     <span class="fw-semibold text-dark me-1">Size: {{ r.size }}</span> | 
                                     <span class="fw-semibold text-dark ms-1">Color: {{ r.color }}</span>
                                 </p>
-                                <p class="text-dark mb-3" style="font-size: 0.95rem; line-height: 1.5;">{{ r.review }}</p>
+                                <p class="text-dark mb-2" style="font-size: 0.85rem; line-height: 1.3;">{{ r.review }}</p>
                                 {% if r.image %}
-                                    <div class="mb-3">
-                                        <img src="{{ r.image.url }}" class="img-fluid " style="max-width:120px; max-height:120px; object-fit:cover;">
+                                    <div class="mb-2">
+                                        <img src="{{ r.image.url }}" class="img-fluid rounded" style="max-width:70px; max-height:70px; object-fit:cover;">
                                     </div>
                                 {% endif %}
                                 <div class="text-end">
                                     <form method="post" action="{% url 'delete_review' r.reviewid %}">
                                         {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-danger px-3 py-1">
+                                        <button type="submit" class="btn btn-sm btn-danger" style="font-size: 0.85rem;">
                                             <i class="fa-solid fa-trash me-1"></i>Delete
                                         </button>
                                     </form>
                                 </div>
                             </div>
                         {% empty %}
-                            <div class="text-center text-muted py-4">No reviews yet. Be the first to write one!</div>
+                            <div class="text-center text-muted py-2" style="font-size: 0.9rem;">No reviews yet. Be the first to write one!</div>
                         {% endfor %}
                     </div>
                 </div>
                 {% if all_reviews_count > 3 %}
                     <a href="{% url 'customerreview' categories.categoryid productview.productviewid %}" class="text-decoration-none">
                         <div class="card border rounded-4">
-                            <div class="card-body text-center text-dark fw-bold py-3">
+                            <div class="card-body text-center text-dark fw-bold py-2" style="font-size: 0.9rem;">
                                 See more reviews ({{ all_reviews_count }}) <i class="fa-solid fa-angle-right ms-1"></i>
                             </div>
                         </div>

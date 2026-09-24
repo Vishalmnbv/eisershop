@@ -322,7 +322,7 @@
                                             <form action="{% url 'add_to_cart' item.productviewid %}" method="post" class="m-0">
                                                 {% csrf_token %}
                                                 <input type="hidden" name="selected_size" value="{{ item.productsize|default:'S' }}">
-                                                <button type="submit" class="btn btn-warning btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center rounded-pill py-2">
+                                                <button type="submit" class="btn btn-warning btn-sm w-100 fw-semibold d-flex align-items-center justify-content-center py-2">
                                                     <i class="fa-solid fa-cart-shopping me-2"></i>Add to Cart
                                                 </button>
                                             </form>
@@ -354,7 +354,7 @@
                     {% for num in page_obj.paginator.page_range %}
                         {% if num == page_obj.number %}
                             <li class="page-item active"><span class="page-link border-1 shadow-none px-3 fw-bold">{{ num }}</span></li>
-                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        {% else %}
                             <li class="page-item"><a class="page-link border-1 shadow-none px-3" href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}">{{ num }}</a></li>
                         {% endif %}
                     {% endfor %}

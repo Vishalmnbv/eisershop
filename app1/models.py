@@ -118,8 +118,8 @@ class ProductVariant(models.Model):
         return f"{self.product.productname} - {self.color}"
 class Review(models.Model):
     reviewid = models.AutoField(primary_key=True)
-    user = models.ForeignKey(User,on_delete=models.CASCADE)
-    product = models.ForeignKey(Productview,on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Productview, on_delete=models.CASCADE)
     rating = models.IntegerField()
     review = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -129,6 +129,12 @@ class Review(models.Model):
     country = models.CharField(max_length=100, blank=True, null=True)
     def __str__(self):
         return self.user.username
+    @property
+    def delivered_date(self):
+        order_item = Orderitem.objects.filter(order_id__user_id=self.user,productview_id=self.product,order_id__orderstatus='Delivered').order_by('-order_id__delivered_at').first()
+        if order_item and order_item.order_id.delivered_at:
+            return order_item.order_id.delivered_at
+        return None
 class Cart(models.Model):
     cartid = models.AutoField(primary_key=True)
     product_id = models.ForeignKey(Productview, on_delete=models.CASCADE)
@@ -397,21 +403,21 @@ class PickupAgent(models.Model):
         return self.user.username
 class ReturnRequest(models.Model):
     RETURN_STATUS = (
-    ("Requested", "Requested"),
-    ("Approved", "Approved"),
-    ("Agent Assigned", "Agent Assigned"),
-    ("Accepted by Pickup Agent", "Accepted by Pickup Agent"),
-    ("Out for Pickup", "Out for Pickup"),
-    ("Pickup Completed", "Pickup Completed"),
-    ("Refund Initiated", "Refund Initiated"),
-    ("Refunded", "Refunded"),
-    ("Rejected", "Rejected"),
-)
-    orderitem = models.OneToOneField(Orderitem,on_delete=models.CASCADE,related_name="returnrequest",null=True,blank=True,)
-    delivery_agent = models.ForeignKey(PickupAgent,on_delete=models.SET_NULL,null=True,blank=True,related_name="return_requests",)
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+        ("Requested", "Requested"),
+        ("Approved", "Approved"),
+        ("Agent Assigned", "Agent Assigned"),
+        ("Accepted by Pickup Agent", "Accepted by Pickup Agent"),
+        ("Out for Pickup", "Out for Pickup"),
+        ("Pickup Completed", "Pickup Completed"),
+        ("Refund Initiated", "Refund Initiated"),
+        ("Refunded", "Refunded"),
+        ("Rejected", "Rejected"),
+    )
+    orderitem = models.OneToOneField('Orderitem', on_delete=models.CASCADE, related_name="returnrequest", null=True, blank=True)
+    delivery_agent = models.ForeignKey('PickupAgent', on_delete=models.SET_NULL, null=True, blank=True, related_name="return_requests")
+    order = models.ForeignKey('Order', on_delete=models.CASCADE)
     reason = models.TextField()
-    status = models.CharField(max_length=30,choices=RETURN_STATUS,default="Requested",)
+    status = models.CharField(max_length=30, choices=RETURN_STATUS, default="Requested")
     created_at = models.DateTimeField(auto_now_add=True)
     approved_at = models.DateTimeField(null=True, blank=True)
     pickup_otp = models.CharField(max_length=6, blank=True, null=True)
@@ -424,6 +430,153 @@ class ReturnRequest(models.Model):
         self.pickup_otp_verified = False
     def __str__(self):
         return f"{self.order} - {self.status}"
+    @property
+    def amazon_order_id(self):
+        return self.order.amazon_order_id if self.order else ""
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        old_status = None
+        if not is_new:
+            try:
+                original = ReturnRequest.objects.get(pk=self.pk)
+                old_status = original.status
+            except ReturnRequest.DoesNotExist:
+                pass
+        if not is_new and old_status != self.status:
+            if self.status == 'Approved' and not self.approved_at:
+                self.approved_at = timezone.now()
+            elif self.status == 'Pickup Completed' and not self.pickup_completed_at:
+                self.pickup_completed_at = timezone.now()
+            elif self.status == 'Refunded' and not self.refund_completed_at:
+                self.refund_completed_at = timezone.now()
+        send_agent_email = False
+        send_accepted_email = False
+        send_otp_email = False
+        send_refund_initiated_email = False
+        send_refunded_email = False
+        if not is_new and old_status != self.status:
+            if self.status == 'Agent Assigned':
+                send_agent_email = True
+            elif self.status == 'Accepted by Pickup Agent':
+                send_accepted_email = True
+            elif self.status == 'Out for Pickup':
+                send_otp_email = True
+            elif self.status == 'Refund Initiated':
+                send_refund_initiated_email = True
+            elif self.status == 'Refunded':
+                send_refunded_email = True
+        super().save(*args, **kwargs)
+        if send_agent_email:
+            self.send_agent_assigned_email()
+        elif send_accepted_email:
+            self.send_pickup_accepted_email()
+        elif send_otp_email:
+            self.send_pickup_otp_email()
+        elif send_refund_initiated_email:
+            self.send_refund_initiated_email()
+        elif send_refunded_email:
+            self.send_refund_completed_email()
+    def send_agent_assigned_email(self):
+        if self.delivery_agent and self.delivery_agent.user and self.delivery_agent.user.email:
+            try:
+                email_context = {
+                    'return_request': self,
+                    'pickup_agent': self.delivery_agent,
+                    'order': self.order,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                subject = f"New Pickup Assigned - EiserShop (#{self.amazon_order_id})"
+                html_content = render_to_string('emails/agent_assigned.html', email_context)
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.delivery_agent.user, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
+    def send_pickup_accepted_email(self):
+        if self.order and self.order.user_id and self.order.user_id.email:
+            try:
+                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                agent_name = self.delivery_agent.user.username if self.delivery_agent and self.delivery_agent.user else "Assigned Agent"
+                context = {
+                    'return_request': self,
+                    'customer_name': customer_name,
+                    'agent_name': agent_name,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/pickup_accepted.html', context)
+                subject = f"Pickup Request Accepted - EiserShop (#{self.amazon_order_id})"
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.order.user_id, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
+    def send_pickup_otp_email(self):
+        if self.order and self.order.user_id and self.order.user_id.email:
+            try:
+                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                context = {
+                    'return_request': self,
+                    'customer_name': customer_name,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/pickup_otp.html', context)
+                subject = f"Pickup OTP - EiserShop (#{self.amazon_order_id})"
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.order.user_id, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
+    def send_refund_initiated_email(self):
+        if self.order and self.order.user_id and self.order.user_id.email:
+            try:
+                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                context = {
+                    'return_request': self,
+                    'customer_name': customer_name,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/refund_initiated.html', context)
+                subject = f"Refund Initiated - EiserShop (#{self.amazon_order_id})"
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.order.user_id, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
+    def send_refund_completed_email(self):
+        if self.order and self.order.user_id and self.order.user_id.email:
+            try:
+                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                refund_amt_str = f"₹{self.refund_amount:,.2f}" if self.refund_amount else "₹0.00"
+                context = {
+                    'return_request': self,
+                    'order': self.order,
+                    'customer_name': customer_name,
+                    'refund_amount': refund_amt_str,
+                    'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
+                }
+                html_content = render_to_string('emails/refund_completed.html', context)
+                subject = f"Refund Completed - EiserShop (#{self.amazon_order_id})"
+                
+                email_thread = threading.Thread(
+                    target=send_async_order_email, 
+                    args=(self.order.user_id, html_content, subject), 
+                    daemon=True
+                )
+                email_thread.start()
+            except Exception as e:
+                traceback.print_exc()
 class Compare(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     product = models.ForeignKey(Productview, on_delete=models.CASCADE)

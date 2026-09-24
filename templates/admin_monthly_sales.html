@@ -89,7 +89,7 @@
                 <h5 class="mb-0 fw-bold d-flex align-items-center" style="font-size:0.95rem;">
                     <i class="fa-solid fa-list-check me-2 text-warning"></i>Monthly Transactions List
                 </h5>
-                <span class="badge text-dark fw-bold" style="background-color: #febd69; font-size: 0.75rem;">{{ current_month_orders_count }} Orders Found</span>
+                <span class="badge bg-secondary text-light fw-normal" style="font-size: 0.75rem;">{{ current_month_orders_count }} Orders Found</span>
             </div>
             <div class="card-body p-0">
                 <div class="table-responsive">
@@ -110,7 +110,7 @@
                                     <tr class="border-bottom">                            
                                         <td class="px-3 text-nowrap">
                                             <span class="fw-bold text-dark d-block">
-                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y" }}
+                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y, h:i A" }}
                                             </span>
                                             <span class="fw-bold font-monospace text-info" style="font-size: 0.75rem;">
                                                 #{{ order.amazon_order_id }}
@@ -123,7 +123,7 @@
                                             <div class="text-muted" style="font-size: 0.75rem;">
                                                 <span>{{ order.paymentmethod }}</span>
                                                 {% if order.payment_status_display == "Paid" %}
-                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">Paid</span>
+                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
                                                 {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
                                                     <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle px-1 ms-1" style="font-size: 0.6rem;">Cancelled</span>
                                                 {% else %}
@@ -165,28 +165,33 @@
                                         </td>
                                         <td class="px-3 text-nowrap">
                                             {% if order.orderstatus == "Pending" %}
-                                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
+                                                <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
                                                     <i class="fa-regular fa-clock me-1"></i>Pending
                                                 </span>
                                             {% elif order.orderstatus == "Processing" %}
-                                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #cce5ff; color: #004085; border: 1px solid #b8daff; font-size: 0.7rem;">
+                                                <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #cce5ff; color: #004085; border: 1px solid #b8daff; font-size: 0.7rem;">
                                                     <i class="fa-solid fa-arrows-rotate fa-spin me-1"></i>Processing
                                                 </span>
                                             {% elif order.orderstatus == "Shipped" %}
-                                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
+                                                <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
                                                     <i class="fa-solid fa-truck-fast me-1"></i>Shipped
                                                 </span>
                                             {% elif order.orderstatus == "Delivered" %}
-                                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
+                                                <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
                                                     <i class="fa-solid fa-circle-check me-1"></i>Delivered
                                                 </span>
                                             {% elif order.orderstatus == "Cancelled" %}
-                                                <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
+                                                <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
                                                     <i class="fa-solid fa-ban me-1"></i>Cancelled
                                                 </span>
                                             {% else %}
-                                                <span class="badge bg-light text-dark border rounded-1 px-2 py-1 fw-semibold" style="font-size: 0.7rem;">
+                                                <span class="badge bg-light text-dark border rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="font-size: 0.7rem;">
                                                     {{ order.orderstatus }}
+                                                </span>
+                                            {% endif %}
+                                            {% if order.display_status_date %}
+                                                <span class="d-block fw-bold text-muted" style="font-size: 0.75rem;">
+                                                    {{ order.orderstatus }} : {{ order.display_status_date|date:"d M Y, h:i A" }}
                                                 </span>
                                             {% endif %}
                                         </td>

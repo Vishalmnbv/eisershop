@@ -189,8 +189,8 @@
                                     <tr class="border-bottom">                            
                                         <td class="px-3 text-nowrap">
                                             <span class="fw-bold text-dark d-block">
-                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y" }}
-                                            </span>
+                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y, h:i A" }}
+                                            </span>                                          
                                             <span class="fw-bold font-monospace text-info" style="font-size: 0.75rem;">
                                                 #{{ order.amazon_order_id }}
                                             </span>
@@ -202,7 +202,7 @@
                                             <div class="text-muted" style="font-size: 0.75rem;">
                                                 <span>{{ order.paymentmethod|default:"Cash on Delivery" }}</span>
                                                 {% if order.payment_status_display == "Paid" %}
-                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">Paid</span>
+                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
                                                 {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
                                                     <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle px-1 ms-1" style="font-size: 0.6rem;">Cancelled</span>
                                                 {% else %}
@@ -247,27 +247,32 @@
                                         <td class="px-3 text-nowrap">
                                             {% with status=item.item_status|default:order.orderstatus %}
                                                 {% if status == "Pending" or status == "Processing" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fef8f2; color: #c45500; border: 1px solid #fbd8b4; font-size: 0.7rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #fef8f2; color: #c45500; border: 1px solid #fbd8b4; font-size: 0.7rem;">
                                                         {{ status }}
                                                     </span>
                                                 {% elif status == "Shipped" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-truck-fast me-1"></i>Shipped
                                                     </span>
                                                 {% elif status == "Delivered" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
                                                         <i class="fa-solid fa-circle-check me-1"></i>Delivered
                                                     </span>
                                                 {% elif status == "Cancelled" %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
-                                                       <i class="fa-solid fa-ban me-1"></i>Cancelled
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; font-size: 0.7rem;">
+                                                        <i class="fa-solid fa-ban me-1"></i>Cancelled
                                                     </span>
                                                 {% else %}
-                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
+                                                    <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
                                                         {{ status|default:"Pending" }}
                                                     </span>
                                                 {% endif %}
                                             {% endwith %}
+                                            {% if order.orderstatus != "Pending" and order.display_status_date %}
+                                                <span class="d-block fw-bold text-muted mt-1" style="font-size: 0.75rem;">
+                                                    {{ order.status_label|default:order.orderstatus }} : {{ order.display_status_date|date:"d M Y, h:i A" }}
+                                                </span>
+                                            {% endif %}
                                         </td>
                                         <td class="px-3 text-end text-nowrap">
                                             <div class="d-flex justify-content-end gap-1">

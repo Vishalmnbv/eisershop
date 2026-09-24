@@ -113,20 +113,25 @@
                                         {% for item in cartdata %}
                                             <tr>
                                                 <td>
-                                                    <div class="fw-semibold">{{ item.product_id.producttitle|truncatechars:60 }}</div>                                 
-                                                    {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
-                                                        <small class="text-muted d-block">Size: {{ item.selected_size }}</small>
-                                                    {% endif %}                                            
-                                                    {% if item.product_id.productcolor1 %}
-                                                        <small class="text-muted d-block">Color: {{ item.product_id.productcolor1 }}</small>
-                                                    {% endif %}                                                
-                                                    <small class="text-muted d-block">Qty: {{ item.quantity }}</small>                                                
+                                                    <div class="d-flex align-items-center gap-3">
+                                                        <img src="{{ item.product_id.productimage1 }}" class="img-fluid rounded" style="width: 70px; height: 70px; object-fit: contain;" alt="{{ item.product_id.producttitle }}">
+                                                        <div>
+                                                            <div class="fw-semibold">{{ item.product_id.producttitle|truncatechars:60 }}</div>
+                                                            {% if item.selected_size and item.selected_size|lower != "standard" and item.selected_size|lower != "none" %}
+                                                                <small class="text-muted d-block">Size: {{ item.selected_size }}</small>
+                                                            {% endif %}
+                                                            {% if item.product_id.productcolor1 %}
+                                                                <small class="text-muted d-block">Color: {{ item.product_id.productcolor1 }}</small>
+                                                            {% endif %}
+                                                            <small class="text-muted d-block">Qty: {{ item.quantity }}</small>
+                                                        </div>
+                                                    </div>
                                                     <input type="hidden" name="product_id" value="{{ item.product_id.id }}">
                                                     <input type="hidden" name="color" value="{{ item.product_id.productcolor1 }}">
                                                     <input type="hidden" name="size" value="{{ item.selected_size }}">
                                                     <input type="hidden" name="qty" value="{{ item.quantity }}">
                                                     <input type="hidden" name="price" value="{{ item.get_unit_price }}">
-                                                </td>                                     
+                                                </td>                                    
                                                 <td class="text-end fw-bold align-middle">₹{{ item.calculated_subtotal|format_indian_currency }}</td>
                                             </tr>
                                         {% endfor %}
@@ -180,7 +185,7 @@
                                     <input type="text" class="form-control shadow-none" id="upi_id" name="upi_id" placeholder="example@upi"onkeyup="checkUPI()">
                                 </div>
                             </div>
-                            <button type="submit" class="btn btn-warning btn-lg w-100 rounded-pill fw-bold shadow-none"><i class="fa-solid fa-cart-arrow-down me-1"></i>Continue to Order</button>
+                            <button type="submit" class="btn btn-warning btn-lg w-100 fw-bold shadow-none"><i class="fa-solid fa-cart-arrow-down me-1"></i>Continue to Order</button>
                         </div>
                     </div>
                 </div>

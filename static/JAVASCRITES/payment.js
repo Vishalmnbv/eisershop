@@ -26,8 +26,7 @@ function handlePayment() {
 }
 function checkPhone() {
     let phoneInput = document.getElementById('number');
-    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, ''); // Sirf numbers allow karein
+    phoneInput.value = phoneInput.value.replace(/[^0-9]/g, ''); 
 }
 function checkUPI() {
-    
 }

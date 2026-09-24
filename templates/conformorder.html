@@ -231,15 +231,21 @@
                             <div class="py-4 {% if not forloop.last %}border-bottom{% endif %}">
                                 <div class="row align-items-center g-3">
                                     <div class="col-3 col-md-2 text-center">
-                                        <img src="{{ i.productview_id.productimage1 }}" alt="{{ i.product_id.producttitle }}" class="img-fluid p-1 product-img {% if i.status == 'Cancelled' %}opacity-50{% endif %}" style="height:100px;width:100%;object-fit:contain;">
+                                        <a href="{% url 'productview' i.productview_id.category_id.categoryid i.productview_id.productviewid %}">
+                                            <img src="{{ i.productview_id.productimage1 }}" alt="{{ i.product_id.producttitle }}" class="img-fluid p-1 product-img {% if i.status == 'Cancelled' %}opacity-50{% endif %}" style="height:100px;width:100%;object-fit:contain;">
+                                        </a>
                                     </div>
                                     <div class="col-9 col-md-7">
-                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem; line-height: 1.4;">{{ i.productview_id.producttitle }}</h6>
+                                        <h6 class="fw-bold mb-1 text-dark" style="font-size: 0.95rem; line-height: 1.4;">
+                                            <a href="{% url 'productview' i.productview_id.category_id.categoryid i.productview_id.productviewid %}" class="text-decoration-none text-dark">
+                                                {{ i.productview_id.producttitle }}
+                                            </a>
+                                        </h6>
                                         <div class="d-flex flex-wrap gap-2 mb-2 text-muted small">
                                             <span><strong>Qty:</strong> {{ i.quantity }}</span>
                                             {% if i.selected_size and i.selected_size|lower != "standard" and i.selected_size|lower != "none" %}
                                                 <span><strong>Size:</strong> {{ i.selected_size }}</span>
-                                            {% endif %}                            
+                                            {% endif %}           
                                             {% if i.productview_id.productcolor1 %}
                                                 <span><strong>Color:</strong> {{ i.productview_id.productcolor1 }}</span>
                                             {% endif %}

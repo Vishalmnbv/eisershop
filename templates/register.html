@@ -85,41 +85,41 @@
                             <label class="form-label">First Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <i class="fa-solid fa-user"></i>
-                                <input type="text" class="form-control shadow-none rounded-pill" name="firstname" id="firstname" placeholder="Enter first name"required>
+                                <input type="text" class="form-control shadow-none" name="firstname" id="firstname" placeholder="Enter first name"required>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Last Name <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <i class="fa-solid fa-user"></i>
-                                <input type="text" class="form-control shadow-none rounded-pill" name="lastname" id="lastname" placeholder="Enter last name" required>
+                                <input type="text" class="form-control shadow-none" name="lastname" id="lastname" placeholder="Enter last name" required>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Username <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <i class="fa-solid fa-user-tag"></i>
-                                <input type="text" class="form-control shadow-none rounded-pill" name="username" id="username" placeholder="Enter username"required>
+                                <input type="text" class="form-control shadow-none" name="username" id="username" placeholder="Enter username"required>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Email <span class="text-danger">*</span></label>
                             <div class="input-group">
                                 <i class="fa-solid fa-envelope"></i>
-                                <input type="email" class="form-control shadow-none rounded-pill" name="email" id="email" placeholder="Enter email"required>
+                                <input type="email" class="form-control shadow-none" name="email" id="email" placeholder="Enter email"required>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Password <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="password" class="form-control shadow-none rounded-pill" id="password" name="password" placeholder="Enter password" required>
+                                <input type="password" class="form-control shadow-none" id="password" name="password" placeholder="Enter password" required>
                                 <i class="fa-solid fa-eye-slash" id="icon1"></i>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Confirm Password <span class="text-danger">*</span></label>
                             <div class="input-group">
-                                <input type="password" class="form-control shadow-none rounded-pill" id="conformpassword" name="conformpassword" placeholder="Confirm password" required>
+                                <input type="password" class="form-control shadow-none" id="conformpassword" name="conformpassword" placeholder="Confirm password" required>
                                 <i class="fa-solid fa-eye-slash" id="icon2"></i>
                             </div>
                         </div>
@@ -127,18 +127,18 @@
                             <label class="form-label">Mobile Number <span class="text-danger">*</span></label>
                             <div class="input-group">                           
                                 <i class="fa-solid fa-phone text-secondary"></i>
-                                <input type="tel" class="form-control shadow-none rounded-pill" name="mobile" id="mobile" pattern="[0-9]{10}" maxlength="10" minlength="10" placeholder="Enter mobile number" required>
+                                <input type="tel" class="form-control shadow-none" name="mobile" id="mobile" pattern="[0-9]{10}" maxlength="10" minlength="10" placeholder="Enter mobile number" required>
                             </div>
                         </div>
                         <div class="col-12 mb-3">
                             <label class="form-label">Profile Image <span class="text-danger">*</span></label>
-                            <input type="file" class="form-control shadow-none rounded-pill" id="image" name="image" accept="image/*"onchange="previewImage(event)">
+                            <input type="file" class="form-control shadow-none" id="image" name="image" accept="image/*"onchange="previewImage(event)">
                             <div class="text-center mt-3">
                                 <img id="preview" src="{% static 'IMAGES/default.png' %}" class="rounded-circle border" width="150" height="150" style="object-fit:contain;">
                             </div>
                         </div>
                         <div class="col-12">
-                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold rounded-pill shadow-none"><i class="fa-solid fa-user-check me-2"></i>Register</button>
+                            <button type="submit" class="btn btn-warning w-100 py-2 fw-bold  shadow-none"><i class="fa-solid fa-user-check me-2"></i>Register</button>
                             <p class="text-center mt-3 mb-0">Already have an account?<a href="/login/" class="text-decoration-none fw-bold">Login Here</a></p>
                         </div>
                     </div>

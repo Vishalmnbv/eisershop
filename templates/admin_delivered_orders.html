@@ -109,7 +109,7 @@
                                     <tr class="border-bottom">                            
                                         <td class="px-3 text-nowrap">
                                             <span class="fw-bold text-dark d-block">
-                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y" }}
+                                                <i class="fa-regular fa-calendar me-1 text-warning"></i>{{ order.date|date:"d M Y, h:i A" }}
                                             </span>
                                             <span class="fw-bold font-monospace text-info" style="font-size: 0.75rem;">
                                                 #{{ order.amazon_order_id }}
@@ -122,7 +122,7 @@
                                             <div class="text-muted" style="font-size: 0.75rem;">
                                                 <span>{{ order.paymentmethod }}</span>
                                                 {% if order.payment_status_display == "Paid" %}
-                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">Paid</span>
+                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
                                                 {% elif order.payment_status_display == "Cancelled" or order.orderstatus == "Cancelled" %}
                                                     <span class="badge rounded-1 bg-danger-subtle text-danger border border-danger-subtle px-1 ms-1" style="font-size: 0.6rem;">Cancelled</span>
                                                 {% else %}
@@ -163,9 +163,14 @@
                                             <div class="fw-bold text-dark pt-1 mt-1">Total: ₹{{ order.calculated_total|format_indian_currency }}</div>
                                         </td>
                                         <td class="px-3 text-nowrap">
-                                            <span class="badge rounded-1 px-2 py-1 fw-semibold" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
+                                            <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; font-size: 0.7rem;">
                                                 <i class="fa-solid fa-circle-check me-1"></i>Delivered
                                             </span>
+                                            {% if order.display_status_date %}
+                                                <span class="d-block fw-bold text-dark" style="font-size: 0.75rem;">
+                                                    Delivered : {{ order.display_status_date|date:"d M Y, h:i A" }}
+                                                </span>
+                                            {% endif %}
                                         </td>
                                         <td class="px-3 text-end text-nowrap">                                        
                                             <span class="text-muted" style="font-size: 0.75rem;">Completed</span>

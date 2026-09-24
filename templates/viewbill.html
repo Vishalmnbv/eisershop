@@ -79,7 +79,7 @@
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted">Order Date</small>
-                        <h6 class="fw-bold">{{ order.date|date:"d M Y" }}</h6>
+                        <h6 class="fw-bold">{{ order.date|date:"d M Y, h:i A" }}</h6>
                     </div>
                     <div class="col-md-3">
                         <small class="text-muted">Payment Method</small>
@@ -149,10 +149,16 @@
                             {% for i in orderitems %}
                                 <tr>
                                     <td width="90">
-                                        <img src="{{ i.productview_id.productimage1 }}" class="img-fluid p-2" style="height:100px;width:100px;object-fit:contain;">
+                                        <a href="{% url 'productview' i.productview_id.category_id.categoryid i.productview_id.productviewid %}">
+                                            <img src="{{ i.productview_id.productimage1 }}" class="img-fluid p-2" style="height:100px;width:100px;object-fit:contain;">
+                                        </a>
                                     </td>
                                     <td>
-                                        <h6 class="fw-bold mb-1">{{ i.productview_id.producttitle }}</h6>
+                                        <h6 class="fw-bold mb-1">
+                                            <a href="{% url 'productview' i.productview_id.category_id.categoryid i.productview_id.productviewid %}" class="text-decoration-none text-dark">
+                                                {{ i.productview_id.producttitle }}
+                                            </a>
+                                        </h6>
                                         <div class="small text-muted">
                                             {% if i.selected_size and i.selected_size|lower != "standard" and i.selected_size|lower != "none" %}
                                                 <div><strong>Size :</strong> {{ i.selected_size }}</div>
