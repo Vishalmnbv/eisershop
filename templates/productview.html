@@ -247,7 +247,7 @@
                             </div>
                         {% if page_obj %}                                   
                             <div class="variant-slider-wrapper mb-3">
-                                <div class="variant-slider d-flex gap-2 overflow-auto">
+                                <div class="variant-slider d-flex gap-1 overflow-auto">
                                     {% for item in page_obj %}
                                         <div class="variant-item flex-shrink-0 variant-card-item" data-color="{{ item.productcolor1|default:''|lower }}">
                                             <a href="/productview/{{ categories.categoryid }}/{{ item.productviewid }}?page={{ page_obj.number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}" class="text-decoration-none text-dark d-block">                                                                                                               

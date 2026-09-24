@@ -1232,8 +1232,6 @@ class ProductDetailView(DetailView):
             title = clean_str(variant_obj.producttitle)
             color = clean_str(variant_obj.productcolor1)
             size = clean_str(selected_size)
-            if "samsung galaxy tab a9" in title and color == "silver":
-                return True
             if "redmi pad 2" in title and size in ["8gb 128gb", "8gb + 128gb"]:
                 return True
             if "apple ipad air" in title and size in ["512gb","1tb","512 gb","1 tb",]:
