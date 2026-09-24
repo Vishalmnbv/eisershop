@@ -105,19 +105,21 @@
                                     <p style="margin:0;color:#565959;font-size:11px;font-weight:bold;">PAYMENT METHOD & STATUS</p>
                                     <p style="margin:6px 0 0 0;color:#111111;font-size:15px;font-weight:bold;">
                                         {{ order.paymentmethod }}
-                                        {% if order.paymentstatus == "Paid" or "upi" in order.paymentmethod|lower or ("cod" in order.paymentmethod|lower and order.orderstatus == "Delivered") %}
-                                            <span style="background-color: #d1e7dd; color: #0f5132; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
-                                                ✓ Paid
-                                            </span>
-                                        {% elif order.paymentstatus == "Cancelled" or order.orderstatus == "Cancelled" %}
-                                            <span style="background-color: #f8d7da; color: #842029; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
-                                                ✕ Cancelled
-                                            </span>
-                                        {% else %}
-                                            <span style="background-color: #fff3cd; color: #856404; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
-                                                ⏱ Pending
-                                            </span>
-                                        {% endif %}
+                                        {% with pm=order.paymentmethod|lower %}
+                                            {% if order.paymentstatus == "Paid" or "upi" in pm or "cod" in pm and order.orderstatus == "Delivered" %}
+                                                <span style="background-color: #d1e7dd; color: #0f5132; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
+                                                    ✓ Paid
+                                                </span>
+                                            {% elif order.paymentstatus == "Cancelled" or order.orderstatus == "Cancelled" %}
+                                                <span style="background-color: #f8d7da; color: #842029; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
+                                                    ✕ Cancelled
+                                                </span>
+                                            {% else %}
+                                                <span style="background-color: #fff3cd; color: #856404; padding: 3px 8px; font-size: 11px; border-radius: 4px; margin-left: 8px; font-weight: normal; display: inline-block;">
+                                                    ⏱ Pending
+                                                </span>
+                                            {% endif %}
+                                        {% endwith %}
                                     </p>
                                 </td>
                                 </tr>
