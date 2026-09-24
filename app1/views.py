@@ -1476,7 +1476,7 @@ def edit_review_view(request, reviewid):
         review.save()
         return redirect('productview', category_id=review.product.category_id.categoryid, productview_id=review.product.productviewid)
     context = {'review': review, 'productview': review.product}
-    return render(request, 'app1/edit_review.html', context)
+    return render(request, 'add_review.html', context)
 class DeleteReviewView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, reviewid):
