@@ -1462,7 +1462,7 @@ def edit_review_view(request, reviewid):
         review.rating = request.POST.get('rating')
         review.review = request.POST.get('review')
         review.save()
-        return redirect('productview', category_id=review.product.category_id.categoryid, productview_id=review.product.productviewid)
+        return redirect('productview', category_id=review.product.category_id.categoryid, productviewid=review.product.productviewid)
     context = {'review': review, 'productview': review.product}
     return render(request, 'add_review.html', context)
 class DeleteReviewView(LoginRequiredMixin, View):
@@ -1499,6 +1499,23 @@ class CustomerReviewView(DetailView):
         product = self.object
         context["category"] = Category.objects.all()
         context["categories"] = get_object_or_404(Category, categoryid=self.kwargs["categoryid"])
+        raw_size = self.request.GET.get("size", "")
+        selected_size = str(raw_size or "").strip().lower()
+        display_size = raw_size
+        if selected_size:
+            s0 = str(product.productsize or "").strip().lower()
+            s1 = str(product.productsize1 or "").strip().lower()
+            s2 = str(product.productsize2 or "").strip().lower()
+            s3 = str(product.productsize3 or "").strip().lower()
+            if selected_size == s1 and product.productsize1:
+                display_size = product.productsize1
+            elif selected_size == s2 and product.productsize2:
+                display_size = product.productsize2
+            elif selected_size == s3 and product.productsize3:
+                display_size = product.productsize3
+            elif selected_size == s0 and product.productsize:
+                display_size = product.productsize
+        context["selected_size"] = display_size
         similar_variant_ids = Productview.objects.filter(producttitle__iexact=product.producttitle).values_list('productviewid', flat=True)
         reviews = list(Review.objects.filter(product_id__in=similar_variant_ids).select_related("user").order_by("-created_at"))
         verified_user_ids = set()

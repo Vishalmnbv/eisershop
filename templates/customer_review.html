@@ -73,7 +73,10 @@
                     </div>
                     <div class="col-md-10 col-8">
                         <h6 class="mb-1">{{ productview.producttitle }}</h6>
-                        <small class="text-muted d-block mb-2">By {{ productview.productname }}</small>
+                        <small class="text-muted d-block mb-1">By {{ productview.productname }}</small>
+                        {% if selected_size and selected_size|lower != "none" and selected_size|lower != "standard" %}
+                            <small class="text-muted d-block">Size: {{ selected_size }}</small>
+                        {% endif %}
                         <p class="mb-0 text-muted">
                             <strong>Color:</strong> {{ productview.productcolor1 }}
                         </p>
