@@ -41,7 +41,7 @@
             <div class="col-lg-8">
                 <div class="card border rounded-3">
                     <div class="card-header bg-white border-bottom p-4">
-                        <h5 class="fw-bold mb-0">Rate this product</h5>
+                        <h5 class="fw-bold mb-0">{% if review %}Edit Review{% else %}Rate this product{% endif %}</h5>
                     </div>
                     <div class="card-body p-4">
                         <form method="POST" enctype="multipart/form-data">
@@ -55,36 +55,40 @@
                                     <i class="fa-solid fa-star rating-star" data-value="4"></i>
                                     <i class="fa-solid fa-star rating-star" data-value="5"></i>
                                 </div>
-                                <input type="hidden" name="rating" id="rating" value="5">
+                                <input type="hidden" name="rating" id="rating" value="{% if review %}{{ review.rating }}{% else %}5{% endif %}">
                             </div>
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-secondary">Review Description</label>
-                                <textarea class="form-control shadow-none border-secondary-subtle" rows="5" name="review" id="Review Description" placeholder="Description..." required onclick="myfunction1()"></textarea>
+                                <textarea class="form-control shadow-none border-secondary-subtle" rows="5" name="review" id="Review Description" placeholder="Description..." required onclick="myfunction1()">{% if review %}{{ review.review }}{% endif %}</textarea>
                             </div>
                             <div class="row g-3 mb-4">
                                 <div class="col-sm-6 col-md-4">
                                     <label class="form-label fw-bold small text-secondary">Size</label>
-                                    <input type="text" class="form-control shadow-none" name="size" id="size" placeholder="e.g., S, M, L, XL" required onclick="myfunction2()">
+                                    <input type="text" class="form-control shadow-none" name="size" id="size" value="{% if review %}{{ review.size }}{% endif %}" placeholder="e.g., S, M, L, XL" required onclick="myfunction2()">
                                 </div>
                                 <div class="col-sm-6 col-md-4">
                                     <label class="form-label fw-bold small text-secondary">Color Option</label>
-                                    <input type="text" class="form-control shadow-none" name="color" id="color" placeholder="e.g., Black, Blue" required onclick="myfunction3()">
+                                    <input type="text" class="form-control shadow-none" name="color" id="color" value="{% if review %}{{ review.color }}{% endif %}" placeholder="e.g., Black, Blue" required onclick="myfunction3()">
                                 </div>
                                 <div class="col-md-4">
                                     <label class="form-label fw-bold small text-secondary">Country</label>
-                                    <input type="text" name="country" id="country" class="form-control shadow-none" placeholder="e.g., India" onclick="myfunction4()">
+                                    <input type="text" name="country" id="country" value="{% if review %}{{ review.country }}{% endif %}" class="form-control shadow-none" placeholder="e.g., India" onclick="myfunction4()">
                                 </div>
                                 <div class="col-12">
                                     <label class="form-label fw-bold small text-secondary">Upload Dynamic Media Attachment</label>
                                     <input type="file" class="form-control shadow-none" id="imageInput" name="image" accept="image/*" onclick="myfunction5()">
                                     <div class="mt-3">
-                                        <img id="previewImage" src="" class="img-fluid rounded border d-none" style="max-width:180px; max-height:180px; object-fit:contain;">
+                                        {% if review and review.image %}
+                                            <img id="previewImage" src="{{ review.image.url }}" class="img-fluid rounded border" style="max-width:180px; max-height:180px; object-fit:contain;">
+                                        {% else %}
+                                            <img id="previewImage" src="" class="img-fluid rounded border d-none" style="max-width:180px; max-height:180px; object-fit:contain;">
+                                        {% endif %}
                                     </div>
                                 </div>
                             </div>
                             <div class="text-end">
                                 <button type="submit" class="btn text-white px-5 py-2 fw-bold text-uppercase shadow-sm" style="background-color: #fb641b; border: none;">
-                                    Submit
+                                    {% if review %}Update{% else %}Submit{% endif %}
                                 </button>
                             </div>
                         </form>

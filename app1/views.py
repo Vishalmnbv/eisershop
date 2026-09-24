@@ -1350,7 +1350,7 @@ class ProductDetailView(DetailView):
             apply_rating(home_banner)
         context["home_banner"] = home_banner
         # SIMILAR PRODUCTS
-        similar_products = list(Productview.objects.filter(category_id=product.category_id,producttitle__iexact=product.producttitle,in_stock=True,).exclude(productviewid=product.productviewid).order_by("-productviewid")[:22])
+        similar_products = list(Productview.objects.filter(category_id=product.category_id, producttitle__iexact=product.producttitle).exclude(productviewid=product.productviewid).order_by("-productviewid")[:22])
         for p in similar_products:
             if "apply_rating" in globals():
                 apply_rating(p)
@@ -1360,7 +1360,7 @@ class ProductDetailView(DetailView):
             p.display_size = active_size_label
             p.display_discount = calculate_discount_rate(var_price, var_mrp)
             p.is_unavailable = is_variant_unavailable(p, selected_size)
-            sim_variants = Productview.objects.filter(category_id=p.category_id,producttitle__iexact=p.producttitle,in_stock=True,).order_by("productviewid")
+            sim_variants = Productview.objects.filter(category_id=p.category_id, producttitle__iexact=p.producttitle).order_by("productviewid")
             ordered_sim_variants = [p] + [v for v in sim_variants if v.productviewid != p.productviewid]
             variants_list = []
             used_colors = set()
@@ -1384,7 +1384,7 @@ class ProductDetailView(DetailView):
                         "unavailable": var_unavail,
                         "is_selected": variant.productviewid == p.productviewid,
                     }
-                )
+                    )
             p.color_variants = variants_list
         context["similar_products"] = similar_products
         if "get_styling_ideas" in globals():
@@ -1397,21 +1397,10 @@ class ProductDetailView(DetailView):
         if self.request.user.is_authenticated:
             context["last_order"] = (Order.objects.filter(user_id=self.request.user).order_by("-date").first())
         # COLOR PAGINATOR
-        variants_qs = (
-            Productview.objects.filter(producttitle__iexact=product.producttitle)
-            .annotate(
-                is_current=Case(
-                    When(productviewid=product.productviewid, then=Value(0)),
-                    default=Value(1),
-                    output_field=IntegerField(),
-                )
-            )
-            .order_by("is_current", "productviewid")
-        )
+        variants_qs = (Productview.objects.filter(producttitle__iexact=product.producttitle).annotate(is_current=Case(When(productviewid=product.productviewid, then=Value(0)),default=Value(1),output_field=IntegerField(),)).order_by("is_current", "productviewid"))
         paginator = Paginator(variants_qs, 10)
         page_number = self.request.GET.get("page", 1)
         page_obj = paginator.get_page(page_number)
-        
         for item in page_obj:
             var_price, var_mrp, active_size_label = get_variant_price_details(item, sel_size_clean)
             item.display_price = var_price
@@ -1419,6 +1408,7 @@ class ProductDetailView(DetailView):
             item.display_size = active_size_label
             item.display_discount = calculate_discount_rate(var_price, var_mrp)
             item.variant_unavailable = is_variant_unavailable(item, selected_size)
+            item.image_url = item.productimage1.url if hasattr(item.productimage1, "url") else item.productimage1
         context["page_obj"] = page_obj
         context["same_product_count"] = variants_qs.count()
         similar_variant_ids = Productview.objects.filter(producttitle__iexact=product.producttitle).values_list('productviewid', flat=True)

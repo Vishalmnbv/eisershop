@@ -186,15 +186,7 @@
                         {% if productview.stock > 5 %}
                             <div class="text-success fw-bold mb-1">
                                 <i class="fa-solid fa-check me-1"></i>In Stock
-                            </div>
-                        {% elif productview.stock > 0 %}
-                            <div class="text-danger fw-bold mb-1">
-                                <i class="fa-solid fa-fire me-1"></i>Only {{ productview.stock }} left in stock - order soon.
-                            </div>
-                        {% else %}
-                            <div class="text-danger fw-bold mb-1">
-                                <i class="fa-solid fa-xmark me-1"></i>Currently unavailable.
-                            </div>
+                            </div>                                         
                         {% endif %}
                     </div>
                     <div class="d-flex align-items-center mb-2 text-warning">
@@ -254,24 +246,27 @@
                             </div>
                             </div>
                         {% if page_obj %}                                   
-                        {% if not variant_unavailable and stock_available %}
                             <div class="variant-slider-wrapper mb-3">
                                 <div class="variant-slider d-flex gap-2 overflow-auto">
                                     {% for item in page_obj %}
                                         <div class="variant-item flex-shrink-0 variant-card-item" data-color="{{ item.productcolor1|default:''|lower }}">
-                                            <a href="/productview/{{ categories.categoryid }}/{{ item.productviewid }}?page={{ page_obj.number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}" class="text-decoration-none text-dark d-block">                                                                                    
-                                                <div class="border rounded-3 h-100 product-card-box {% if forloop.first %}active-card{% endif %}" onmouseenter="previewVariantImage('{{ item.productimage1.url|default:item.productimage1 }}', '{{ item.productcolor1 }}')" onmouseleave="resetDefaultImage()">                                                    
-                                                    <div class="p-2 text-center rounded-top-3">                                                    
-                                                        <img src="{{ item.productimage1.url|default:item.productimage1 }}" class="img-fluid" style="height:80px; width:100%; object-fit:contain;" alt="{{ item.producttitle }}">
-                                                    </div>                                                                                        
+                                            <a href="/productview/{{ categories.categoryid }}/{{ item.productviewid }}?page={{ page_obj.number }}{% if selected_size %}&size={{ selected_size|urlencode }}{% endif %}" class="text-decoration-none text-dark d-block">                                                                                                               
+                                                <div class="border rounded-3 h-100 product-card-box {% if forloop.first %}active-card{% endif %}" onmouseenter="previewVariantImage('{{ item.productimage1.url|default:item.productimage1 }}', '{{ item.productcolor1 }}')" onmouseleave="resetDefaultImage()">                           
+                                                    <div class="p-2 text-center rounded-top-3">                           
+                                                        <img src="{{ item.productimage1|default:'/static/IMAGES/default.png' }}" class="img-fluid" style="height:80px; width:100%; object-fit:contain;" alt="{{ item.producttitle }}">
+                                                    </div>                                                                                                                                              
                                                     <div class="card-body p-1 text-center rounded-bottom-3 d-flex flex-column justify-content-center align-items-center" style="min-height:50px;">
-                                                        <span class="fw-bold text-dark" style="font-size:18px;">
-                                                            ₹{{ item.display_price|format_indian_currency }}
-                                                        </span>
-                                                        {% if item.display_discount and item.display_discount != '0' %}
-                                                            <span class="small text-muted text-decoration-line-through" style="font-size:12px;">
-                                                                ₹{{ item.display_mrp|format_indian_currency }}
+                                                        {% if item.variant_unavailable %}
+                                                            <span class="text-danger fw-bold" style="font-size: 10px; line-height: 1.2;">Currently Unavailable</span>
+                                                        {% else %}
+                                                            <span class="fw-bold text-dark" style="font-size:18px;">
+                                                                ₹{{ item.display_price|format_indian_currency }}
                                                             </span>
+                                                            {% if item.display_discount and item.display_discount != '0' %}
+                                                                <span class="small text-muted text-decoration-line-through" style="font-size:12px;">
+                                                                    ₹{{ item.display_mrp|format_indian_currency }}
+                                                                </span>
+                                                            {% endif %}
                                                         {% endif %}
                                                     </div>
                                                 </div>
@@ -280,7 +275,6 @@
                                     {% endfor %}
                                 </div>
                             </div>
-                        {% endif %}
                         {% if page_obj.has_other_pages %}
                             <nav aria-label="Page navigation" class="mb-4">
                                 <ul class="pagination pagination-sm justify-content-center align-items-center flex-wrap gap-1">
@@ -589,9 +583,6 @@
                                             </div>
                                         {% endif %}
                                     </div>                                                  
-                                    <a href="" class="btn btn-warning btn-sm w-100">
-                                        <i class="fa-solid fa-eye me-1"></i>View Product
-                                    </a>
                                 </div>
                             </a>
                         </div>
