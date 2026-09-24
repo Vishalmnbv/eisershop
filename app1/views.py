@@ -1916,7 +1916,7 @@ class ConfirmOrderView(LoginRequiredMixin, View):
         order.calculated_total = final_total
         user_order_no = Order.objects.filter(user_id=request.user, orderid__lte=order.orderid).count()
         order.amazon_order_id = f"{user_order_no:05d}"
-        expected_delivery = order.date + timedelta(days=5)
+        expected_delivery = order.date + timedelta(days=3)
         first_item = order_items.first()
         context = {
             "order": order,
