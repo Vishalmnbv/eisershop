@@ -433,6 +433,11 @@ class ReturnRequest(models.Model):
     @property
     def amazon_order_id(self):
         return self.order.amazon_order_id if self.order else ""
+    @amazon_order_id.setter
+    def amazon_order_id(self, value):
+        if self.order:
+            self.order.amazon_order_id = value
+            self.order.save()
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         old_status = None
