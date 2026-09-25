@@ -587,14 +587,14 @@
                                                                 Deliver
                                                             </button>
                                                         </form>
-                                                    {% elif order.has_return_request or item.return_request %}
+                                                    {% elif item.returnrequest %}
                                                         <div class="text-start">
                                                             <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
                                                                 <i class="fa-solid fa-rotate-left me-1"></i>Return Requested
                                                             </span>
-                                                            {% if item.return_request.created_at %}
+                                                            {% if item.returnrequest.created_at %}
                                                                 <span class="d-block text-muted" style="font-size: 0.65rem;">
-                                                                    Date: {{ item.return_request.created_at|date:"d M Y, h:i A" }}
+                                                                    Date: {{ item.returnrequest.created_at|date:"d M Y, h:i A" }}
                                                                 </span>
                                                             {% endif %}
                                                         </div>
@@ -677,11 +677,11 @@
                                         </div>                              
                                         <div class="mb-1">
                                             <strong style="color: #0f1111;">Order Date:</strong> 
-                                            {% if r.order_date %}{{ r.order_date|date:"d M Y" }}{% elif r.order.date %}{{ r.order.date|date:"d M Y" }}{% else %}N/A{% endif %}                                        
+                                            {% if r.order_date %}{{ r.order_date|date:"d M Y, h:i A" }}{% elif r.order.date %}{{ r.order.date|date:"d M Y, h:i A" }}{% else %}N/A{% endif %}                                        
                                             {% if r.delivered_on or r.order.delivered_at %}
                                                 <span class="mx-1 text-muted">|</span>
                                                 <strong style="color: #0f1111;">Delivered On:</strong> 
-                                                {% if r.delivered_on %}{{ r.delivered_on|date:"d M Y" }}{% else %}{{ r.order.delivered_at|date:"d M Y" }}{% endif %}
+                                                {% if r.delivered_on %}{{ r.delivered_on|date:"d M Y" }}{% else %}{{ r.order.delivered_at|date:"d M Y, h:i A" }}{% endif %}
                                             {% endif %}                                     
                                             <span class="mx-1 text-muted">|</span>
                                             {% if r.refunded_at %}
