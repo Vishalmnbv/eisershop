@@ -74,9 +74,6 @@
                     <div class="col-md-10 col-8">
                         <h6 class="mb-1">{{ productview.producttitle }}</h6>
                         <small class="text-muted d-block mb-1">By {{ productview.productname }}</small>
-                        {% if selected_size and selected_size|lower != "none" and selected_size|lower != "standard" and selected_size != "" %}
-                            <small class="text-muted d-block" style="font-size: 11px;">Size: {{ selected_size }}</small>
-                        {% endif %}
                         <p class="mb-0 text-muted">
                             <strong>Color:</strong> {{ productview.productcolor1 }}
                         </p>
@@ -135,7 +132,7 @@
             <div class="alert alert-info text-center">No reviews found.</div>
         {% endfor %}
         {% if all_reviews_count > 3 %}
-            <a href="{% url 'customerreview' categories.categoryid productview.productviewid %}?size={{ selected_size }}" class="text-decoration-none">
+            <a href="{% url 'customerreview' categories.categoryid productview.productviewid %}" class="text-decoration-none">
                 <div class="card border rounded-4 mt-2">
                     <div class="card-body text-center text-dark fw-bold py-2" style="font-size: 0.9rem;">
                         See more reviews ({{ all_reviews_count }}) <i class="fa-solid fa-angle-right ms-1"></i>
