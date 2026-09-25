@@ -151,7 +151,7 @@
                                             </a>
                                             <div>
                                                 <div class="fw-bold text-dark mb-0 text-truncate" style="max-width: 170px;" title="{{ ret.order.firstname }} {{ ret.order.user_id.username }}">
-                                                    {{ ret.order.firstname }} {{ ret.order.user_id.username }} {{ ret.order.lastname }}
+                                                    {{ ret.order.user_id.username }} 
                                                 </div>
                                                 <small class="text-muted d-block text-truncate" style="max-width: 170px;" title="{{ ret.order.email }}">
                                                     <i class="fa-regular fa-envelope me-1"></i>
@@ -160,13 +160,12 @@
                                             </div>
                                         </div>
                                     </td>       
-                                    <!-- Updated Date Column for Delivered Date & Return Request Date -->
                                     <td class="py-3 px-3 text-nowrap">
                                         <div class="mb-1">
                                             <span class="text-muted" style="font-size: 0.7rem;">Delivered:</span>
                                             <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
                                                 {% if ret.delivered_on %}
-                                                    {{ ret.delivered_on|date:"d M Y, h:i A" }} <span class="text-muted" style="font-size: 0.7rem;">({{ ret.delivered_on|date:"d M Y, h:i A" }})</span>
+                                                    {{ ret.delivered_on|date:"d M Y, h:i A" }}
                                                 {% else %}
                                                     <span class="text-muted fst-italic">N/A</span>
                                                 {% endif %}
@@ -175,7 +174,13 @@
                                         <div>
                                             <span class="text-muted" style="font-size: 0.7rem;">Requested:</span>
                                             <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
-                                                {{ ret.return_request_date|date:"d M Y, h:i A" }} <span class="text-muted" style="font-size: 0.7rem;">({{ ret.return_request_date|date:"d M Y, h:i A" }})</span>
+                                                {% if ret.return_request_date %}
+                                                    {{ ret.return_request_date|date:"d M Y, h:i A" }}
+                                                {% elif ret.created_at %}
+                                                    {{ ret.created_at|date:"d M Y, h:i A" }}
+                                                {% else %}
+                                                    <span class="text-muted fst-italic">N/A</span>
+                                                {% endif %}
                                             </div>
                                         </div>
                                     </td>
