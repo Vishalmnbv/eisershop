@@ -139,7 +139,7 @@
                                     </td>        
                                     <td class="py-3 px-3 text-center">
                                         <a href="#" class="fw-bold text-decoration-none font-monospace text-info" style="font-size: 0.85rem;">
-                                            #{{ ret.display_order_id }}
+                                            #{{ ret.amazon_order_id }}
                                         </a>
                                     </td>         
                                     <td class="py-3 px-3">
@@ -162,7 +162,7 @@
                                     </td>       
                                     <td class="py-3 px-3 text-nowrap">
                                         <div class="mb-1">
-                                            <span class="text-muted" style="font-size: 0.7rem;">Delivered:</span>
+                                            <span class="text-muted" style="font-size: 0.7rem;">Delivered on:</span>
                                             <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
                                                 {% if ret.delivered_on %}
                                                     {{ ret.delivered_on|date:"d M Y, h:i A" }}
@@ -172,7 +172,7 @@
                                             </div>
                                         </div>
                                         <div>
-                                            <span class="text-muted" style="font-size: 0.7rem;">Requested:</span>
+                                            <span class="text-muted" style="font-size: 0.7rem;">Return Requested:</span>
                                             <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
                                                 {% if ret.return_request_date %}
                                                     {{ ret.return_request_date|date:"d M Y, h:i A" }}
