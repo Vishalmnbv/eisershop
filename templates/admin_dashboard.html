@@ -587,6 +587,17 @@
                                                                 Deliver
                                                             </button>
                                                         </form>
+                                                    {% elif order.has_return_request or item.return_request %}
+                                                        <div class="text-start">
+                                                            <span class="badge rounded-1 px-2 py-1 fw-semibold d-inline-block mb-1" style="background-color: #fff3cd; color: #856404; border: 1px solid #ffeeba; font-size: 0.7rem;">
+                                                                <i class="fa-solid fa-rotate-left me-1"></i>Return Requested
+                                                            </span>
+                                                            {% if item.return_request.created_at %}
+                                                                <span class="d-block text-muted" style="font-size: 0.65rem;">
+                                                                    Date: {{ item.return_request.created_at|date:"d M Y, h:i A" }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
                                                     {% else %}
                                                         <span class="text-muted" style="font-size: 0.75rem;">Completed</span>
                                                     {% endif %}
@@ -642,7 +653,7 @@
                                     <div class="small" style="color: #565959; font-size: 0.83rem;">                                       
                                         <div class="mb-1">
                                             <strong style="color: #0f1111;">Order ID:</strong>
-                                            <span class="font-monospace fw-semibold text-info">#{{ r.display_order_id }}</span>
+                                            <span class="font-monospace fw-semibold text-info">#{{ r.amazon_order_id }}</span>
                                             <span class="mx-1 text-muted">|</span>
                                             <strong style="color: #0f1111;">Customer:</strong> {{ r.order.user_id.username }}
                                         </div>                                
@@ -674,15 +685,15 @@
                                             {% endif %}                                     
                                             <span class="mx-1 text-muted">|</span>
                                             {% if r.refunded_at %}
-                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.refunded_at|date:"d M Y" }}
+                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.refunded_at|date:"d M Y, h:i A" }}
                                             {% elif r.updated_at %}
-                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.updated_at|date:"d M Y" }}
+                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.updated_at|date:"d M Y, h:i A" }}
                                             {% elif r.created_at %}
-                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.created_at|date:"d M Y" }}
+                                                <strong style="color: #0f1111;">Return Requests:</strong> {{ r.created_at|date:"d M Y, h:i A"}}
                                             {% endif %}
                                             {% if r.refund_completed_at %}
                                                 <span class="mx-1 text-muted">|</span>
-                                                <strong style="color: #0f1111;">Refunded On:</strong> {{ r.refund_completed_at|date:"d M Y" }}
+                                                <strong style="color: #0f1111;">Refunded On:</strong> {{ r.refund_completed_at|date:"d M Y, h:i A" }}
                                             {% endif %}
                                         </div>                            
                                         <div class="mt-2 pt-1" style="border-color: #f0f2f2 !important;">
