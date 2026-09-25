@@ -74,8 +74,8 @@
                     <div class="col-md-10 col-8">
                         <h6 class="mb-1">{{ productview.producttitle }}</h6>
                         <small class="text-muted d-block mb-1">By {{ productview.productname }}</small>
-                        {% if selected_size and selected_size|lower != "none" and selected_size|lower != "standard" %}
-                            <small class="text-muted d-block">Size: {{ selected_size }}</small>
+                        {% if selected_size and selected_size|lower != "none" and selected_size|lower != "standard" and selected_size != "" %}
+                            <small class="text-muted d-block" style="font-size: 11px;">Size: {{ selected_size }}</small>
                         {% endif %}
                         <p class="mb-0 text-muted">
                             <strong>Color:</strong> {{ productview.productcolor1 }}
@@ -89,7 +89,7 @@
     <div class="container mt-3">
         {% for review in reviews %}
             <div class="card border-1 mb-2">
-                <a href="/profile/{{review.user.id}}" class="text-decoration-none text-dark">
+                <a href="{% url 'profile' review.user.id review.product.category_id.categoryid review.product.productviewid %}" class="text-decoration-none text-dark">
                     <div class="card-body">
                         <div class="d-flex align-items-center mb-3">
                             {% if review.user.profile.image %}
@@ -121,7 +121,7 @@
                                     <span class="text-dark ms-2">{{ review.rating }}/5</span>
                                 </div>
                                 <p class="text-muted mb-2">
-                                    <strong>Size:</strong> {{ review.size }}
+                                    <strong>Size:</strong> {{ review.size|upper }}
                                     |
                                     <strong>Color:</strong> {{ review.color }}
                                 </p>
