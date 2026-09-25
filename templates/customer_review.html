@@ -82,9 +82,9 @@
             </div>
         </div>
     </div>
-    <div class="container mt-3 fw-bold">Customer reviews</div>
+    <div class="container mt-3 fw-bold">All Customer Reviews</div>
     <div class="container mt-3">
-        {% for review in reviews|slice:":3" %}
+        {% for review in reviews %}
             <div class="card border-1 mb-2">
                 <a href="{% url 'profile' review.user.id review.product.category_id.categoryid review.product.productviewid %}" class="text-decoration-none text-dark">
                     <div class="card-body">
@@ -131,15 +131,6 @@
         {% empty %}
             <div class="alert alert-info text-center">No reviews found.</div>
         {% endfor %}
-        {% if all_reviews_count > 3 %}
-            <a href="{% url 'customerreview' categories.categoryid productview.productviewid %}" class="text-decoration-none">
-                <div class="card border rounded-4 mt-2">
-                    <div class="card-body text-center text-dark fw-bold py-2" style="font-size: 0.9rem;">
-                        See more reviews ({{ all_reviews_count }}) <i class="fa-solid fa-angle-right ms-1"></i>
-                    </div>
-                </div>
-            </a>
-        {% endif %}
     </div>
     {% if home_banner %}
         <div class="container mb-5 mt-5">
