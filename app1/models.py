@@ -502,10 +502,13 @@ class ReturnRequest(models.Model):
             except Exception as e:
                 traceback.print_exc()
     def send_pickup_accepted_email(self):
-        if self.order and self.order.user_id and self.order.user_id.email:
+        recipient = self.order.user_id if (self.order and self.order.user_id) else None
+        recipient_email = self.order.email if (self.order and self.order.email) else (recipient.email if recipient else None)
+        if recipient_email:
             try:
-                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                customer_name = self.order.firstname if (self.order and self.order.firstname) else (recipient.username if recipient else "Customer")
                 agent_name = self.delivery_agent.user.username if self.delivery_agent and self.delivery_agent.user else "Assigned Agent"
+                
                 context = {
                     'return_request': self,
                     'customer_name': customer_name,
@@ -514,9 +517,10 @@ class ReturnRequest(models.Model):
                 }
                 html_content = render_to_string('emails/pickup_accepted.html', context)
                 subject = f"Pickup Request Accepted - EiserShop (#{self.amazon_order_id})"
+                target_arg = recipient if recipient else recipient_email
                 email_thread = threading.Thread(
                     target=send_async_order_email, 
-                    args=(self.order.user_id, html_content, subject), 
+                    args=(target_arg, html_content, subject), 
                     daemon=True
                 )
                 email_thread.start()
@@ -574,7 +578,6 @@ class ReturnRequest(models.Model):
                 }
                 html_content = render_to_string('emails/refund_completed.html', context)
                 subject = f"Refund Completed - EiserShop (#{self.amazon_order_id})"
-                
                 email_thread = threading.Thread(
                     target=send_async_order_email, 
                     args=(self.order.user_id, html_content, subject), 
