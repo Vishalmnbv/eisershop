@@ -162,6 +162,16 @@
                                     </td>       
                                     <td class="py-3 px-3 text-nowrap">
                                         <div class="mb-1">
+                                            <span class="text-muted" style="font-size: 0.7rem;">Order Date:</span>
+                                            <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
+                                                {% if ret.order_date %}
+                                                    {{ ret.order_date|date:"d M Y, h:i A" }}
+                                                {% else %}
+                                                    <span class="text-muted fst-italic">N/A</span>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-1">
                                             <span class="text-muted" style="font-size: 0.7rem;">Delivered on:</span>
                                             <div class="text-dark fw-semibold" style="font-size: 0.775rem;">
                                                 {% if ret.delivered_on %}
