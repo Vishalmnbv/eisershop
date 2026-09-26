@@ -54,7 +54,7 @@
     </div>
     <div class="container py-4">
         <div class="row justify-content-center">
-            <div class="col-lg-8">
+            <div class="col-lg-7">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb small mb-0">
                         <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary "><i class="fa-solid fa-house me-1"></i>Home</a></li>
@@ -114,7 +114,7 @@
                             {% csrf_token %}                        
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-dark mb-1">Select Quantity to Return</label>
-                                <select class="form-select shadow-none" name="return_quantity" required style="border-color: #888c8c; font-size: 0.875rem;">
+                                <select class="form-select shadow-none" name="return_quantity" required>
                                     {% for i in "x"|ljust:order_item.quantity %}
                                         <option value="{{ forloop.counter }}" {% if forloop.last %}selected{% endif %}>
                                             {{ forloop.counter }}
@@ -124,7 +124,7 @@
                             </div>                         
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-dark mb-1">Why are you returning this?</label>
-                                <select class="form-select shadow-none" name="reason" required style="border-color: #888c8c; font-size: 0.875rem;">
+                                <select class="form-select shadow-none" name="reason" required>
                                     <option value="" selected disabled>-- Choose a reason --</option>
                                     <option value="Wrong Product Received">Wrong Product Received</option>
                                     <option value="Damaged Product">Damaged Product</option>
@@ -137,10 +137,10 @@
                             </div>
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-dark mb-1">Comments <span class="text-muted fw-normal">(optional)</span></label>
-                                <textarea class="form-control shadow-none" rows="3" name="comments" placeholder="Provide additional details..." style="border-color: #888c8c; font-size: 0.875rem;"></textarea>
+                                <textarea class="form-control shadow-none" rows="3" name="comments" placeholder="Provide additional details..."></textarea>
                             </div>                        
                             <div class="pt-2">
-                                <button type="submit" class="btn w-100 fw-semibold rounded-pill py-2" style="background-color: #ffd814; border: 1px solid #fcd200; color: #0F1111; font-size: 0.9rem;">
+                                <button type="submit" class="btn w-100 fw-semibold py-2" style="background-color: #ffd814; border: 1px solid #fcd200; color: #0F1111; font-size: 0.9rem;">
                                     <i class="fa-solid fa-rotate-left me-2"></i>Submit Return Request
                                 </button>
                             </div>

@@ -86,7 +86,7 @@
     </div>
     <div class="container py-4">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 <nav aria-label="breadcrumb">
                     <ol class="breadcrumb small mb-0">
                         <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
@@ -98,7 +98,7 @@
     </div>
     <div class="container">
         <div class="row justify-content-center">
-            <div class="col-lg-10">
+            <div class="col-lg-8">
                 <h3 class="fw-bold text-dark mb-4" style="font-size: 1.6rem;">Your Orders</h3>
                 {% for order in orders %}
                     <div class="amazon-order-card w-100 mb-4 border rounded bg-white overflow-hidden">
@@ -153,7 +153,7 @@
                                         <i class="fa-solid fa-user me-1 text-secondary"></i>{{ order.firstname }} {{ order.username }} {{ order.lastname }}
                                     </span>
                                 </div>
-                                <div class="col-6 col-md-3 pt-2 text-md-end">
+                                <div class="col-6 col-md-3 pt-2">
                                     <small class="text-muted text-uppercase d-block" style="font-size: 0.7rem;">Order ID</small>
                                     <span class="fw-bold font-monospace text-dark d-block mt-1" style="font-size: 0.85rem;">#{{ order.amazon_order_id }}</span>
                                 </div>
@@ -173,13 +173,13 @@
                                     <span class="badge bg-success px-3 py-2"><i class="fa-solid fa-circle-check me-1"></i> Delivered</span>
                                     {% if order.delivered_at %}
                                         <div class="small text-muted mt-1">
-                                            <i class="fa-solid fa-calendar-check me-1 text-success"></i>Delivered on {{ order.delivered_at|date:"d M Y" }}
+                                            <i class="fa-solid fa-calendar-check me-1 text-success"></i>Delivered on {{ order.delivered_at|date:"d M Y, h:i A" }}
                                         </div>
                                     {% endif %}
                                 {% elif order.orderstatus == "Cancelled" %}
                                     <span class="badge bg-danger px-3 py-2"><i class="fa-solid fa-circle-xmark me-1"></i> Cancelled</span>
                                     {% if order.cancelled_at %}
-                                        <div class="small text-danger mt-1"><i class="fa-solid fa-calendar-xmark me-1"></i> Cancelled on {{ order.cancelled_at|date:"d M Y" }}</div>
+                                        <div class="small text-danger mt-1"><i class="fa-solid fa-calendar-xmark me-1"></i> Cancelled on {{ order.cancelled_at|date:"d M Y, h:i A" }}</div>
                                     {% endif %}
                                 {% endif %}
                             </div>
@@ -243,11 +243,29 @@
                                                     <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" style="background-color: #ffd814; border-color: #fcd200;"><i class="fa-solid fa-cart-shopping me-1"></i>Buy it Again</button>
                                                 </form>                                                                                                                
                                                 {% if item.has_return_request %}
-                                                    <div class="badge {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}bg-success text-white{% elif item.return_status == 'Rejected' %}bg-danger text-white{% else %}bg-info text-dark{% endif %} px-3 py-2 fs-6 d-inline-flex align-items-center gap-1 shadow-sm">
-                                                        <i class="fa-solid fa-rotate-left"></i>
-                                                        <span>Status: {{ item.return_status }}</span>
+                                                    <div class="badge rounded-1 px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm 
+                                                        {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
+                                                            bg-success text-white
+                                                        {% elif item.return_status == 'Approved' %}
+                                                            bg-primary text-white
+                                                        {% elif item.return_status == 'Rejected' %}
+                                                            bg-danger text-white
+                                                        {% else %}
+                                                            bg-warning text-dark
+                                                        {% endif %}" 
+                                                        style="font-size: 0.75rem;">
+                                                        {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
+                                                            <i class="fa-solid fa-circle-check me-1"></i>
+                                                        {% elif item.return_status == 'Approved' %}
+                                                            <i class="fa-solid fa-thumbs-up me-1"></i>
+                                                        {% elif item.return_status == 'Rejected' %}
+                                                            <i class="fa-solid fa-ban me-1"></i>
+                                                        {% else %}
+                                                            <i class="fa-regular fa-clock me-1"></i>
+                                                        {% endif %}
+                                                        <span>Status: {{ item.return_status }}</span>                                                
                                                         {% if item.return_date %}
-                                                            <span class="ms-1 small text-white opacity-100">({{ item.return_date|date:"d M Y" }})</span>
+                                                            <span class="ms-1 small opacity-75">({{ item.return_date|date:"d M Y, h:i A" }})</span>
                                                         {% endif %}
                                                     </div>
                                                 {% elif order.orderstatus == "Delivered" and order.return_last_date %}

@@ -54,18 +54,22 @@
         </div>
     </div>
     <div class="container py-3">
-        <nav aria-label="breadcrumb" class="mb-4">
-            <ol class="breadcrumb bg-white px-3 py-2 rounded mb-0 flex-wrap">
-                <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
-                <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
-                <li class="breadcrumb-item breadcrumb-active text-secondary text-truncate" style="max-width: 180px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45 }}</li>
-                <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
-                <li class="breadcrumb-item"><a href="/checkout/" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Checkout</a></li>
-                <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-circle-check me-1"></i>ConfomerOrder</li>
-            </ol>
-        </nav>
+        <div class="row align-items-center">
+            <div class="col-md-7">
+                <nav aria-label="breadcrumb" class="mb-4">
+                    <ol class="breadcrumb bg-white px-3 py-2 rounded mb-0 flex-wrap">
+                        <li class="breadcrumb-item"><a href="/" class="text-decoration-none text-secondary"><i class="fa-solid fa-house me-1"></i>Home</a></li>
+                        <li class="breadcrumb-item"><a href="/collection/{{categories.categoryid}}" class="text-decoration-none text-secondary"><i class="fa-solid fa-tags me-1"></i>{{categories.categoryname}}</a></li>
+                        <li class="breadcrumb-item breadcrumb-active text-secondary text-truncate" style="max-width: 180px;"><i class="fa-solid fa-box me-1"></i>{{productview.producttitle|truncatechars:45 }}</li>
+                        <li class="breadcrumb-item"><a href="/cart/" class="text-decoration-none text-secondary"><i class="fa-solid fa-cart-shopping me-1"></i>Cart</a></li>
+                        <li class="breadcrumb-item"><a href="/checkout/" class="text-decoration-none text-secondary"><i class="fa-solid fa-receipt me-1"></i>Checkout</a></li>
+                        <li class="breadcrumb-item active breadcrumb-active text-secondary"><i class="fa-solid fa-circle-check me-1"></i>ConfomerOrder</li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
     </div>
-    <div class="container py-1 mb-3">
+    <div class="container">
         <div class="card premium-card mb-4 p-2 border">
             <div class="card-body">
                 <div class="row align-items-center g-3">
@@ -207,10 +211,26 @@
                             <div class="col-sm-6 col-md-3 position-relative">
                                 {% if order.orderstatus == "Delivered" %}
                                     <span class="text-muted small d-block mb-1">Delivered On</span>
-                                    <span class="fw-bold text-success"><i class="fa-solid fa-circle-check me-1"></i>{{ order.date|date:"d M Y" }}</span>
+                                    <span class="fw-bold text-success text-nowrap" style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-circle-check me-1"></i>
+                                        {% if order.delivered_at %}
+                                            {{ order.delivered_at|date:"d M Y, h:i A" }}
+                                        {% else %}
+                                            {{ order.date|date:"d M Y, h:i A" }}
+                                        {% endif %}
+                                    </span>
                                 {% else %}
                                     <span class="text-muted small d-block mb-1">Expected Delivery</span>
-                                    <span class="fw-bold text-primary"><i class="fa-solid fa-truck-fast me-1"></i>{{ expected_delivery|date:"d M Y" }}</span>
+                                    <span class="fw-bold text-primary text-nowrap" style="font-size: 0.85rem;">
+                                        <i class="fa-solid fa-truck-fast me-1"></i>
+                                        {% if expected_delivery %}
+                                            {{ expected_delivery|date:"d M Y, h:i A" }}
+                                        {% elif order.expected_delivery %}
+                                            {{ order.expected_delivery|date:"d M Y, h:i A" }}
+                                        {% else %}
+                                            {{ order.date|date:"d M Y, h:i A" }}
+                                        {% endif %}
+                                    </span>
                                 {% endif %}
                                 <div class="d-none d-md-block position-absolute end-0 top-50 translate-middle-y border-end" style="height: 35px;"></div>
                             </div>
@@ -224,7 +244,7 @@
                 <div class="card premium-card mb-4 border">
                     <div class="card-header bg-white border-0 pt-4 px-4 d-flex justify-content-between align-items-center">
                         <h5 class="fw-bold text-dark mb-0"><i class="fa-solid fa-basket-shopping text-warning me-2"></i>Items in your order</h5>
-                        <span class="badge bg-dark px-3 py-2 rounded-pill">{{ cart_items|length }} Item</span>
+                        <span class="badge bg-dark px-3 py-2">{{ cart_items|length }} Item</span>
                     </div>
                     <div class="card-body px-4 pb-4">
                         {% for i in cart_items %}
@@ -253,7 +273,7 @@
                                         <div class="small text-muted mb-2">Sold by: <strong class="text-dark">Eiser Shop</strong></div>
                                         {% if not is_checkout %}
                                             {% if order.orderstatus == "Pending" or order.orderstatus == "Processing" %}
-                                                <a href="{% url 'cancel_product' i.orderitemid %}" class="btn btn-danger btn-sm rounded-pill py-0 px-2" style="font-size: 0.75rem;"><i class="fa-solid fa-xmark me-1"></i>Cancel Product</a>
+                                                <a href="{% url 'cancel_product' i.orderitemid %}" class="btn btn-danger btn-sm px-1 py-1" style="font-size: 0.75rem;"><i class="fa-solid fa-xmark me-1"></i>Cancel Product</a>
                                             {% elif order.orderstatus == "Cancelled" %}
                                                 <span class="badge bg-danger"><i class="fa-solid fa-ban me-1"></i>Cancelled</span>
                                             {% endif %}

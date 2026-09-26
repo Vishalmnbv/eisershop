@@ -416,6 +416,7 @@ class ReturnRequest(models.Model):
     orderitem = models.OneToOneField('Orderitem', on_delete=models.CASCADE, related_name="returnrequest", null=True, blank=True)
     delivery_agent = models.ForeignKey('PickupAgent', on_delete=models.SET_NULL, null=True, blank=True, related_name="return_requests")
     order = models.ForeignKey('Order', on_delete=models.CASCADE)
+    quantity = models.PositiveIntegerField(default=1)
     reason = models.TextField()
     status = models.CharField(max_length=30, choices=RETURN_STATUS, default="Requested")
     created_at = models.DateTimeField(auto_now_add=True)
