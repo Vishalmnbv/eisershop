@@ -48,10 +48,11 @@
     <div class="email-container">
         <div class="email-header">
             <h2>Pickup Agent Assigned</h2>
+            <img src="{{ logo_url }}" alt="EiserShop Logo" width="180">
         </div>
         <div class="email-body">
             <p>Hello <strong>{{ user.username }}</strong>,</p>
-            <p>Good news! A pickup agent has been successfully assigned for your return request (<strong>#{{ return_request.id }}</strong>).</p>
+            <p>Good news! A pickup agent has been successfully assigned for your return request </p>
             
             <div class="info-box">
                 <p style="margin: 4px 0;"><strong>Agent Name:</strong> {{ return_request.delivery_agent.user.get_full_name|default:return_request.delivery_agent.user.username }}</p>
