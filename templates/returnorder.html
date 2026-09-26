@@ -150,4 +150,103 @@
             </div>
         </div>
     </div>
+    {% if home_banner %}
+        <div class="container mb-5 mt-5">
+            <div class="card border rounded-3  mx-auto" style="max-width:850px;">
+                <div class="row g-3 align-items-center p-3">
+                    <div class="col-md-4 text-center">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}">
+                            <img src="{{ home_banner.productimage1 }}" class="img-fluid"style="max-height:120px;object-fit:contain;"alt="{{ home_banner.producttitle }}">
+                        </a>
+                    </div>
+                    <div class="col-md-8">
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="text-decoration-none">
+                            <h4 class="text-primary mt-2">{{ home_banner.producttitle|truncatechars:40 }}</h4>
+                        </a>
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fw-bold me-1 text-dark small">{{ home_banner.rating }}</span>
+                            <div class="text-warning small" style="font-size:12px;">
+                                {% for star in home_banner.full_stars_range %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% endfor %}
+                                {% for star in home_banner.half_stars_range %}
+                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                {% endfor %}
+                                {% for star in home_banner.empty_stars_range %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-auto d-flex align-items-baseline gap-2">
+                            <span class="fw-bold text-dark" style="font-size:18px;">₹{{ home_banner.productprice|format_indian_currency }}</span>
+                            {% if home_banner.productdiscountrate and home_banner.productdiscountrate != '0' %}
+                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ home_banner.productmrpprice|format_indian_currency }}</span>
+                                <span class="badge text-white px-2 py-1" style="background-color: #cc0c39; font-size: 11px;">({{ home_banner.productdiscountrate }}% OFF)</span>
+                                <span class="text-danger fw-bold small" style="font-size: 15px;">Limited time deal</span>
+                            {% endif %}
+                        </div>
+                        <a href="{% url 'productview' home_banner.category_id.categoryid home_banner.productviewid %}" class="btn btn-warning rounded-pill px-4">Shop now</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    {% if recently_viewed_products %}
+        <div class="container bg-white py-3 py-md-4 my-4 border-top border-bottom">
+            <div class="container-fluid px-2 px-md-4">
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-baseline mb-3 gap-1 pb-2">
+                    <h4 class="fw-bold mb-0 text-dark fs-6 fs-md-5">Your browsing history</h4>
+                    <a href="{% url 'browsing_history' %}" class="text-decoration-none text-primary fw-normal" style="font-size: 12px;">View or edit your browsing history</a>
+                </div>
+                <div class="position-relative px-1 px-md-3">
+                    <div class="swiper amazonBrowsingSwiper">
+                        <div class="swiper-wrapper">
+                            {% for product in recently_viewed_products %}
+                                <div class="swiper-slide" style="width: 180px;">
+                                    <div class="card h-100 border-0 p-2 position-relative bg-white">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none d-block">
+                                            <div class="p-2 bg-white text-center d-flex align-items-center justify-content-center hover-card" style="height: 130px;">
+                                                <img src="{{ product.productimage1.url|default:product.productimage1 }}" alt="{{ product.producttitle }}" class="img-fluid" style="max-height: 110px; object-fit: contain;">
+                                            </div>
+                                        </a>                              
+                                        <div class="card-body p-0 d-flex flex-column">                                    
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                                <p class="mb-1 text-truncate-2 small fw-normal lh-sm" style="font-size: 13px; height: 32px; color: #0f1111;">
+                                                    {{ product.producttitle|truncatechars:40  }}
+                                                </p>
+                                            </a>                                    
+                                            <div class="mt-auto pt-1">
+                                                <div class="d-flex align-items-baseline gap-1 flex-wrap">
+                                                    <span class="fw-medium text-dark" style="font-size: 14px;">₹{{ product.productprice|intcomma }}</span>
+                                                    {% if product.productmrpprice and product.productmrpprice > product.productprice %}
+                                                        <span class="text-muted text-decoration-line-through" style="font-size: 10px;">M.R.P: ₹{{ product.productmrpprice|intcomma }}</span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                    <small class="text-danger d-block" style="font-size: 10px;">({{ product.productdiscountrate }}% off)</small>
+                                                {% endif %}                                            
+                                                {% if delivery_date %}
+                                                    <div class="mt-1" style="font-size: 10px;">
+                                                        <span class="text-muted">FREE Delivery </span>
+                                                        <span class="fw-bold text-dark">{{ delivery_date|date:"D, M d" }}</span>
+                                                    </div>
+                                                {% endif %}
+                                            </div>                             
+                                            <form method="post" action="{% url 'add_to_cart' product.productviewid %}" class="mt-2">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="selected_size" value="{{ product.productsize1 }}">
+                                                <button type="submit" class="btn btn-warning btn-sm w-100 rounded-pill text-dark border-0 py-1" style="background-color: #ffd814; font-size: 11px;" {% if product.stock and product.stock <= 0 %}disabled{% endif %}>
+                                                    Add to Cart
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
 {% endblock body %}

@@ -448,10 +448,6 @@ class ReturnRequest(models.Model):
                 old_status = original.status
             except ReturnRequest.DoesNotExist:
                 pass
-        
-        # --- DEBUG PRINT ---
-        print(f"--- DEBUG SAVE: is_new={is_new}, old_status={old_status}, new_status={self.status} ---")
-
         if not is_new and old_status != self.status:
             if self.status == 'Approved' and not self.approved_at:
                 self.approved_at = timezone.now()
@@ -459,18 +455,15 @@ class ReturnRequest(models.Model):
                 self.pickup_completed_at = timezone.now()
             elif self.status == 'Refunded' and not self.refund_completed_at:
                 self.refund_completed_at = timezone.now()
-
         send_agent_email = False
         send_accepted_email = False
         send_otp_email = False
         send_refund_initiated_email = False
         send_refunded_email = False
-
         if not is_new and old_status != self.status:
             if self.status == 'Agent Assigned':
                 send_agent_email = True
             elif self.status == 'Accepted by Pickup Agent':
-                print("--- DEBUG: Matched Accepted by Pickup Agent condition! ---")
                 send_accepted_email = True
             elif self.status == 'Out for Pickup':
                 send_otp_email = True
@@ -478,13 +471,10 @@ class ReturnRequest(models.Model):
                 send_refund_initiated_email = True
             elif self.status == 'Refunded':
                 send_refunded_email = True
-
         super().save(*args, **kwargs)
-
         if send_agent_email:
             self.send_agent_assigned_email()
         elif send_accepted_email:
-            print("--- DEBUG: Calling send_pickup_accepted_email() ---")
             self.send_pickup_accepted_email()
         elif send_otp_email:
             self.send_pickup_otp_email()
@@ -515,7 +505,6 @@ class ReturnRequest(models.Model):
         recipient = self.order.user_id if (self.order and self.order.user_id) else None
         recipient_email = self.order.email if (self.order and self.order.email) else (recipient.email if recipient else None)
         if recipient_email:
-            print(f"--- DEBUG: Sending email to {recipient_email} ---")
             customer_name = self.order.firstname if (self.order and self.order.firstname) else (recipient.username if recipient else "Customer")
             agent_name = self.delivery_agent.user.username if self.delivery_agent and self.delivery_agent.user else "Assigned Agent"
             context = {
