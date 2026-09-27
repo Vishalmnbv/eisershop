@@ -55,7 +55,16 @@
             <p>Good news! A pickup agent has been successfully assigned for your return request </p>
             
             <div class="info-box">
-                <p style="margin: 4px 0;"><strong>Agent Name:</strong> {{ return_request.delivery_agent.user.get_full_name|default:return_request.delivery_agent.user.username }}</p>
+                <p style="margin: 4px 0;">
+                    <strong>Agent Name:</strong> 
+                    {% with agent_user=return_request.delivery_agent.user %}
+                        {% if agent_user.first_name or agent_user.last_name %}
+                            {{ agent_user.first_name }} ({{ agent_user.username }}) {{ agent_user.last_name }}
+                        {% else %}
+                            {{ agent_user.username }}
+                        {% endif %}
+                    {% endwith %}
+                </p>
                 <p style="margin: 4px 0;"><strong>Phone Number:</strong> {{ return_request.delivery_agent.phone }}</p>
                 <p style="margin: 4px 0;"><strong>Vehicle Number:</strong> {{ return_request.delivery_agent.vehicle_number }}</p>
             </div>

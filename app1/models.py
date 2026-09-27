@@ -486,21 +486,23 @@ class ReturnRequest(models.Model):
         elif send_refunded_email:
             self.send_refund_completed_email()
     def send_agent_assigned_email(self):
-        if self.delivery_agent and self.delivery_agent.user and self.delivery_agent.user.email:
+        customer = getattr(self, 'user', None)  
+        if customer and customer.email:
             try:
                 email_context = {
                     'return_request': self,
                     'pickup_agent': self.delivery_agent,
                     'order': self.order,
+                    'user': customer,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
-                }
+                    }
                 subject = f"New Pickup Assigned - EiserShop (#{self.amazon_order_id})"
                 html_content = render_to_string('emails/agent_assigned.html', email_context)
                 email_thread = threading.Thread(
                     target=send_async_order_email, 
-                    args=(self.delivery_agent.user, html_content, subject), 
+                    args=(customer, html_content, subject), 
                     daemon=True
-                )
+                    )
                 email_thread.start()
             except Exception as e:
                 traceback.print_exc()
