@@ -145,25 +145,25 @@
                                     <option value="Other">Other</option>
                                 </select>
                             </div>                       
-                            {% if is_cod %}
-                            <div class="p-3 mb-3 bg-light rounded-3 border">
-                                <label class="form-label fw-bold small text-dark mb-1">
-                                    <i class="fa-solid fa-wallet text-warning me-1"></i> Refund Details (For Cash on Delivery)
-                                </label>
-                                <p class="text-muted small mb-2">Since this was a Cash on Delivery order, please provide your UPI ID or Bank Details to receive your refund.</p>                            
-                                <div class="mb-2">
-                                    <input type="text" class="form-control shadow-none form-control-sm" name="upi_id" placeholder="Enter UPI ID (e.g., username@oksbi)">
-                                </div>
-                                <div class="text-center text-muted small my-1">OR</div>
-                                <div class="row g-2">
-                                    <div class="col-6">
-                                        <input type="text" class="form-control shadow-none form-control-sm" name="bank_account_number" placeholder="Account Number">
+                            {% if "cash" in order.paymentmethod|lower or "cod" in order.paymentmethod|lower or "delivery" in order.paymentmethod|lower %}
+                                <div class="p-3 mb-3 bg-light rounded-3 border">
+                                    <label class="form-label fw-bold small text-dark mb-1">
+                                        <i class="fa-solid fa-wallet text-warning me-1"></i> Refund Details (For Cash on Delivery)
+                                    </label>
+                                    <p class="text-muted small mb-2">Since this was a Cash on Delivery order, please provide your UPI ID or Bank Details to receive your refund.</p>            
+                                    <div class="mb-2">
+                                        <input type="text" class="form-control shadow-none form-control-sm" name="upi_id" placeholder="Enter UPI ID (e.g., username@oksbi)">
                                     </div>
-                                    <div class="col-6">
-                                        <input type="text" class="form-control shadow-none form-control-sm" name="ifsc_code" placeholder="IFSC Code">
+                                    <div class="text-center text-muted small my-1">OR</div>
+                                    <div class="row g-2">
+                                        <div class="col-6">
+                                            <input type="text" class="form-control shadow-none form-control-sm" name="bank_account_number" placeholder="Account Number">
+                                        </div>
+                                        <div class="col-6">
+                                            <input type="text" class="form-control shadow-none form-control-sm" name="ifsc_code" placeholder="IFSC Code">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
                             {% endif %}
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-dark mb-1">Comments <span class="text-muted fw-normal">(optional)</span></label>
