@@ -57,13 +57,9 @@
             <div class="info-box">
                 <p style="margin: 4px 0;">
                     <strong>Agent Name:</strong> 
-                    {% with agent_user=return_request.delivery_agent.user %}
-                        {% if agent_user.first_name or agent_user.last_name %}
-                            {{ agent_user.first_name }} ({{ agent_user.username }}) {{ agent_user.last_name }}
-                        {% else %}
-                            {{ agent_user.username }}
-                        {% endif %}
-                    {% endwith %}
+                    {{ return_request.delivery_agent.user.first_name }} 
+                    {{ return_request.delivery_agent.user.username }} 
+                    {{ return_request.delivery_agent.user.last_name }}
                 </p>
                 <p style="margin: 4px 0;"><strong>Phone Number:</strong> {{ return_request.delivery_agent.phone }}</p>
                 <p style="margin: 4px 0;"><strong>Vehicle Number:</strong> {{ return_request.delivery_agent.vehicle_number }}</p>
