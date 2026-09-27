@@ -2331,7 +2331,18 @@ class ReturnOrderView(LoginRequiredMixin, View):
             messages.error(request, "Size Issue is not applicable for this product category.")
             return redirect("return_order", orderitemid=orderitemid)
         final_reason = f"{reason} - {comments}".strip(" -") if comments else reason
-        ReturnRequest.objects.create(order=order,orderitem=order_item,reason=final_reason,status="Requested",)
+        upi_id = request.POST.get("upi_id", "").strip()
+        bank_account_number = request.POST.get("bank_account_number", "").strip()
+        ifsc_code = request.POST.get("ifsc_code", "").strip()
+        ReturnRequest.objects.create(
+            order=order,
+            orderitem=order_item,
+            reason=final_reason,
+            status="Requested",
+            upi_id=upi_id if upi_id else None,
+            bank_account_number=bank_account_number if bank_account_number else None,
+            ifsc_code=ifsc_code if ifsc_code else None
+        )
         order_item.status = "Return Requested"
         order_item.save()
         messages.success(request, "Return request submitted successfully.")
