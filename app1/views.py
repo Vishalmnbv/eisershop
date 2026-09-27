@@ -2443,6 +2443,20 @@ class AdminDashboardView(LoginRequiredMixin, View):
                 r.calculated_unit_price = unit_price
                 r.calculated_refund = refund_total    
         try:
+            return_req = getattr(r, 'returnrequest', None) or ReturnRequest.objects.filter(orderitem=r).first()
+            if return_req:
+                r.upi_id = return_req.upi_id
+                r.bank_account_number = return_req.bank_account_number
+                r.ifsc_code = return_req.ifsc_code
+            else:
+                r.upi_id = None
+                r.bank_account_number = None
+                r.ifsc_code = None
+        except Exception:
+            r.upi_id = None
+            r.bank_account_number = None
+            r.ifsc_code = None
+        try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
         except NameError:
