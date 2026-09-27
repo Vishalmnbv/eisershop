@@ -75,7 +75,15 @@
                         </h4>
                     </div>
                     <div class="card-body p-4">
-                        <div class="p-3 mb-4 rounded-3" style="background-color: #f7f8f8; border: 1px solid #d5d9d9;">
+                        <div class="alert alert-info py-2 px-3 mb-3 small d-flex justify-content-between align-items-center">
+                            <div>
+                                <i class="fa-solid fa-truck-fast me-1"></i> Delivered on: <strong>{{ delivered_date|date:"d M, Y" }}</strong>
+                            </div>
+                            <div>
+                                <span class="text-danger">Return by: <strong>{{ expiry_date|date:"d M, Y" }}</strong></span>
+                            </div>
+                        </div>
+                        <div class="p-3 mb-4 rounded-3" style="border: 1px solid #d5d9d9;">
                             <div class="d-flex justify-content-between align-items-center mb-2 pb-2 border-bottom" style="border-color: #e7e7e7;">
                                 <div>
                                     <span class="text-muted small">Order ID:</span>
@@ -83,13 +91,13 @@
                                 </div>
                                 <div>
                                     <span class="badge bg-success bg-opacity-10 text-success fw-semibold px-2 py-1" style="font-size: 0.75rem;">
-                                       <i class="fa-solid fa-circle-check me-1"></i>{{ order.orderstatus }}
+                                        <i class="fa-solid fa-circle-check me-1"></i>{{ order.orderstatus }}
                                     </span>
                                 </div>
                             </div>
                             <div class="row align-items-center g-3 pt-1">
                                 <div class="col-3 col-sm-2 text-center">
-                                    <img src="{{ order_item.productview_id.productimage1 }}" class="img-fluid  p-1" style="max-height: 75px; object-fit: contain;">
+                                    <img src="{{ order_item.productview_id.productimage1 }}" class="img-fluid p-1" style="max-height: 75px; object-fit: contain;">
                                 </div>
                                 <div class="col-9 col-sm-7">
                                     <h6 class="fw-semibold text-dark mb-1 text-truncate" style="font-size: 0.9rem;" title="{{ order_item.productview_id.producttitle }}">
@@ -111,7 +119,7 @@
                             </div>
                         </div>
                         <form method="post">
-                            {% csrf_token %}                        
+                            {% csrf_token %}        
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-dark mb-1">Select Quantity to Return</label>
                                 <select class="form-select shadow-none" name="return_quantity" required>
@@ -121,24 +129,46 @@
                                         </option>
                                     {% endfor %}
                                 </select>
-                            </div>                         
+                            </div>        
                             <div class="mb-3">
                                 <label class="form-label fw-bold small text-dark mb-1">Why are you returning this?</label>
                                 <select class="form-select shadow-none" name="reason" required>
                                     <option value="" selected disabled>-- Choose a reason --</option>
                                     <option value="Wrong Product Received">Wrong Product Received</option>
                                     <option value="Damaged Product">Damaged Product</option>
-                                    <option value="Defective Product">Defective Product</option>                
-                                    <option value="Size Issue">Size Issue</option>                            
+                                    <option value="Defective Product">Defective Product</option>            
+                                    {% if not hide_size_issue %}
+                                    <option value="Size Issue">Size Issue</option>                        
+                                    {% endif %}
                                     <option value="Quality Not Good">Quality Not Good</option>
                                     <option value="Product Not Needed">Product Not Needed</option>
                                     <option value="Other">Other</option>
                                 </select>
+                            </div>                       
+                            {% if is_cod %}
+                            <div class="p-3 mb-3 bg-light rounded-3 border">
+                                <label class="form-label fw-bold small text-dark mb-1">
+                                    <i class="fa-solid fa-wallet text-warning me-1"></i> Refund Details (For Cash on Delivery)
+                                </label>
+                                <p class="text-muted small mb-2">Since this was a Cash on Delivery order, please provide your UPI ID or Bank Details to receive your refund.</p>                            
+                                <div class="mb-2">
+                                    <input type="text" class="form-control shadow-none form-control-sm" name="upi_id" placeholder="Enter UPI ID (e.g., username@oksbi)">
+                                </div>
+                                <div class="text-center text-muted small my-1">OR</div>
+                                <div class="row g-2">
+                                    <div class="col-6">
+                                        <input type="text" class="form-control shadow-none form-control-sm" name="bank_account_number" placeholder="Account Number">
+                                    </div>
+                                    <div class="col-6">
+                                        <input type="text" class="form-control shadow-none form-control-sm" name="ifsc_code" placeholder="IFSC Code">
+                                    </div>
+                                </div>
                             </div>
+                            {% endif %}
                             <div class="mb-4">
                                 <label class="form-label fw-bold small text-dark mb-1">Comments <span class="text-muted fw-normal">(optional)</span></label>
                                 <textarea class="form-control shadow-none" rows="3" name="comments" placeholder="Provide additional details..."></textarea>
-                            </div>                        
+                            </div>                                
                             <div class="pt-2">
                                 <button type="submit" class="btn w-100 fw-semibold py-2" style="background-color: #ffd814; border: 1px solid #fcd200; color: #0F1111; font-size: 0.9rem;">
                                     <i class="fa-solid fa-rotate-left me-2"></i>Submit Return Request

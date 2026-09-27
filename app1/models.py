@@ -426,6 +426,9 @@ class ReturnRequest(models.Model):
     pickup_completed_at = models.DateTimeField(null=True, blank=True)
     refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     refund_completed_at = models.DateTimeField(null=True, blank=True)
+    upi_id = models.CharField(max_length=100, blank=True, null=True)
+    bank_account_number = models.CharField(max_length=50, blank=True, null=True)
+    ifsc_code = models.CharField(max_length=20, blank=True, null=True)
     def generate_pickup_otp(self):
         self.pickup_otp = str(random.randint(100000, 999999))
         self.pickup_otp_verified = False

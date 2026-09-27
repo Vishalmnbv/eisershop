@@ -236,60 +236,85 @@
                                                     <span><strong class="text-dark">Color:</strong> {{ item.productview_id.productcolor1 }}</span>
                                                 {% endif %}
                                             </div>        
-                                            <div class="mt-3 d-flex align-items-center flex-wrap gap-2">
-                                                <form method="post" action="{% url 'add_to_cart' item.productview_id.productviewid %}">
-                                                    {% csrf_token %}
-                                                    <input type="hidden" name="selected_size" value="{{ item.selected_size }}">
-                                                    <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm" style="background-color: #ffd814; border-color: #fcd200;"><i class="fa-solid fa-cart-shopping me-1"></i>Buy it Again</button>
-                                                </form>                                                                                                                
+                                            <div class="mt-3 d-flex flex-column gap-2">
                                                 {% if item.has_return_request %}
-                                                    <div class="badge rounded-1 px-3 py-2 fw-semibold d-inline-flex align-items-center gap-1 shadow-sm 
-                                                        {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
-                                                            bg-success text-white
-                                                        {% elif item.return_status == 'Approved' %}
-                                                            bg-primary text-white
-                                                        {% elif item.return_status == 'Rejected' %}
-                                                            bg-danger text-white
-                                                        {% else %}
-                                                            bg-warning text-dark
-                                                        {% endif %}" 
-                                                        style="font-size: 0.75rem;">
-                                                        {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
-                                                            <i class="fa-solid fa-circle-check me-1"></i>
-                                                        {% elif item.return_status == 'Approved' %}
-                                                            <i class="fa-solid fa-thumbs-up me-1"></i>
-                                                        {% elif item.return_status == 'Rejected' %}
-                                                            <i class="fa-solid fa-ban me-1"></i>
-                                                        {% else %}
-                                                            <i class="fa-regular fa-clock me-1"></i>
-                                                        {% endif %}
-                                                        <span>Status: {{ item.return_status }}</span>                                                
-                                                        {% if item.return_date %}
-                                                            <span class="ms-1 small opacity-75">({{ item.return_date|date:"d M Y, h:i A" }})</span>
+                                                    <div class="d-flex flex-column gap-1">
+                                                        <div class="d-flex align-items-center flex-wrap gap-1">
+                                                            <div class="badge rounded-1 px-3 py-2 fw-semibold d-inline-flex align-items-center flex-wrap gap-1 text-wrap text-start
+                                                                {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
+                                                                    bg-success text-white
+                                                                {% elif item.return_status == 'Approved' %}
+                                                                    bg-primary text-white
+                                                                {% elif item.return_status == 'Rejected' %}
+                                                                    bg-danger text-white
+                                                                {% else %}
+                                                                    bg-warning text-dark
+                                                                {% endif %}" style="font-size: 0.75rem;">                                                         
+                                                                {% if item.return_status == 'Refunded' or item.return_status == 'Returned' %}
+                                                                    <i class="fa-solid fa-circle-check me-1 flex-shrink-0"></i>
+                                                                {% elif item.return_status == 'Approved' %}
+                                                                    <i class="fa-solid fa-thumbs-up me-1 flex-shrink-0"></i>
+                                                                {% elif item.return_status == 'Rejected' %}
+                                                                    <i class="fa-solid fa-ban me-1 flex-shrink-0"></i>
+                                                                {% else %}
+                                                                    <i class="fa-regular fa-clock me-1 flex-shrink-0"></i>
+                                                                {% endif %}                                                    
+                                                                <span>Status: {{ item.return_status }}</span>        
+                                                                {% if item.return_date %}
+                                                                    <span class="ms-1 small opacity-75">({{ item.return_date|date:"d M Y, h:i A" }})</span>
+                                                                {% endif %}
+                                                            </div>
+                                                        </div>                                                 
+                                                        {% if item.return_status == 'Refunded' %}
+                                                            {% if item.return_request.upi_id or item.return_request.bank_account_number %}
+                                                                <div class="text-secondary d-flex align-items-center flex-wrap gap-1 mt-1 text-break" style="font-size: 0.73rem;">
+                                                                    <span>Refund sent to 
+                                                                    {% if item.return_request.upi_id %}
+                                                                        UPI: <strong class="text-dark">{{ item.return_request.upi_id }}</strong>
+                                                                    {% else %}
+                                                                        A/C: <strong class="text-dark">{{ item.return_request.bank_account_number }}</strong>
+                                                                    {% endif %}
+                                                                    </span>
+                                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size: 0.6rem;">
+                                                                        <i class="fa-solid fa-circle-check me-1"></i>Paid
+                                                                    </span>
+                                                                </div>
+                                                            {% endif %}
                                                         {% endif %}
                                                     </div>
                                                 {% elif order.orderstatus == "Delivered" and order.return_last_date %}
-                                                    <div class="d-flex align-items-center border rounded px-3 py-1 bg-danger text-white small">
-                                                        <i class="fa-solid fa-clock me-2 text-white"></i>
-                                                        <div>
-                                                            <span id="timer{{ order.orderid }}_{{ item.orderitemid }}" class="fw-bold text-white" data-end="{{ order.return_last_date|date:'c' }}" data-return-btn="returnBtn{{ item.orderitemid }}"></span>
+                                                    <div class="d-flex flex-column flex-sm-row align-items-stretch align-items-sm-center gap-2">
+                                                        <div class="d-flex align-items-center border rounded px-3 py-1 bg-danger text-white small">
+                                                            <i class="fa-solid fa-clock me-2 text-white"></i>
+                                                            <div>
+                                                                <span id="timer{{ order.orderid }}_{{ item.orderitemid }}" class="fw-bold text-white" data-end="{{ order.return_last_date|date:'c' }}" data-return-btn="returnBtn{{ item.orderitemid }}"></span>
+                                                            </div>
                                                         </div>
-                                                    </div>
-                                                    <a href="{% url 'return_order' item.orderitemid %}" id="returnBtn{{ item.orderitemid }}" class="btn btn-secondary btn-sm px-3">
-                                                        <i class="fa-solid fa-rotate-left me-1"></i>Return Item
-                                                    </a>
-                                                {% endif %}
-                                                {% if order.orderstatus == "Delivered" %}
-                                                    {% if item.has_reviewed %}
-                                                        <span class="badge bg-secondary px-3 py-2 fw-bold text-white">
-                                                            <i class="fa-solid fa-check me-1"></i>Reviewed
-                                                        </span>
-                                                    {% else %}
-                                                        <a href="{% url 'add_review_page' item.productview_id.productviewid %}" class="btn btn-primary btn-sm px-3 fw-bold">
-                                                            <i class="fa-solid fa-star me-1 text-warning"></i>Rate & Review
+                                                        <a href="{% url 'return_order' item.orderitemid %}" id="returnBtn{{ item.orderitemid }}" class="btn btn-secondary btn-sm px-3 text-nowrap">
+                                                            <i class="fa-solid fa-rotate-left me-1"></i>Return Item
                                                         </a>
-                                                    {% endif %}
+                                                    </div>
                                                 {% endif %}
+                                                <div class="d-flex align-items-center flex-wrap gap-2 mt-1">
+                                                    <form method="post" action="{% url 'add_to_cart' item.productview_id.productviewid %}" class="m-0">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="selected_size" value="{{ item.selected_size }}">
+                                                        <button class="btn btn-warning btn-sm fw-bold px-3 shadow-sm d-inline-flex align-items-center text-nowrap" style="background-color: #ffd814; border-color: #fcd200; font-size: 0.75rem;">
+                                                            <i class="fa-solid fa-cart-shopping me-1"></i>Buy It Again
+                                                        </button>
+                                                    </form>
+                                                    {% if order.orderstatus == "Delivered" %}
+                                                        {% if item.has_reviewed %}
+                                                            <span class="badge bg-secondary px-3 py-2 fw-bold text-white d-inline-flex align-items-center text-nowrap" style="font-size: 0.75rem;">
+                                                                <i class="fa-solid fa-check me-1"></i>Reviewed
+                                                            </span>
+                                                        {% else %}
+                                                            <a href="{% url 'add_review_page' item.productview_id.productviewid %}" class="btn btn-primary btn-sm px-3 fw-bold d-inline-flex align-items-center text-nowrap" style="font-size: 0.75rem;">
+                                                                <i class="fa-solid fa-star me-1 text-warning"></i>Rate & Review
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>

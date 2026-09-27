@@ -650,14 +650,14 @@
                                         <a href="{% url 'productview' r.orderitem.productview_id.category_id.categoryid r.orderitem.productview_id.productviewid %}" class="fw-bold text-decoration-none text-dark text-truncate d-block" style="max-width: 200px; font-size: 0.8rem;">
                                             {{ r.orderitem.productview_id.producttitle }}
                                         </a>
-                                    </h6>                         
-                                    <div class="small" style="color: #565959; font-size: 0.83rem;">                                       
+                                    </h6>                                
+                                    <div class="small" style="color: #565959; font-size: 0.83rem;">                                    
                                         <div class="mb-1">
                                             <strong style="color: #0f1111;">Order ID:</strong>
                                             <span class="font-monospace fw-semibold text-info">#{{ r.amazon_order_id }}</span>
                                             <span class="mx-1 text-muted">|</span>
                                             <strong style="color: #0f1111;">Customer:</strong> {{ r.order.user_id.username }}
-                                        </div>                                
+                                        </div>                               
                                         <div class="mb-1">
                                             {% if r.orderitem.selected_size and r.orderitem.selected_size|lower != "standard" and r.orderitem.selected_size|lower != "none" %}
                                                 <span class="me-2"><strong style="color: #0f1111;">Size:</strong>{{ r.orderitem.selected_size }}</span>
@@ -666,7 +666,7 @@
                                             <span><strong style="color: #0f1111;">Color:</strong> {{ r.orderitem.productview_id.productcolor1 }}</span>
                                             <span class="mx-1 text-muted">|</span>
                                             <span><strong style="color: #0f1111;">Qty:</strong> {{ r.quantity }}</span>
-                                        </div>                              
+                                        </div>                           
                                         <div class="mb-1">
                                             <strong style="color: #0f1111;">Price:</strong> ₹{% if r.orderitem %}{{ r.orderitem.productview_id.productprice|format_indian_currency }}{% else %}0{% endif %}
                                             <span class="mx-1 text-muted">|</span>
@@ -674,12 +674,32 @@
                                             <span class="fw-bold" style="color: #b12704;">
                                                 ₹{% if r.calculated_refund %}{{ r.calculated_refund|format_indian_currency }}{% else %}0{% endif %}
                                             </span>
-                                        </div>                             
+                                        </div>                            
+                                        <div class="mb-1">
+                                            <strong style="color: #0f1111;">Order Payment:</strong> 
+                                            <span class="text-dark fw-semibold">{{ r.order.paymentmethod }}</span>
+                                            <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
+                                            {% if r.upi_id or r.bank_account_number %}
+                                                <span class="mx-1 text-muted">|</span>
+                                                <span class="text-dark fw-semibold">
+                                                    {% if r.upi_id %}
+                                                        <strong>Return order Payment:</strong> UPI: {{ r.upi_id }}
+                                                    {% else %}
+                                                        <strong>Return order Payment:</strong> A/C: {{ r.bank_account_number }} {% if r.ifsc_code %}(IFSC: {{ r.ifsc_code }}){% endif %}
+                                                    {% endif %}
+                                                    {% if r.status == "Refunded" %}
+                                                        <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">
+                                                            <i class="fa-solid fa-circle-check me-1"></i>Paid
+                                                        </span>
+                                                    {% endif %}
+                                                </span>
+                                            {% endif %}
+                                        </div>
                                         <div class="mb-1">
                                             <span class="text-nowrap">
                                                 <strong style="color: #0f1111;">Order Date:</strong> 
                                                 {% if r.order_date %}{{ r.order_date|date:"d M Y, h:i A" }}{% elif r.order.date %}{{ r.order.date|date:"d M Y, h:i A" }}{% else %}N/A{% endif %}
-                                            </span>                                       
+                                            </span>                                        
                                             {% if r.delivered_on or r.order.delivered_at %}
                                                 <span class="mx-1 text-muted">|</span>
                                                 <span class="text-nowrap">
@@ -696,13 +716,12 @@
                                                 {% elif r.created_at %}
                                                     <strong style="color: #0f1111;">Return Requests:</strong> {{ r.created_at|date:"d M Y, h:i A"}}
                                                 {% endif %}
-
                                                 {% if r.refund_completed_at %}
                                                     <span class="mx-1 text-muted">|</span>
                                                     <strong style="color: #0f1111;">Refunded On:</strong> {{ r.refund_completed_at|date:"d M Y, h:i A" }}
                                                 {% endif %}
                                             </span>
-                                        </div>                           
+                                        </div>                            
                                         <div class="mt-2 pt-1" style="border-color: #f0f2f2 !important;">
                                             <strong style="color: #0f1111;">Reason:</strong>
                                             <span style="color: #c45500;" class="fw-semibold">{{ r.reason }}</span>
@@ -781,11 +800,7 @@
                                     {% elif r.status == "Refunded" %}
                                         <span class="badge rounded-1 px-2 py-1 fw-semibold mb-1" style="background-color: #f0f8f0; color: #007600; border: 1px solid #b2e3b2;">
                                             <i class="fa-solid fa-circle-check me-1"></i> Refunded
-                                        </span>
-                                        <div class="text-dark fw-bold" style="font-size: 0.75rem;">
-                                            {{ r.order.paymentmethod|default:"Cash on Delivery" }} 
-                                            <span class="badge bg-success bg-opacity-10 text-success fw-bold px-1 py-0" style="font-size: 0.65rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
-                                        </div>
+                                        </span>                                      
                                     {% if r.refund_completed_at %}
                                         <div class="text-dark fw-bold" style="font-size: 0.75rem;">
                                             Refunded on : {{ r.refund_completed_at|date:"d M Y, h:i A" }}
