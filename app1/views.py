@@ -1411,21 +1411,25 @@ class ProductDetailView(DetailView):
         context["same_product_count"] = variants_qs.count()
         similar_variant_ids = Productview.objects.filter(producttitle__iexact=product.producttitle).values_list('productviewid', flat=True)
         reviews = list(Review.objects.filter(product_id__in=similar_variant_ids).select_related("user").order_by("-created_at")[:7])
+        if self.request.user.is_authenticated:
+            user_reviews = [r for r in reviews if r.user == self.request.user]
+            other_reviews = [r for r in reviews if r.user != self.request.user]
+            reviews = user_reviews + other_reviews
         verified_user_ids = set()
         if reviews:
-            review_user_ids = [r.user.id for r in reviews if r.user_id]
+            review_user_ids = [r.user.id for r in reviews if r.user]
             if review_user_ids:
                 try:
-                    verified_user_ids = set(Orderitem.objects.filter(order_id__orderstatus="Delivered",productview_id__in=similar_variant_ids,order_id__user_id__in=review_user_ids).values_list("order_id__user_id", flat=True))
+                    verified_user_ids = set(Orderitem.objects.filter(order__orderstatus="Delivered", productview_id__in=similar_variant_ids, order_id__user_id__in=review_user_ids).values_list('order_id__user_id', flat=True))
                 except Exception:
                     try:
-                        verified_user_ids = set(Orderitem.objects.filter(order__orderstatus="Delivered",productview_id__in=similar_variant_ids,order__user__in=review_user_ids).values_list("order__user_id", flat=True))
+                        verified_user_ids = set(Orderitem.objects.filter(order__orderstatus="Delivered", productview_id__in=similar_variant_ids, order_id__user__in=review_user_ids).values_list('order_id__user', flat=True))
                     except Exception:
                         pass
         for review in reviews:
             review.verified_purchase = (review.user_id in verified_user_ids if review.user else False)
-        context["reviews"] = reviews
-        context["all_reviews_count"] = Review.objects.filter(product_id__in=similar_variant_ids).count()
+        context['reviews'] = reviews
+        context['all_reviews_count'] = Review.objects.filter(product_id__in=similar_variant_ids).count()
         return context
 @login_required
 def add_review_view(request, productviewid):
