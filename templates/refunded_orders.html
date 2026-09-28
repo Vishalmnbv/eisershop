@@ -151,18 +151,17 @@
                                             <i class="fa-solid fa-circle-check me-1"></i>Refunded
                                         </span>
                                         <div class="text-dark fw-bold" style="font-size: 0.75rem;">
-                                            {{ r.order.paymentmethod|default:"Cash on Delivery" }} 
+                                            {{ r.order.paymentmethod }} 
+                                            <strong>Order Payment:</strong> 
                                             <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
                                         </div>
-                                        {% if r.upi_id or r.bank_account_number %}
+                                        {% if r.upi_id %}
                                             <span class="d-block fw-semibold text-dark mt-1" style="font-size: 0.7rem;">
                                                 <strong>Return order Payment:</strong>
-                                                {% if r.upi_id %}
-                                                    UPI: {{ r.upi_id }}
-                                                    <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
-                                                {% else %}
-                                                    A/C: {{ r.bank_account_number }}
-                                                {% endif %}
+                                                UPI: {{ r.upi_id }}
+                                                <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">
+                                                    <i class="fa-solid fa-circle-check me-1"></i>Paid
+                                                </span>
                                             </span>
                                         {% endif %}
                                         {% if r.refund_completed_at %}

@@ -2322,6 +2322,7 @@ class ReturnOrderView(LoginRequiredMixin, View):
             return redirect("my_orders")
         reason = request.POST.get("reason")
         comments = request.POST.get("comments", "")
+        quantity = request.POST.get("quantity", 1)
         if not reason:
             messages.error(request, "Please select a return reason.")
             return redirect("return_order", orderitemid=orderitemid)
@@ -2337,6 +2338,7 @@ class ReturnOrderView(LoginRequiredMixin, View):
         ReturnRequest.objects.create(
             order=order,
             orderitem=order_item,
+            quantity=quantity,
             reason=final_reason,
             status="Requested",
             upi_id=upi_id if upi_id else None,

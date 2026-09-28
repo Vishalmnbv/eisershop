@@ -679,14 +679,10 @@
                                             <strong style="color: #0f1111;">Order Payment:</strong> 
                                             <span class="text-dark fw-semibold">{{ r.order.paymentmethod }}</span>
                                             <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;"><i class="fa-solid fa-circle-check me-1"></i>Paid</span>
-                                            {% if r.upi_id or r.bank_account_number %}
+                                            {% if r.upi_id %}
                                                 <span class="mx-1 text-muted">|</span>
                                                 <span class="text-dark fw-semibold">
-                                                    {% if r.upi_id %}
-                                                        <strong>Return order Payment:</strong> UPI: {{ r.upi_id }}
-                                                    {% else %}
-                                                        <strong>Return order Payment:</strong> A/C: {{ r.bank_account_number }} {% if r.ifsc_code %}(IFSC: {{ r.ifsc_code }}){% endif %}
-                                                    {% endif %}
+                                                    <strong>Return order Payment:</strong> UPI: {{ r.upi_id }}
                                                     {% if r.status == "Refunded" %}
                                                         <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle px-1 ms-1" style="font-size: 0.6rem;">
                                                             <i class="fa-solid fa-circle-check me-1"></i>Paid

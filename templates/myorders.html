@@ -266,15 +266,9 @@
                                                             </div>
                                                         </div>                                                 
                                                         {% if item.return_status == 'Refunded' %}
-                                                            {% if item.return_request.upi_id or item.return_request.bank_account_number %}
+                                                            {% if item.return_request.upi_id %}
                                                                 <div class="text-secondary d-flex align-items-center flex-wrap gap-1 mt-1 text-break" style="font-size: 0.73rem;">
-                                                                    <span>Refund sent to 
-                                                                    {% if item.return_request.upi_id %}
-                                                                        UPI: <strong class="text-dark">{{ item.return_request.upi_id }}</strong>
-                                                                    {% else %}
-                                                                        A/C: <strong class="text-dark">{{ item.return_request.bank_account_number }}</strong>
-                                                                    {% endif %}
-                                                                    </span>
+                                                                    <span>Refund sent to UPI: <strong class="text-dark">{{ item.return_request.upi_id }}</strong></span>
                                                                     <span class="badge rounded-1 bg-success-subtle text-success border border-success-subtle" style="font-size: 0.6rem;">
                                                                         <i class="fa-solid fa-circle-check me-1"></i>Paid
                                                                     </span>
