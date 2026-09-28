@@ -593,7 +593,7 @@ color_map = {
     "mint green": "#98FF98",
     "mintgreen": "#98FF98",
     "sea green": "#2E8B57",
-    "midnight fern green": "#1A3323",
+    "midnight fern green": "#233A2C",
     "teal green": "#00827F",
     "deep forrest": "#1B3B2B",
     "deep brown": "#4A2E2B",
@@ -2326,7 +2326,7 @@ class ReturnOrderView(LoginRequiredMixin, View):
             return redirect("my_orders")
         reason = request.POST.get("reason")
         comments = request.POST.get("comments", "")
-        quantity = request.POST.get("quantity", 1)
+        quantity = int(request.POST.get("return_quantity", 1))
         if not reason:
             messages.error(request, "Please select a return reason.")
             return redirect("return_order", orderitemid=orderitemid)
@@ -2456,9 +2456,8 @@ class AdminDashboardView(LoginRequiredMixin, View):
             else:
                 r.amazon_order_id = "00001"
             if r.orderitem:
-                unit_price, refund_total = get_calculated_price(r.orderitem)
-                r.calculated_unit_price = unit_price
-                r.calculated_refund = refund_total * r.quantity   
+                ret_q = getattr(r, "quantity", 1) or 1
+                r.calculated_refund = unit_price * ret_q
         try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
@@ -3219,8 +3218,8 @@ class AdminReturnOrdersView(LoginRequiredMixin, View):
                     elif s0 and s0 == s_clean:
                         unit_price = prod.productprice
                 r.calculated_unit_price = unit_price
-                ret_qty = getattr(item, "quantity", 1) or 1
-                r.calculated_refund = unit_price * ret_qty
+                ret_q = getattr(r, "quantity", 1) or 1
+                r.calculated_refund = unit_price * ret_q
             else:
                 r.calculated_unit_price = 0
                 r.calculated_refund = 0
