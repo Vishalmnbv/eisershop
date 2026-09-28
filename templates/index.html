@@ -263,382 +263,307 @@
     {% endif %}
     {% if new_arrivals %}
         <section id="arrivingSection" class="container my-4">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <div class="d-flex align-items-center gap-3">
-                    <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Just Arrived</h3>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-0">
+                    <i class="fa-solid fa-layer-group text-primary me-2"></i>Just Arrived
+                </h3>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollArrivingSlider(-270)" aria-label="Previous" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollArrivingSlider(270)" aria-label="Next" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
-            <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollArrivingSlider(-320)" aria-label="Previous"
-                    style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div id="arrivingSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+            <div class="slider-wrapper position-relative">
+                <div id="arrivingSlider" class="d-flex flex-nowrap overflow-auto align-items-stretch" style="scroll-behavior: smooth; gap: 15px; scrollbar-width: none;">
                     {% for product in new_arrivals %}
-                        <div class="flex-shrink-0" style="width: 250px;">
-                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">   
-                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
-                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
-                                        <i class="fa-regular fa-heart text-danger"></i>
-                                    </button>
-                                </form>
-                                <div class="text-center mb-3 pt-2">
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
-                                        {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">
-                                        {% endif %}
-                                    </a>
+                        <div class="card flex-shrink-0 border-1" style="width: 250px;">
+                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                    <i class="fa-regular fa-heart text-danger"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center justify-content-center p-2" style="height: 200px;">
+                                    {% if product.productimage1 %}
+                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="max-height: 100%; object-fit: contain;">
+                                    {% endif %}
                                 </div>
-                                <div class="card-body d-flex flex-column justify-content-between p-0">
-                                    <div class="text-left">
-                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>  
-                                        </a>                               
-                                        {% if product.color_variants %}
-                                            <div class="d-flex align-items-center mb-1 gap-1">
-                                                {% for color in product.color_variants|slice:":5" %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
-                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
-                                                            title="{{ color.name }}">
-                                                        </span>
-                                                    </a>
-                                                {% endfor %}
-                                                {% if product.color_variants|length > 5 %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
-                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
-                                                    </a>
-                                                {% endif %}
-                                            </div>
+                            </a>
+                            <div class="card-body d-flex flex-column p-3">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                    <h6 class="fw-bold text-truncate mb-1" title="{{ product.producttitle }}">{{ product.producttitle }}</h6>
+                                </a>
+                                {% if product.color_variants %}
+                                    <div class="d-flex align-items-center my-1 gap-1">
+                                        {% for color in product.color_variants|slice:":5" %}
+                                            <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                <span style="width: 16px; height: 16px; border-radius: 50%; display: inline-block; background: {{ color.color_code }}; border: 1px solid #ccc;" title="{{ color.name }}"></span>
+                                            </a>
+                                        {% endfor %}
+                                        {% if product.color_variants|length > 5 %}
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="ms-1 text-decoration-none text-muted" style="font-size: 11px;" title="{{ product.color_variants|length|add:'-5' }} more color options">
+                                                +{{ product.color_variants|length|add:"-5" }}
+                                            </a>
                                         {% endif %}
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
-                                            <div class="text-warning small" style="font-size: 12px;">
-                                                {% for star in product.full_stars_range %}
-                                                    <i class="fa-solid fa-star"></i>
-                                                {% endfor %}
-                                                {% for star in product.half_stars_range %}
-                                                    <i class="fa-solid fa-star-half-stroke"></i>
-                                                {% endfor %}
-                                                {% for star in product.empty_stars_range %}
-                                                    <i class="fa-regular fa-star"></i>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        <div class="mb-3 d-flex align-items-baseline gap-2">
-                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
-                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
-                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
-                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-dark">
-                                                <span class="text-success">FREE Delivery</span>
-                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
-                                            </span>
-                                        </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
-                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                {% endif %}
+                                <div class="d-flex align-items-center text-warning small mb-1">
+                                    <span class="fw-bold me-1 text-dark">{{ product.rating }}</span>
+                                    {% for star in product.full_stars_range %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                    {% for star in product.half_stars_range %}<i class="fa-solid fa-star-half-stroke"></i>{% endfor %}
+                                    {% for star in product.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
+                                </div>
+                                <div class="mt-auto">
+                                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                                        <span class="fw-bold text-dark fs-6">₹{{ product.productprice|format_indian_currency }}</span>
+                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                            <span class="small text-muted text-decoration-line-through">₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                            <span class="small text-success fw-semibold" style="font-size: 10px;">({{ product.productdiscountrate }}% OFF)</span>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-sm w-100 fw-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye me-1"></i> View Product
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollArrivingSlider(320)" aria-label="Next"
-                    style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
             </div>
         </section>
     {% endif %}
     {% if recommended_products %}
         <section class="container my-3">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <div class="d-flex align-items-center gap-2">
-                    <h3 class="font-weight-bold text-dark mb-0 mr-2"><i class="fa fa-thumbs-up text-primary mr-2 me-1"></i>Recommended For You</h3>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-0">
+                    <i class="fa fa-thumbs-up text-primary me-2"></i>Recommended For You
+                </h3>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollRecommendedSlider(-270)" aria-label="Previous" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollRecommendedSlider(270)" aria-label="Next" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
-            <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollRecommendedSlider(-320)" 
-                    aria-label="Previous" style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div id="recommendedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+            <div class="slider-wrapper position-relative">
+                <div id="recommendedSlider" class="d-flex flex-nowrap overflow-auto align-items-stretch" style="scroll-behavior: smooth; gap: 15px; scrollbar-width: none;">
                     {% for product in recommended_products %}
-                        <div class="flex-shrink-0" style="width: 250px;">
-                            <div class="card h-100 border-1 rounded-lg text-center p-3 position-relative">
-                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
-                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
-                                        <i class="fa-regular fa-heart text-danger"></i>
-                                    </button>
-                                </form>
-                                <div class="text-center mb-3 pt-2">
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
-                                        {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
-                                        {% endif %}
-                                    </a>
+                        <div class="card flex-shrink-0 border-1" style="width: 250px;">
+                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                    <i class="fa-regular fa-heart text-danger"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center justify-content-center p-2" style="height: 200px;">
+                                    {% if product.productimage1 %}
+                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="max-height: 100%; object-fit: contain;">
+                                    {% endif %}
                                 </div>
-                                <div class="card-body d-flex flex-column justify-content-between p-0">
-                                    <div class="text-left">
-                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
-                                        </a>                               
-                                        {% if product.color_variants %}
-                                            <div class="d-flex align-items-center mb-1 gap-1">
-                                                {% for color in product.color_variants|slice:":5" %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
-                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px;height:18px;border-radius:50%;display:inline-block;background:{{ color.color_code }};border:1px solid #ccc;"
-                                                            title="{{ color.name }}">
-                                                        </span>
-                                                    </a>
-                                                {% endfor %}
-                                                {% if product.color_variants|length > 5 %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
-                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
-                                                    </a>
-                                                {% endif %}
-                                            </div>
+                            </a>
+                            <div class="card-body d-flex flex-column p-3">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                    <h6 class="fw-bold text-truncate mb-1" title="{{ product.producttitle }}">{{ product.producttitle }}</h6>
+                                </a>
+                                {% if product.color_variants %}
+                                    <div class="d-flex align-items-center my-1 gap-1">
+                                        {% for color in product.color_variants|slice:":5" %}
+                                            <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                <span style="width: 16px; height: 16px; border-radius: 50%; display: inline-block; background: {{ color.color_code }}; border: 1px solid #ccc;" title="{{ color.name }}"></span>
+                                            </a>
+                                        {% endfor %}
+                                        {% if product.color_variants|length > 5 %}
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="ms-1 text-decoration-none text-muted" style="font-size: 11px;" title="{{ product.color_variants|length|add:'-5' }} more color options">
+                                                +{{ product.color_variants|length|add:"-5" }}
+                                            </a>
                                         {% endif %}
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
-                                            <div class="text-warning small" style="font-size: 12px;">
-                                                {% for star in product.full_stars_range %}
-                                                    <i class="fa-solid fa-star"></i>
-                                                {% endfor %}
-                                                {% for star in product.half_stars_range %}
-                                                    <i class="fa-solid fa-star-half-stroke"></i>
-                                                {% endfor %}
-                                                {% for star in product.empty_stars_range %}
-                                                    <i class="fa-regular fa-star"></i>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        <div class="mb-3 d-flex align-items-baseline gap-2">
-                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
-                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
-                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
-                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-dark">
-                                                <span class="text-success">FREE Delivery</span>
-                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
-                                            </span>
-                                        </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
-                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                {% endif %}
+                                <div class="d-flex align-items-center text-warning small mb-1">
+                                    <span class="fw-bold me-1 text-dark">{{ product.rating }}</span>
+                                    {% for star in product.full_stars_range %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                    {% for star in product.half_stars_range %}<i class="fa-solid fa-star-half-stroke"></i>{% endfor %}
+                                    {% for star in product.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
+                                </div>
+                                <div class="mt-auto">
+                                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                                        <span class="fw-bold text-dark fs-6">₹{{ product.productprice|format_indian_currency }}</span>
+                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                            <span class="small text-muted text-decoration-line-through">₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                            <span class="small text-success fw-semibold" style="font-size: 10px;">({{ product.productdiscountrate }}% OFF)</span>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-sm w-100 fw-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye me-1"></i> View Product
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollRecommendedSlider(320)" 
-                    aria-label="Next" style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
             </div>
         </section>
     {% endif %}
     {% if deals_of_the_day %}
         <section id="dealsSection" class="container my-3">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <div class="d-flex align-items-center gap-3">
-                    <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Deals Of The Day</h3>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <div class="d-flex align-items-center gap-2">
+                    <h3 class="fw-bold mb-0">
+                        <i class="fa-solid fa-clock text-danger me-2"></i>Deals Of The Day
+                    </h3>
                 </div>
-                <div class="d-flex align-items-center bg-danger text-white px-3 py-1">
-                    <i class="fa-solid fa-clock me-2"></i>
-                    <span class="small me-2 fw-semibold">Ends in:</span>
-                    <span id="dealTimer" class="fw-bold tracking-wide" style="font-family: monospace; font-size: 15px;">00h 00m 00s</span>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollDealsSlider(-270)" aria-label="Previous" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollDealsSlider(270)" aria-label="Next" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
-            <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollSlider(-320)" aria-label="Previous"
-                    style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div id="amazonSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+            <div class="slider-wrapper position-relative">
+                <div id="amazonSlider" class="d-flex flex-nowrap overflow-auto align-items-stretch" style="scroll-behavior: smooth; gap: 15px; scrollbar-width: none;">
                     {% for product in deals_of_the_day %}
-                        <div class="flex-shrink-0" style="width: 250px;">
-                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">  
-                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
-                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
-                                        <i class="fa-regular fa-heart text-danger"></i>
-                                    </button>
-                                </form>
-                                <div class="text-center mb-3 pt-2">
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
-                                        {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
-                                        {% endif %}
-                                    </a>
+                        <div class="card flex-shrink-0 border-1" style="width: 250px;">
+                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                    <i class="fa-regular fa-heart text-danger"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center justify-content-center p-2" style="height: 200px;">
+                                    {% if product.productimage1 %}
+                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="max-height: 100%; object-fit: contain;">
+                                    {% endif %}
                                 </div>
-                                <div class="card-body d-flex flex-column justify-content-between p-0">
-                                    <div class="text-left">
-                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
-                                        ></a>                               
-                                        {% if product.color_variants %}
-                                            <div class="d-flex align-items-center mb-1 gap-1">
-                                                {% for color in product.color_variants|slice:":5" %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
-                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
-                                                            title="{{ color.name }}">
-                                                        </span>
-                                                    </a>
-                                                {% endfor %}
-                                                {% if product.color_variants|length > 5 %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
-                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
-                                                    </a>
-                                                {% endif %}
-                                            </div>
-                                        {% endif %}    
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
-                                            <div class="text-warning small" style="font-size: 12px;">
-                                                {% for star in product.full_stars_range %}
-                                                    <i class="fa-solid fa-star"></i>
-                                                {% endfor %}
-                                                {% for star in product.half_stars_range %}
-                                                    <i class="fa-solid fa-star-half-stroke"></i>
-                                                {% endfor %}
-                                                {% for star in product.empty_stars_range %}
-                                                    <i class="fa-regular fa-star"></i>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        <div class="mb-3 d-flex align-items-baseline gap-2">
-                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
-                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
-                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
-                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-dark">
-                                                <span class="text-success">FREE Delivery</span>
-                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
-                                            </span>
-                                        </div>
+                            </a>
+                            <div class="card-body d-flex flex-column p-3">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                    <h6 class="fw-bold text-truncate mb-1" title="{{ product.producttitle }}">{{ product.producttitle }}</h6>
+                                </a>
+                                {% if product.color_variants %}
+                                    <div class="d-flex align-items-center my-1 gap-1">
+                                        {% for color in product.color_variants|slice:":5" %}
+                                            <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                <span style="width: 16px; height: 16px; border-radius: 50%; display: inline-block; background: {{ color.color_code }}; border: 1px solid #ccc;" title="{{ color.name }}"></span>
+                                            </a>
+                                        {% endfor %}
+                                        {% if product.color_variants|length > 5 %}
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="ms-1 text-decoration-none text-muted" style="font-size: 11px;" title="{{ product.color_variants|length|add:'-5' }} more color options">
+                                                +{{ product.color_variants|length|add:"-5" }}
+                                            </a>
+                                        {% endif %}
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
-                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                {% endif %}
+                                <div class="d-flex align-items-center text-warning small mb-1">
+                                    <span class="fw-bold me-1 text-dark">{{ product.rating }}</span>
+                                    {% for star in product.full_stars_range %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                    {% for star in product.half_stars_range %}<i class="fa-solid fa-star-half-stroke"></i>{% endfor %}
+                                    {% for star in product.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
+                                </div>
+                                <div class="mt-auto">
+                                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                                        <span class="fw-bold text-dark fs-6">₹{{ product.productprice|format_indian_currency }}</span>
+                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                            <span class="small text-muted text-decoration-line-through">₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                            <span class="small text-success fw-semibold" style="font-size: 10px;">({{ product.productdiscountrate }}% OFF)</span>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-sm w-100 fw-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye me-1"></i> View Product
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollSlider(320)" aria-label="Next"
-                    style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
             </div>
         </section>
     {% endif %}
     {% if top_rated_products %}
         <section class="container my-3">
-            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-                <div class="d-flex align-items-center gap-2">
-                    <h3 class="font-weight-bold text-dark mb-0 mr-2"><i class="fa fa-star text-warning mr-2"></i>Top Rated Products</h3>
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
+                <h3 class="fw-bold mb-0">
+                    <i class="fa fa-star text-warning me-2"></i>Top Rated Products
+                </h3>
+                <div class="d-flex gap-2">
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollTopRatedSlider(-270)" aria-label="Previous" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-left"></i>
+                    </button>
+                    <button class="btn btn-light rounded-circle shadow-none border" onclick="scrollTopRatedSlider(270)" aria-label="Next" style="width: 38px; height: 38px;">
+                        <i class="fa-solid fa-chevron-right"></i>
+                    </button>
                 </div>
             </div>
-            <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollTopRatedSlider(-320)" 
-                    aria-label="Previous" style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-left"></i>
-                </button>
-                <div id="topRatedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+            <div class="slider-wrapper position-relative">
+                <div id="topRatedSlider" class="d-flex flex-nowrap overflow-auto align-items-stretch" style="scroll-behavior: smooth; gap: 15px; scrollbar-width: none;">
                     {% for product in top_rated_products %}
-                        <div class="flex-shrink-0" style="width: 250px;">
-                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">
-                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                                    {% csrf_token %}
-                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
-                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
-                                        <i class="fa-regular fa-heart text-danger"></i>
-                                    </button>
-                                </form>
-                                <div class="text-center mb-3 pt-2">
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
-                                        {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
-                                        {% endif %}
-                                    </a>
+                        <div class="card flex-shrink-0 border-1" style="width: 250px;">
+                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                {% csrf_token %}
+                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center shadow-sm" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                    <i class="fa-regular fa-heart text-danger"></i>
+                                </button>
+                            </form>
+                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                <div class="d-flex align-items-center justify-content-center p-2" style="height: 200px;">
+                                    {% if product.productimage1 %}
+                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="max-height: 100%; object-fit: contain;">
+                                    {% endif %}
                                 </div>
-                                <div class="card-body d-flex flex-column justify-content-between p-0">
-                                    <div class="text-left">
-                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
-                                        </a>                 
-                                        {% if product.color_variants %}
-                                            <div class="d-flex align-items-center mb-1 gap-1">
-                                                {% for color in product.color_variants|slice:":5" %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
-                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px;height:18px;border-radius:50%;display:inline-block;background:{{ color.color_code }};border:1px solid #ccc;"
-                                                            title="{{ color.name }}">
-                                                        </span>
-                                                    </a>
-                                                {% endfor %}
-                                                {% if product.color_variants|length > 5 %}
-                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
-                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
-                                                    </a>
-                                                {% endif %}
-                                            </div>
+                            </a>
+                            <div class="card-body d-flex flex-column p-3">
+                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none text-dark">
+                                    <h6 class="fw-bold text-truncate mb-1" title="{{ product.producttitle }}">{{ product.producttitle }}</h6>
+                                </a>
+                                {% if product.color_variants %}
+                                    <div class="d-flex align-items-center my-1 gap-1">
+                                        {% for color in product.color_variants|slice:":5" %}
+                                            <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                <span style="width: 16px; height: 16px; border-radius: 50%; display: inline-block; background: {{ color.color_code }}; border: 1px solid #ccc;" title="{{ color.name }}"></span>
+                                            </a>
+                                        {% endfor %}
+                                        {% if product.color_variants|length > 5 %}
+                                            <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="ms-1 text-decoration-none text-muted" style="font-size: 11px;" title="{{ product.color_variants|length|add:'-5' }} more color options">
+                                                +{{ product.color_variants|length|add:"-5" }}
+                                            </a>
                                         {% endif %}
-                                        <div class="d-flex align-items-center mb-2">
-                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
-                                            <div class="text-warning small" style="font-size: 12px;">
-                                                {% for star in product.full_stars_range %}
-                                                    <i class="fa-solid fa-star"></i>
-                                                {% endfor %}
-                                                {% for star in product.half_stars_range %}
-                                                    <i class="fa-solid fa-star-half-stroke"></i>
-                                                {% endfor %}
-                                                {% for star in product.empty_stars_range %}
-                                                    <i class="fa-regular fa-star"></i>
-                                                {% endfor %}
-                                            </div>
-                                        </div>
-                                        <div class="mb-3 d-flex align-items-baseline gap-2">
-                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
-                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
-                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
-                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
-                                            {% endif %}
-                                        </div>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="text-dark">
-                                                <span class="text-success">FREE Delivery</span>
-                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
-                                            </span>
-                                        </div>
                                     </div>
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
-                                        <i class="fa fa-eye mr-2 me-1"></i>View Product
+                                {% endif %}
+                                <div class="d-flex align-items-center text-warning small mb-1">
+                                    <span class="fw-bold me-1 text-dark">{{ product.rating }}</span>
+                                    {% for star in product.full_stars_range %}<i class="fa-solid fa-star"></i>{% endfor %}
+                                    {% for star in product.half_stars_range %}<i class="fa-solid fa-star-half-stroke"></i>{% endfor %}
+                                    {% for star in product.empty_stars_range %}<i class="fa-regular fa-star"></i>{% endfor %}
+                                </div>
+                                <div class="mt-auto">
+                                    <div class="d-flex align-items-baseline gap-2 mb-2">
+                                        <span class="fw-bold text-dark fs-6">₹{{ product.productprice|format_indian_currency }}</span>
+                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                            <span class="small text-muted text-decoration-line-through">₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                            <span class="small text-success fw-semibold" style="font-size: 10px;">({{ product.productdiscountrate }}% OFF)</span>
+                                        {% endif %}
+                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-sm w-100 fw-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye me-1"></i> View Product
                                     </a>
                                 </div>
                             </div>
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollTopRatedSlider(320)" 
-                    aria-label="Next" style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
-                    <i class="fa-solid fa-chevron-right"></i>
-                </button>
             </div>
         </section>
     {% endif %}
@@ -731,78 +656,31 @@
     </script>
     <!-- New Arrivals Section js -->
     <script>
-    const arrivingSlider = document.getElementById('arrivingSlider');
-    function scrollArrivingSlider(distance) {
-        if (arrivingSlider) {
-            arrivingSlider.scrollBy({
-                left: distance,
-                behavior: 'smooth'
-            });
-        }
+        function scrollArrivingSlider(amount) {
+            const slider = document.getElementById('arrivingSlider');
+            slider.scrollBy({ left: amount, behavior: 'smooth' });
         }
     </script>
     <!-- Recommended For You Section js -->
     <script>
-    function scrollRecommendedSlider(amount) {
-        const slider = document.getElementById('recommendedSlider');
-        if (slider) {
-            slider.scrollBy({
-                left: amount,
-                behavior: 'smooth'
-            });
+        function scrollRecommendedSlider(amount) {
+            const slider = document.getElementById('recommendedSlider');
+            slider.scrollBy({ left: amount, behavior: 'smooth' });
         }
-    }
     </script>
     <!-- Deals Of The Day Section js -->
     <script>
-    function scrollSlider(amount) {
-        const slider = document.getElementById('amazonSlider');
-        if (slider) {
-            slider.scrollBy({
-                left: amount,
-                behavior: 'smooth'
-            });
+        function scrollDealsSlider(amount) {
+            const slider = document.getElementById('amazonSlider');
+            slider.scrollBy({ left: amount, behavior: 'smooth' });
         }
-    }
-    </script>
-    <!-- Deals Of The Day Section timer js -->
-    <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        let dealEndTime = new Date();
-        dealEndTime.setHours(23, 59, 59, 999);
-        function updateTimer() {
-            let timerElement = document.getElementById("dealTimer");
-            if (!timerElement) return; 
-            let now = new Date().getTime();
-            let distance = dealEndTime.getTime() - now;
-            if (distance < 0) {
-                timerElement.innerHTML = "EXPIRED";
-                clearInterval(timerInterval); 
-                return;
-            }
-            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-            hours = String(hours).padStart(2, '0');
-            minutes = String(minutes).padStart(2, '0');
-            seconds = String(seconds).padStart(2, '0');
-            timerElement.innerHTML = hours + "h " + minutes + "m " + seconds + "s";
-        }
-        updateTimer();
-        let timerInterval = setInterval(updateTimer, 1000);
-    });
     </script>
     <!-- Top Rated Products Section js -->
     <script>
-    function scrollTopRatedSlider(amount) {
-        const slider = document.getElementById('topRatedSlider');
-        if (slider) {
-            slider.scrollBy({
-                left: amount,
-                behavior: 'smooth'
-            });
+        function scrollTopRatedSlider(amount) {
+            const slider = document.getElementById('topRatedSlider');
+            slider.scrollBy({ left: amount, behavior: 'smooth' });
         }
-    }
     </script>
     <!-- Recently Viewed Items js-->
     <script>
