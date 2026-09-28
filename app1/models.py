@@ -549,10 +549,12 @@ class ReturnRequest(models.Model):
     def send_refund_initiated_email(self):
         if self.order and self.order.user_id and self.order.user_id.email:
             try:
-                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                user = self.order.user_id
                 context = {
                     'return_request': self,
-                    'customer_name': customer_name,
+                    'customer_firstname': user.first_name,
+                    'customer_username': user.username,
+                    'customer_lastname': user.last_name,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }
                 html_content = render_to_string('emails/refund_initiated.html', context)
@@ -568,12 +570,14 @@ class ReturnRequest(models.Model):
     def send_refund_completed_email(self):
         if self.order and self.order.user_id and self.order.user_id.email:
             try:
-                customer_name = self.order.user_id.first_name or self.order.user_id.username
+                user = self.order.user_id
                 refund_amt_str = f"₹{self.refund_amount:,.2f}" if self.refund_amount else "₹0.00"
                 context = {
                     'return_request': self,
                     'order': self.order,
-                    'customer_name': customer_name,
+                    'customer_firstname': user.first_name,
+                    'customer_username': user.username,
+                    'customer_lastname': user.last_name,
                     'refund_amount': refund_amt_str,
                     'logo_url': "https://res.cloudinary.com/rccdb6pd/image/upload/v1789276432/logo.png",
                 }

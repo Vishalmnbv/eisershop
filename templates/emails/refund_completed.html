@@ -26,9 +26,8 @@
                     </tr>
                     <tr>
                         <td style="padding:35px;">
-                            <p style="font-size:16px;color:#555;line-height:28px;">Hello <strong>{{ customer_name }}</strong>,</p>
-                            <p style="font-size:16px;color:#555;line-height:28px;">Great News! Your refund for Order <strong>#{{ order.orderid }}</strong> has been successfully completed.</p>
-                            
+                            <p style="font-size:16px;color:#555;line-height:28px;">Hello <strong>{{ customer_firstname }} ({{ customer_username }}) {{ customer_lastname }}</strong></p>
+                            <p style="font-size:16px;color:#555;line-height:28px;">Great News! Your refund for Order <strong>#{{ return_request.amazon_order_id }}</strong> has been successfully completed.</p>
                             <table width="100%" cellpadding="10" cellspacing="0" style="margin-top:20px;border:1px solid #e6e6e6;border-radius:8px;">
                                 <tr style="background:#fafafa;">
                                     <td width="40%"><strong>Refund Amount</strong></td>
@@ -38,8 +37,16 @@
                                     <td><strong>Status</strong></td>
                                     <td style="color:#28a745;font-weight:bold;">Refunded Successfully</td>
                                 </tr>
+                                {% if return_request.upi_id %}
+                                <tr>
+                                    <td><strong>Return order Payment</strong></td>
+                                    <td>
+                                        UPI: {{ return_request.upi_id }}
+                                        <span style="background-color: #d1e7dd; color: #0f5132; padding: 2px 6px; font-size: 11px; border-radius: 3px; font-weight: bold; margin-left: 5px;">Paid</span>
+                                    </td>
+                                </tr>
+                                {% endif %}
                             </table>
-
                             <p style="font-size:16px;color:#555;line-height:28px;margin-top:20px;">The amount will be credited according to your original payment method.</p>
                             <hr style="border:none;border-top:1px solid #eeeeee;margin:30px 0;">
                             <p style="color:#777;font-size:14px;line-height:26px;">Thank you for shopping with us. Please do not reply to this message.</p>
