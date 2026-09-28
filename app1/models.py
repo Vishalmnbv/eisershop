@@ -488,7 +488,7 @@ class ReturnRequest(models.Model):
     def send_agent_assigned_email(self):
         if self.delivery_agent and self.delivery_agent.user and self.delivery_agent.user.email:
             try:
-                customer_user = getattr(self.order, 'user', None) if self.order else None
+                customer_user = getattr(self.order, 'user_id', None) if self.order else None
                 email_context = {
                     'return_request': self,
                     'pickup_agent': self.delivery_agent,
