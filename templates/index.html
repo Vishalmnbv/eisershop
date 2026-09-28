@@ -262,98 +262,98 @@
         </div>
     {% endif %}
     {% if new_arrivals %}
-    <section id="arrivingSection" class="container my-4">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
-            <div class="d-flex align-items-center gap-3">
-                <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Just Arrived</h3>
+        <section id="arrivingSection" class="container my-4">
+            <div class="d-flex flex-wrap justify-content-between align-items-center mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    <h3 class="font-weight-bold text-dark mb-0 mr-3 me-1">Just Arrived</h3>
+                </div>
             </div>
-        </div>
-        <div class="position-relative">
-            <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollArrivingSlider(-320)" aria-label="Previous"
-                style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                ‹
-            </button>
-            <div id="arrivingSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
-                {% for product in new_arrivals %}
-                    <div class="flex-shrink-0" style="width: 250px;">
-                        <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">   
-                            <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
-                                {% csrf_token %}
-                                <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
-                                <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
-                                    <i class="fa-regular fa-heart text-danger"></i>
-                                </button>
-                            </form>
-                            <div class="text-center mb-3 pt-2">
-                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
-                                    {% if product.productimage1 %}
-                                        <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">
-                                    {% endif %}
-                                </a>
-                            </div>
-                            <div class="card-body d-flex flex-column justify-content-between p-0">
-                                <div class="text-left">
-                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                        <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>  
-                                    </a>                              
-                                    {% if product.color_variants %}
-                                        <div class="d-flex align-items-center mb-1 gap-1">
-                                            {% for color in product.color_variants|slice:":5" %}
-                                                <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
-                                                    <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
-                                                        title="{{ color.name }}">
-                                                    </span>
-                                                </a>
-                                            {% endfor %}
-                                            {% if product.color_variants|length > 5 %}
-                                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
-                                                    title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
-                                                </a>
+            <div class="position-relative">
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollArrivingSlider(-320)" aria-label="Previous"
+                    style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-left"></i>
+                </button>
+                <div id="arrivingSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
+                    {% for product in new_arrivals %}
+                        <div class="flex-shrink-0" style="width: 250px;">
+                            <div class="card h-100 border-1 rounded-lg text-center p-3 bg-white position-relative">   
+                                <form action="{% url 'add_wishlist' product.productviewid %}" method="post" class="position-absolute top-0 end-0 m-2" style="z-index: 10;">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="selected_size" value="{{ product.productsize|default:product.productsize1|default:'Free Size' }}">
+                                    <button type="submit" class="btn btn-light rounded-circle border-0 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;" title="Add to Wishlist">
+                                        <i class="fa-regular fa-heart text-danger"></i>
+                                    </button>
+                                </form>
+                                <div class="text-center mb-3 pt-2">
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
+                                        {% if product.productimage1 %}
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">
+                                        {% endif %}
+                                    </a>
+                                </div>
+                                <div class="card-body d-flex flex-column justify-content-between p-0">
+                                    <div class="text-left">
+                                        <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
+                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>  
+                                        </a>                               
+                                        {% if product.color_variants %}
+                                            <div class="d-flex align-items-center mb-1 gap-1">
+                                                {% for color in product.color_variants|slice:":5" %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid color.id %}" class="text-decoration-none">
+                                                        <span class="{% if color.id == product.productviewid %}selected-color{% endif %}" style="width:18px; height:18px; border-radius:50%; display:inline-block; background:{{ color.color_code }}; border:1px solid #ccc;"
+                                                            title="{{ color.name }}">
+                                                        </span>
+                                                    </a>
+                                                {% endfor %}
+                                                {% if product.color_variants|length > 5 %}
+                                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="amazon-more-colors ms-1 text-decoration-none"
+                                                        title="{{ product.color_variants|length|add:'-5' }} more color options available">+{{ product.color_variants|length|add:"-5" }}
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        {% endif %}
+                                        <div class="d-flex align-items-center mb-2">
+                                            <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
+                                            <div class="text-warning small" style="font-size: 12px;">
+                                                {% for star in product.full_stars_range %}
+                                                    <i class="fa-solid fa-star"></i>
+                                                {% endfor %}
+                                                {% for star in product.half_stars_range %}
+                                                    <i class="fa-solid fa-star-half-stroke"></i>
+                                                {% endfor %}
+                                                {% for star in product.empty_stars_range %}
+                                                    <i class="fa-regular fa-star"></i>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                        <div class="mb-3 d-flex align-items-baseline gap-2">
+                                            <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
+                                            {% if product.productdiscountrate and product.productdiscountrate != '0' %}
+                                                <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
+                                                <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
                                             {% endif %}
                                         </div>
-                                    {% endif %}
-                                    <div class="d-flex align-items-center mb-2">
-                                        <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
-                                        <div class="text-warning small" style="font-size: 12px;">
-                                            {% for star in product.full_stars_range %}
-                                                <i class="fa-solid fa-star"></i>
-                                            {% endfor %}
-                                            {% for star in product.half_stars_range %}
-                                                <i class="fa-solid fa-star-half-stroke"></i>
-                                            {% endfor %}
-                                            {% for star in product.empty_stars_range %}
-                                                <i class="fa-regular fa-star"></i>
-                                            {% endfor %}
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="text-dark">
+                                                <span class="text-success">FREE Delivery</span>
+                                                <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
+                                            </span>
                                         </div>
                                     </div>
-                                    <div class="mb-3 d-flex align-items-baseline gap-2">
-                                        <span class="font-weight-bold text-dark" style="font-size: 18px;">₹{{ product.productprice|format_indian_currency }}</span>
-                                        {% if product.productdiscountrate and product.productdiscountrate != '0' %}
-                                            <span class="small text-muted text-decoration-line-through">M.R.P: ₹{{ product.productmrpprice|format_indian_currency }}</span>
-                                            <span class="small text-success">({{ product.productdiscountrate }}% OFF)</span>
-                                        {% endif %}
-                                    </div>
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <span class="text-dark">
-                                            <span class="text-success">FREE Delivery</span>
-                                            <strong class="ms-1 text-dark">{{ delivery_date|date:"l, j F" }}</strong>
-                                        </span>
-                                    </div>
+                                    <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
+                                        <i class="fa fa-eye mr-2 me-1"></i> View Product
+                                    </a>
                                 </div>
-                                <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="btn btn-warning btn-block font-weight-bold text-dark d-flex align-items-center justify-content-center" style="border-radius: 6px; font-size: 13px;">
-                                    <i class="fa fa-eye mr-2 me-1"></i> View Product
-                                </a>
                             </div>
                         </div>
-                    </div>
-                {% endfor %}
+                    {% endfor %}
+                </div>
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollArrivingSlider(320)" aria-label="Next"
+                    style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-right"></i>
+                </button>
             </div>
-            <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollArrivingSlider(320)" aria-label="Next"
-                style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                ›
-            </button>
-        </div>
-    </section>
+        </section>
     {% endif %}
     {% if recommended_products %}
         <section class="container my-3">
@@ -363,9 +363,9 @@
                 </div>
             </div>
             <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollRecommendedSlider(-320)" 
-                    aria-label="Previous" style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ‹
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollRecommendedSlider(-320)" 
+                    aria-label="Previous" style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div id="recommendedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
                     {% for product in recommended_products %}
@@ -381,7 +381,7 @@
                                 <div class="text-center mb-3 pt-2">
                                     <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
                                         {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                            
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
                                         {% endif %}
                                     </a>
                                 </div>
@@ -389,7 +389,7 @@
                                     <div class="text-left">
                                         <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
                                             <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
-                                        </a>                                
+                                        </a>                               
                                         {% if product.color_variants %}
                                             <div class="d-flex align-items-center mb-1 gap-1">
                                                 {% for color in product.color_variants|slice:":5" %}
@@ -442,9 +442,9 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollRecommendedSlider(320)" 
-                    aria-label="Next" style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ›
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollRecommendedSlider(320)" 
+                    aria-label="Next" style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
         </section>
@@ -462,9 +462,9 @@
                 </div>
             </div>
             <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle" onclick="scrollSlider(-320)"  aria-label="Previous"
-                    style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ‹
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollSlider(-320)" aria-label="Previous"
+                    style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div id="amazonSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
                     {% for product in deals_of_the_day %}
@@ -480,7 +480,7 @@
                                 <div class="text-center mb-3 pt-2">
                                     <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
                                         {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                            
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
                                         {% endif %}
                                     </a>
                                 </div>
@@ -488,7 +488,7 @@
                                     <div class="text-left">
                                         <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
                                             <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
-                                        </a>                                  
+                                        ></a>                               
                                         {% if product.color_variants %}
                                             <div class="d-flex align-items-center mb-1 gap-1">
                                                 {% for color in product.color_variants|slice:":5" %}
@@ -504,7 +504,7 @@
                                                     </a>
                                                 {% endif %}
                                             </div>
-                                        {% endif %}     
+                                        {% endif %}    
                                         <div class="d-flex align-items-center mb-2">
                                             <span class="font-weight-bold mr-1 text-dark small">{{ product.rating }}</span>
                                             <div class="text-warning small" style="font-size: 12px;">
@@ -541,9 +541,9 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollSlider(320)" aria-label="Next"
-                    style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ›
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollSlider(320)" aria-label="Next"
+                    style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
         </section>
@@ -556,9 +556,9 @@
                 </div>
             </div>
             <div class="position-relative">
-                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollTopRatedSlider(-320)" 
-                    aria-label="Previous" style="left: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ‹
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollTopRatedSlider(-320)" 
+                    aria-label="Previous" style="left: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-left"></i>
                 </button>
                 <div id="topRatedSlider" class="d-flex flex-nowrap overflow-hidden align-items-stretch" style="scroll-behavior: smooth; gap: 16px; padding: 10px 4px;">
                     {% for product in top_rated_products %}
@@ -574,15 +574,15 @@
                                 <div class="text-center mb-3 pt-2">
                                     <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}">
                                         {% if product.productimage1 %}
-                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">                                
+                                            <img src="{{ product.productimage1 }}" class="img-fluid rounded" alt="{{ product.producttitle }}" style="height: 170px; object-fit: contain;">           
                                         {% endif %}
                                     </a>
                                 </div>
                                 <div class="card-body d-flex flex-column justify-content-between p-0">
                                     <div class="text-left">
                                         <a href="{% url 'productview' product.category_id.categoryid product.productviewid %}" class="text-decoration-none">
-                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45  }}</h6>
-                                        </a>                       
+                                            <h6 class="text-muted small mb-2 product-title" title="{{ product.producttitle }}">{{ product.producttitle|truncatechars:45 }}</h6>
+                                        </a>                 
                                         {% if product.color_variants %}
                                             <div class="d-flex align-items-center mb-1 gap-1">
                                                 {% for color in product.color_variants|slice:":5" %}
@@ -635,9 +635,9 @@
                         </div>
                     {% endfor %}
                 </div>
-                <button class="btn btn-light border position-absolute rounded-circle"  onclick="scrollTopRatedSlider(320)" 
-                    aria-label="Next" style="right: -18px; top: 40%; z-index: 10; width: 42px; height: 42px; padding: 0; line-height: 40px; font-size: 20px; font-weight: bold; color: #111;">
-                    ›
+                <button class="btn btn-light border position-absolute rounded-circle shadow-sm d-flex align-items-center justify-content-center" onclick="scrollTopRatedSlider(320)" 
+                    aria-label="Next" style="right: -20px; top: 42%; transform: translateY(-50%); z-index: 10; width: 40px; height: 40px; padding: 0; font-size: 18px; font-weight: bold; color: #333; background-color: #fff;">
+                    <i class="fa-solid fa-chevron-right"></i>
                 </button>
             </div>
         </section>
@@ -719,15 +719,15 @@
     <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <!-- Top Brands js -->
     <script>
-    function scrollBrandSlider(amount) {
-        const slider = document.getElementById("brandSlider");
+    function scrollArrivingSlider(amount) {
+        const slider = document.getElementById('arrivingSlider');
         if (slider) {
             slider.scrollBy({
                 left: amount,
-                behavior: "smooth"
+                behavior: 'smooth'
             });
         }
-        }
+    }
     </script>
     <!-- New Arrivals Section js -->
     <script>
@@ -743,63 +743,66 @@
     </script>
     <!-- Recommended For You Section js -->
     <script>
-    const recommendedSlider = document.getElementById("recommendedSlider");
-    function scrollRecommendedSlider(value) {
-        if (recommendedSlider) {
-            recommendedSlider.scrollBy({
-                left: value,
-                behavior: "smooth"
+    function scrollRecommendedSlider(amount) {
+        const slider = document.getElementById('recommendedSlider');
+        if (slider) {
+            slider.scrollBy({
+                left: amount,
+                behavior: 'smooth'
             });
         }
-        }
+    }
     </script>
     <!-- Deals Of The Day Section js -->
     <script>
-    const slider = document.getElementById("amazonSlider");
-    function scrollSlider(value) {
+    function scrollSlider(amount) {
+        const slider = document.getElementById('amazonSlider');
         if (slider) {
             slider.scrollBy({
-                left: value,
-                behavior: "smooth"
+                left: amount,
+                behavior: 'smooth'
             });
         }
-        }
+    }
     </script>
     <!-- Deals Of The Day Section timer js -->
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            let dealEndTime = new Date();
-            dealEndTime.setHours(23, 59, 59, 999);
-            function updateTimer() {
-                let now = new Date().getTime();
-                let distance = dealEndTime.getTime() - now;
-                if (distance < 0) {
-                    document.getElementById("dealTimer").innerHTML = "EXPIRED";
-                    return;
-                }
-                let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-                let seconds = Math.floor((distance % (1000 * 60)) / 1000);
-                hours = hours < 10 ? "0" + hours : hours;
-                minutes = minutes < 10 ? "0" + minutes : minutes;
-                seconds = seconds < 10 ? "0" + seconds : seconds;
-                document.getElementById("dealTimer").innerHTML = hours + "h " + minutes + "m " + seconds + "s";
+    document.addEventListener("DOMContentLoaded", function () {
+        let dealEndTime = new Date();
+        dealEndTime.setHours(23, 59, 59, 999);
+        function updateTimer() {
+            let timerElement = document.getElementById("dealTimer");
+            if (!timerElement) return; 
+            let now = new Date().getTime();
+            let distance = dealEndTime.getTime() - now;
+            if (distance < 0) {
+                timerElement.innerHTML = "EXPIRED";
+                clearInterval(timerInterval); 
+                return;
             }
-            updateTimer();
-            setInterval(updateTimer, 1000);
-        });
+            let hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            let minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+            let seconds = Math.floor((distance % (1000 * 60)) / 1000);
+            hours = String(hours).padStart(2, '0');
+            minutes = String(minutes).padStart(2, '0');
+            seconds = String(seconds).padStart(2, '0');
+            timerElement.innerHTML = hours + "h " + minutes + "m " + seconds + "s";
+        }
+        updateTimer();
+        let timerInterval = setInterval(updateTimer, 1000);
+    });
     </script>
     <!-- Top Rated Products Section js -->
     <script>
-    const topRatedSlider = document.getElementById("topRatedSlider");
     function scrollTopRatedSlider(amount) {
-        if (topRatedSlider) {
-            topRatedSlider.scrollBy({
+        const slider = document.getElementById('topRatedSlider');
+        if (slider) {
+            slider.scrollBy({
                 left: amount,
-                behavior: "smooth"
+                behavior: 'smooth'
             });
         }
-        }
+    }
     </script>
     <!-- Recently Viewed Items js-->
     <script>

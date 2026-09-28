@@ -2458,7 +2458,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
             if r.orderitem:
                 unit_price, refund_total = get_calculated_price(r.orderitem)
                 r.calculated_unit_price = unit_price
-                r.calculated_refund = refund_total    
+                r.calculated_refund = refund_total * r.quantity   
         try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
