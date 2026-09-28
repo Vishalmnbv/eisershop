@@ -3336,6 +3336,16 @@ class AdminRefundedOrdersView(LoginRequiredMixin, View):
             return str(value).strip().lower().replace(" ", "").replace("-", "")
         for r in refunded_orders:
             if r.order:
+                r.order_date = getattr(r.order, "date", None) or getattr(r.order, "created_at", None)
+                r.delivered_on = (
+                    getattr(r.order, "delivered_at", None) 
+                    or getattr(r.order, "delivered_on", None) 
+                    or getattr(r.order, "completed_at", None)
+                )
+            else:
+                r.order_date = None
+                r.delivered_on = None
+            if r.order:
                 if not getattr(r.order, "amazon_order_id", None):
                     user_order_no = Order.objects.filter(user_id=r.order.user_id, orderid__lte=r.order.orderid).count()
                     r.order.amazon_order_id = f"{user_order_no:05d}"
@@ -3344,10 +3354,10 @@ class AdminRefundedOrdersView(LoginRequiredMixin, View):
                 product = r.orderitem.productview_id
                 selected_size = normalize_size(r.orderitem.selected_size)
                 variant_prices = [
-                    (getattr(product, "productsize", None),getattr(product, "productprice", None),),
-                    (getattr(product, "productsize1", None),getattr(product, "productprice1", None),),
-                    (getattr(product, "productsize2", None),getattr(product, "productprice2", None),),
-                    (getattr(product, "productsize3", None),getattr(product, "productprice3", None),),
+                    (getattr(product, "productsize", None), getattr(product, "productprice", None)),
+                    (getattr(product, "productsize1", None), getattr(product, "productprice1", None)),
+                    (getattr(product, "productsize2", None), getattr(product, "productprice2", None)),
+                    (getattr(product, "productsize3", None), getattr(product, "productprice3", None)),
                 ]
                 matched_price = None
                 for sz, pr in variant_prices:
@@ -3366,8 +3376,7 @@ class RefundCompletedView(LoginRequiredMixin, View):
     def post(self, request, pk):
         if not request.user.is_staff:
             return redirect("login")
-        return_request = get_object_or_404(
-            ReturnRequest.objects.select_related("order", "order__user_id", "orderitem", "orderitem__productview_id"),pk=pk)
+        return_request = get_object_or_404(ReturnRequest.objects.select_related("order", "order__user_id", "orderitem", "orderitem__productview_id"),pk=pk,)
         item = return_request.orderitem
         def normalize_size(value):
             if not value:
