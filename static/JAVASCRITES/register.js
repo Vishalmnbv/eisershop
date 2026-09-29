@@ -22,7 +22,6 @@ icon2.onclick = function () {
         icon2.classList = 'fa-solid fa-eye-slash';
     };
 };
-
 function previewImage(event) {
     const input = event.target;
     const preview = document.getElementById('preview');

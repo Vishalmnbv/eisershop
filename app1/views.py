@@ -1203,21 +1203,25 @@ class ProductDetailView(DetailView):
         country = request.POST.get("country")  
         size = request.POST.get("size")
         color = request.POST.get("color")
-        image = request.FILES.get("image") or request.FILES.get("review_image")
         if rating and review_text:
-            Review.objects.create(
+            review_obj = Review.objects.create(
                 product=product,
                 user=request.user,
                 rating=rating,
                 country=country,
                 review=review_text,
                 size=size,
-                color=color,
-                image=image if image else None
+                color=color
             )
+            images = request.FILES.getlist('review_images')
+            for img in images:
+                try:
+                    ReviewImage.objects.create(review=review_obj, image=img)  # Yahan '-' ki jagah '=' karein
+                except Exception as e:
+                    print(f"Error uploading image: {e}")
             messages.success(request, "Your review has been submitted successfully.")
         else:
-            messages.error(request, "Please provide both rating and review text.")
+            messages.error(request, "Please provide both rating and review text.")  
         return redirect(request.path)
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -1410,7 +1414,7 @@ class ProductDetailView(DetailView):
         context["page_obj"] = page_obj
         context["same_product_count"] = variants_qs.count()
         similar_variant_ids = Productview.objects.filter(producttitle__iexact=product.producttitle).values_list('productviewid', flat=True)
-        reviews = list(Review.objects.filter(product_id__in=similar_variant_ids).select_related("user").order_by("-created_at")[:7])
+        reviews = list(Review.objects.filter(product_id__in=similar_variant_ids).select_related("user").prefetch_related("review_images").order_by("-created_at")[:7])
         if self.request.user.is_authenticated:
             user_reviews = [r for r in reviews if r.user == self.request.user]
             other_reviews = [r for r in reviews if r.user != self.request.user]
@@ -1440,18 +1444,22 @@ def add_review_view(request, productviewid):
         size = request.POST.get("size")
         color = request.POST.get("color")
         country = request.POST.get("country")
-        image = request.FILES.get("image")
         if rating and review_text:
-            Review.objects.create(
+            review_obj = Review.objects.create(
                 product=product,
                 user=request.user,
                 rating=rating,
                 review=review_text,
                 size=size,
                 color=color,
-                country=country,
-                image=image if image else None
+                country=country
             )
+            images = request.FILES.getlist('review_images')
+            for img in images:
+                try:
+                    ReviewImage.objects.create(review=review_obj, image=img)
+                except Exception as e:
+                    print(f"Error uploading image: {e}")
             messages.success(request, "Your review has been submitted successfully.")
             return redirect('productview', categoryid=product.category_id.categoryid, productviewid=product.productviewid)
         else:
@@ -1465,10 +1473,26 @@ def edit_review_view(request, reviewid):
     if request.method == 'POST':
         review.rating = request.POST.get('rating')
         review.review = request.POST.get('review')
+        review.size = request.POST.get('size')
+        review.color = request.POST.get('color')
+        review.country = request.POST.get('country')
         review.save()
+        images = request.FILES.getlist('review_images')
+        if images:
+            for img in images:
+                try:
+                    ReviewImage.objects.create(review=review, image=img)
+                except Exception as e:
+                    print(f"Error uploading image: {e}")
+        messages.success(request, "Your review has been updated successfully.")
         return redirect('productview', categoryid=review.product.category_id.categoryid, productviewid=review.product.productviewid)
     context = {'review': review, 'productview': review.product}
     return render(request, 'add_review.html', context)
+def delete_review_image(request, img_id):
+    image_obj = get_object_or_404(ReviewImage, id=img_id)
+    review_id = image_obj.review.reviewid
+    image_obj.delete()
+    return redirect('edit_review_page', reviewid=review_id)
 class DeleteReviewView(LoginRequiredMixin, View):
     login_url = "login"
     def post(self, request, reviewid):
@@ -2185,8 +2209,17 @@ class MyOrdersView(LoginRequiredMixin, View):
                 order.coupon_discount_display = 0
             if order.date:
                 order.return_last_date = order.date + timedelta(days=7)
+                now = timezone.now()
+                if now > order.return_last_date:
+                    order.is_return_expired = True
+                    order.return_display_text = f"Return window closed on {order.return_last_date.strftime('%d %b %Y')}"
+                else:
+                    order.is_return_expired = False
+                    order.return_display_text = f"Return by {order.return_last_date.strftime('%d %b %Y')}"
             else:
                 order.return_last_date = None
+                order.is_return_expired = True
+                order.return_display_text = "Return window closed"
             order_items = Orderitem.objects.filter(order_id=order)
             running_total = 0
             for item in order_items:
@@ -3172,8 +3205,8 @@ class AdminReviewsView(LoginRequiredMixin, View):
     def get(self, request):
         if not request.user.is_staff:
             return redirect("login")
-        reviews = Review.objects.all().order_by("-reviewid")
-        context = {"reviews": reviews,}
+        reviews = Review.objects.all().prefetch_related("review_images").order_by("-reviewid")
+        context = {"reviews": reviews}
         return render(request, "admin_reviews.html", context)
 class AdminReturnOrdersView(LoginRequiredMixin, View):
     login_url = "login"

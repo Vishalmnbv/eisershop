@@ -123,7 +123,6 @@ class Review(models.Model):
     rating = models.IntegerField()
     review = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
-    image = models.ImageField(upload_to='reviews/', blank=True, null=True)
     size = models.CharField(max_length=20, blank=True, null=True)
     color = models.CharField(max_length=30, blank=True, null=True)
     country = models.CharField(max_length=100, blank=True, null=True)
@@ -135,6 +134,11 @@ class Review(models.Model):
         if order_item and order_item.order_id.delivered_at:
             return order_item.order_id.delivered_at
         return None
+class ReviewImage(models.Model):
+    review = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='review_images')
+    image = models.ImageField(upload_to='reviews/', blank=True, null=True)
+    def __str__(self):
+        return f"Image for Review {self.review.reviewid}"
 class Cart(models.Model):
     cartid = models.AutoField(primary_key=True)
     product_id = models.ForeignKey(Productview, on_delete=models.CASCADE)
@@ -393,6 +397,11 @@ class Orderitem(models.Model):
     selected_size = models.CharField(max_length=10, blank=True, null=True)
     def __str__(self):
         return f"{self.productview_id.producttitle} - {self.order_id.user_id.username}"
+    @property
+    def can_return(self):
+        if self.delivered_date:
+            return timezone.now() <= self.delivered_date + timedelta(days=7)
+        return False
 class PickupAgent(models.Model):
     agentid = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -635,7 +644,7 @@ class ProductReview(models.Model):
     product = models.ForeignKey(Productview, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    rating = models.IntegerField(default=5)  # 1 to 5 stars
+    rating = models.IntegerField(default=5)
     review_text = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
