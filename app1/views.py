@@ -1565,6 +1565,35 @@ class CustomerReviewView(DetailView):
         context["reviews"] = reviews
         context["all_reviews_count"] = len(reviews)
         return context
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        product = self.object
+        rating = request.POST.get("rating")
+        review_text = request.POST.get("review")
+        size = request.POST.get("size")
+        color = request.POST.get("color")
+        country = request.POST.get("country")
+        if rating and review_text:
+            review_obj = Review.objects.create(
+                product=product,
+                user=request.user,
+                rating=rating,
+                review=review_text,
+                size=size,
+                color=color,
+                country=country
+            )
+            images = request.FILES.getlist('review_images')
+            for img in images:
+                try:
+                    ReviewImage.objects.create(review=review_obj, image=img)
+                except Exception as e:
+                    print(f"Error uploading image: {e}")
+            messages.success(request, "Your review has been submitted successfully.")
+            return redirect(request.path)
+        else:
+            messages.error(request, "Please provide both rating and review text.")
+            return self.render_to_response(self.get_context_data())
 class ApplyCouponView(View):
     def post(self, request):
         if not request.user.is_authenticated:

@@ -102,8 +102,12 @@
                         </div>
                         <div class="row align-items-center">
                             <div class="col-md-2 col-4 text-center">
-                                {% if review.image %}
-                                    <img src="{{ review.image.url }}" class="img-fluid rounded" style="height:100px; ">
+                                {% if r.review_images.all %}
+                                    <div class="mb-2 d-flex flex-wrap gap-2">
+                                        {% for img in r.review_images.all %}
+                                            <img src="{{ img.image.url }}" class="img-fluid rounded" style="width: 80px; height: 80px; object-fit: contain;">
+                                        {% endfor %}
+                                    </div>
                                 {% endif %}
                             </div>
                             <div class="col-md-10 col-8">
