@@ -1511,10 +1511,35 @@ class ProfileView(DetailView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["category"] = Category.objects.all()
-        context["productview"] = get_object_or_404(Productview,productviewid=self.kwargs["productviewid"])
-        context["categories"] = context["productview"].category_id
+        productview_id = self.kwargs.get("productviewid")
+        if productview_id:
+            context["productview"] = get_object_or_404(Productview, productviewid=productview_id)
+            context["categories"] = context["productview"].category_id
         context["reviews"] = (Review.objects.filter(user=self.object).select_related("user", "product").order_by("-created_at"))
         return context
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object() 
+        if request.user != self.object:
+            messages.error(request, "You are not authorized to update this profile.")
+            return redirect(request.path)
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        if first_name is not None:
+            self.object.first_name = first_name
+        if last_name is not None:
+            self.object.last_name = last_name
+        profile_image = request.FILES.get("profile_image")
+        if profile_image:
+            try:
+                self.object.profile_image = profile_image
+            except Exception as e:
+                print(f"Error uploading profile image: {e}")
+        try:
+            self.object.save()
+            messages.success(request, "Profile updated successfully.")
+        except Exception as e:
+            messages.error(request, f"Error updating profile: {e}")
+        return redirect(request.path)
 class CustomerReviewView(DetailView):
     model = Productview
     template_name = "customer_review.html"

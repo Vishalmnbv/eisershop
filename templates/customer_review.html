@@ -84,55 +84,55 @@
     </div>
     <div class="container mt-3 fw-bold">All Customer Reviews</div>
     <div class="container mt-3">
-    {% for review in reviews %}
-        <div class="card border-1 mb-3">
-            <div class="card-body">
-                <div class="d-flex align-items-center mb-3">
-                    {% if review.user.profile.image %}
-                        <img src="{{ review.user.profile.image.url }}" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
-                    {% else %}
-                        <img src="/static/IMG/default.png" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
-                    {% endif %}
-                    <div>
-                        <h6 class="mb-0">
-                            <a href="{% url 'profile' review.user.id review.product.category_id.categoryid review.product.productviewid %}" class="text-decoration-none text-dark">
-                                {{ review.user.username }}
-                            </a>
-                        </h6>
-                        <small class="text-muted">Reviewed in {{ review.country }} {{ review.created_at }}</small><br>
-                        <small class="text-muted">{{ review.user.email }}</small>
-                    </div>
-                </div>
-                <div class="ps-md-5 ms-md-2">
-                    <div class="mb-2 text-warning">
-                        {% for i in "12345"|make_list %}
-                            {% if forloop.counter <= review.rating %}
-                                <i class="fa-solid fa-star"></i>
-                            {% else %}
-                                <i class="fa-regular fa-star"></i>
-                            {% endif %}
-                        {% endfor %}
-                        <span class="text-dark ms-2">{{ review.rating }}/5</span>
-                    </div>
-                    <p class="text-muted mb-2">
-                        <strong>Size:</strong> {{ review.size|upper }} | <strong>Color:</strong> {{ review.color }}
-                    </p>
-                    <p class="mb-3">{{ review.review }}</p>
-                    {% if review.review_images.all %}
-                        <div class="d-flex flex-wrap gap-2 mb-2">
-                            {% for img in review.review_images.all %}
-                                <a href="{{ img.image.url }}" target="_blank">
-                                    <img src="{{ img.image.url }}" class="img-fluid rounded" style="width: 80px; height: 80px; object-fit: contain;">
+        {% for review in reviews %}
+            <div class="card border-1 mb-3">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        {% if review.user.profile.image %}
+                            <img src="{{ review.user.profile.image.url }}" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
+                        {% else %}
+                            <img src="/static/IMG/default.png" class="rounded-circle border me-3" width="50" height="50" style="object-fit:contain;">
+                        {% endif %}
+                        <div>
+                            <h6 class="mb-0">
+                                <a href="{% url 'profile' review.user.id review.product.category_id.categoryid review.product.productviewid %}" class="text-decoration-none text-dark">
+                                    {{ review.user.username }}
                                 </a>
-                            {% endfor %}
+                            </h6>
+                            <small class="text-muted">Reviewed in {{ review.country }} {{ review.created_at }}</small><br>
+                            <small class="text-muted">{{ review.user.email }}</small>
                         </div>
-                    {% endif %}
+                    </div>
+                    <div class="ps-md-5 ms-md-2">
+                        <div class="mb-2 text-warning">
+                            {% for i in "12345"|make_list %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fa-solid fa-star"></i>
+                                {% else %}
+                                    <i class="fa-regular fa-star"></i>
+                                {% endif %}
+                            {% endfor %}
+                            <span class="text-dark ms-2">{{ review.rating }}/5</span>
+                        </div>
+                        <p class="text-muted mb-2">
+                            <strong>Size:</strong> {{ review.size|upper }} | <strong>Color:</strong> {{ review.color }}
+                        </p>
+                        <p class="mb-3">{{ review.review }}</p>
+                        {% if review.review_images.all %}
+                            <div class="d-flex flex-wrap gap-2 mb-2">
+                                {% for img in review.review_images.all %}
+                                    <a href="{{ img.image.url }}" target="_blank">
+                                        <img src="{{ img.image.url }}" class="img-fluid rounded" style="width: 80px; height: 80px; object-fit: contain;">
+                                    </a>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
-    {% empty %}
-        <div class="alert alert-info text-center">No reviews found.</div>
-    {% endfor %}
+        {% empty %}
+            <div class="alert alert-info text-center">No reviews found.</div>
+        {% endfor %}
     </div>
     {% if home_banner %}
         <div class="container mb-5 mt-5">
