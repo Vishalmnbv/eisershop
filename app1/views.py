@@ -2543,9 +2543,31 @@ class AdminDashboardView(LoginRequiredMixin, View):
             else:
                 r.amazon_order_id = "00001"
             if r.orderitem:
-                ret_q = getattr(r, "quantity", 1) or 1
-                unit_price = getattr(r.orderitem, "price", 0) or getattr(r.orderitem, "unit_price", 0)
-                r.calculated_refund = unit_price * ret_q
+                item = r.orderitem
+                if item and item.productview_id:
+                    prod = item.productview_id
+                    unit_price = prod.productprice
+                    item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                    if item_size:
+                        s_clean = re.sub(r"\s+", "", str(item_size)).lower()
+                        s0 = (re.sub(r"\s+", "", str(prod.productsize)).lower() if getattr(prod, "productsize", None) else "")
+                        s1 = (re.sub(r"\s+", "", str(prod.productsize1)).lower() if getattr(prod, "productsize1", None) else "")
+                        s2 = (re.sub(r"\s+", "", str(prod.productsize2)).lower() if getattr(prod, "productsize2", None) else "")
+                        s3 = (re.sub(r"\s+", "", str(prod.productsize3)).lower() if getattr(prod, "productsize3", None) else "")
+                        if s1 and s1 == s_clean:
+                            unit_price = (getattr(prod, "productprice1", None) or prod.productprice)
+                        elif s2 and s2 == s_clean:
+                            unit_price = (getattr(prod, "productprice2", None) or prod.productprice)
+                        elif s3 and s3 == s_clean:
+                            unit_price = (getattr(prod, "productprice3", None) or prod.productprice)
+                        elif s0 and s0 == s_clean:
+                            unit_price = prod.productprice
+                    ret_q = getattr(r, "quantity", 1) or 1
+                    r.calculated_refund = unit_price * ret_q
+                else:
+                    r.calculated_refund = 0
+            else:
+                r.calculated_refund = 0
         try:
             total_coupons = Coupon.objects.count()
             active_coupons = Coupon.objects.filter(active=True).count()
