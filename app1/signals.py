@@ -4,26 +4,25 @@ from django.dispatch import receiver
 from .models import UserActivityLog
 from django.utils import timezone
 from datetime import timedelta
-
 @receiver(user_logged_in)
 def log_user_login(sender, request, user, **kwargs):
     ip = request.META.get('HTTP_X_FORWARDED_FOR')
     if ip:
-        ip = ip.split(',')[0]
+        ip = ip.split(',')[0].strip()
     else:
         ip = request.META.get('REMOTE_ADDR')
     location = "Unknown"
-    if ip and ip != '127.0.0.1' and ip != 'localhost':
+    if ip and ip not in ['127.0.0.1', '::1', 'localhost']:
         try:
-            response = requests.get(f"https://ipapi.co/{ip}/json/", timeout=3)
+            response = requests.get(f"https://ipapi.co/{ip}/json/", timeout=4, headers={"User-Agent": "EiserShop"})
             if response.status_code == 200:
                 data = response.json()
                 city = data.get("city")
                 country = data.get("country_name")
                 if city and country:
                     location = f"{city}, {country}"
-        except:
-            pass
+        except Exception as e:
+            print("Location lookup error:", str(e))
     recent_time = timezone.now() - timedelta(seconds=5)
     existing_log = UserActivityLog.objects.filter(user=user, timestamp__gte=recent_time).exists()
     if not existing_log:
