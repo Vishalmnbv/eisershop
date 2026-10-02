@@ -2544,6 +2544,7 @@ class AdminDashboardView(LoginRequiredMixin, View):
                 r.amazon_order_id = "00001"
             if r.orderitem:
                 ret_q = getattr(r, "quantity", 1) or 1
+                unit_price = getattr(r.orderitem, "price", 0) or getattr(r.orderitem, "unit_price", 0)
                 r.calculated_refund = unit_price * ret_q
         try:
             total_coupons = Coupon.objects.count()
