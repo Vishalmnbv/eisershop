@@ -338,9 +338,9 @@ class LoginView(View):
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
             ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
-        UserActivityLog.objects.create(user=user, action="Logged into the account", ip_address=ip_address)
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
+        location = "Unknown Location"
         try:
             ua = parse(user_agent)
             browser = f"{ua.browser.family} {ua.browser.version_string}"
