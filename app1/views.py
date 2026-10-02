@@ -53,6 +53,7 @@ import resend
 from django.contrib.staticfiles import finders
 from django.utils.safestring import mark_safe
 from .models import UserActivityLog
+import csv
 # Create your views here.
 def send_email_thread(email):
     try:
@@ -2718,25 +2719,41 @@ class AdminDashboardView(LoginRequiredMixin, View):
 class AdminUsersView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request):
-      if not request.user.is_staff:
-        return redirect("login")
-      orders_queryset = Order.objects.prefetch_related("orderitem_set__productview_id").order_by("-date")
-      users = (User.objects.select_related("profile").prefetch_related(Prefetch("order_set", queryset=orders_queryset)).annotate(total_spent=Coalesce(Sum("order__total"), Value(0))).order_by("-date_joined"))
-      for user in users:
-        user.custom_user_id = f"{user.id:05d}"
-        for order in user.order_set.all():
-          if not getattr(order, "amazon_order_id", None):
-            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
-            order.amazon_order_id = f"{user_order_no:05d}"
-          else:
-            order.coupon_code_display = None
-            order.coupon_discount_display = 0
-      activities = UserActivityLog.objects.select_related("user").order_by("-timestamp")[:10]  
-      paginator = Paginator(users, 20)
-      page_number = request.GET.get("page")
-      page_obj = paginator.get_page(page_number)
-      context = {"users": page_obj, "activities": activities}
-      return render(request, "admin_users.html", context)
+        if not request.user.is_staff:
+            return redirect("login")
+        orders_queryset = Order.objects.prefetch_related("orderitem_set__productview_id").order_by("-date")
+        users = (User.objects.select_related("profile").prefetch_related(Prefetch("order_set", queryset=orders_queryset)).annotate(total_spent=Coalesce(Sum("order__total"), Value(0))).order_by("-date_joined"))
+        if request.GET.get('export') == 'csv':
+            response = HttpResponse(content_type='text/csv')
+            response['Content-Disposition'] = 'attachment; filename="customer_directory.csv"'
+            writer = csv.writer(response)
+            writer.writerow(['User ID', 'Username', 'Email', 'Registration Date', 'Total Orders', 'Total Spent (INR)'])
+            for u in users:
+                total_orders = u.order_set.count()
+                writer.writerow([
+                    f"{u.id:05d}", 
+                    u.username, 
+                    u.email, 
+                    u.date_joined.strftime('%Y-%m-%d %H:%M'), 
+                    total_orders, 
+                    u.total_spent
+                ])
+            return response
+        for user in users:
+            user.custom_user_id = f"{user.id:05d}"
+            for order in user.order_set.all():
+                if not getattr(order, "amazon_order_id", None):
+                    user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+                    order.amazon_order_id = f"{user_order_no:05d}"
+                else:
+                    order.coupon_code_display = None
+                    order.coupon_discount_display = 0 
+        activities = UserActivityLog.objects.select_related("user").order_by("-timestamp")[:10]  
+        paginator = Paginator(users, 20)
+        page_number = request.GET.get("page")
+        page_obj = paginator.get_page(page_number)
+        context = {"users": page_obj, "activities": activities}
+        return render(request, "admin_users.html", context)
 class AdminCustomerDetailView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request, user_id):
