@@ -15,6 +15,7 @@ from django.utils.html import strip_tags
 import threading
 import traceback
 import random
+from datetime import timedelta, datetime
 # Create your models here.
 class Profile(models.Model):
     user = models.OneToOneField(User,on_delete=models.CASCADE)
@@ -649,3 +650,10 @@ class ProductReview(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     def __str__(self):
         return f"{self.user.username} - {self.product.producttitle} ({self.rating} Stars)"
+class UserActivityLog(models.Model):
+  user = models.ForeignKey(User, on_delete=models.CASCADE)
+  action = models.CharField(max_length=255)
+  ip_address = models.GenericIPAddressField(null=True, blank=True)
+  timestamp = models.DateTimeField(auto_now_add=True)
+  def __str__(self):
+    return f"{self.user.username} - {self.action} at {self.timestamp}"

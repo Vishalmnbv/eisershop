@@ -18,6 +18,7 @@ admin.site.register(FlashSale)
 admin.site.register(Coupon)
 admin.site.register(CouponUsage)
 admin.site.register(ReviewImage)
+admin.site.register(UserActivityLog)
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     def save_model(self, request, obj, form, change):

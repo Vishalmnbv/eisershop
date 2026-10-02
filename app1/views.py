@@ -52,6 +52,7 @@ import base64
 import resend
 from django.contrib.staticfiles import finders
 from django.utils.safestring import mark_safe
+from .models import UserActivityLog
 # Create your views here.
 def send_email_thread(email):
     try:
@@ -327,27 +328,17 @@ class LoginView(View):
     def post(self, request):
         username = request.POST.get("username", "").strip()
         password = request.POST.get("password", "")
-        user = auth.authenticate(
-            request,
-            username=username,
-            password=password
-        )
+        user = auth.authenticate(request,username=username,password=password)
         if user is None:
             messages.error(request,"Invalid username or password")
-            return render(
-                request,
-                self.template_name,
-                {
-                    "category": Category.objects.all(),
-                    "username": username,
-                },
-            )
+            return render(request,self.template_name,{"category": Category.objects.all(),"username": username,},)
         auth.login(request, user)
         x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
         if x_forwarded_for:
             ip_address = x_forwarded_for.split(",")[0].strip()
         else:
             ip_address = request.META.get("REMOTE_ADDR", "127.0.0.1")
+        UserActivityLog.objects.create(user=user, action="Logged into the account", ip_address=ip_address)
         user_agent = request.META.get("HTTP_USER_AGENT", "")
         device = "Unknown Device"
         try:
@@ -2493,6 +2484,13 @@ class AdminDashboardView(LoginRequiredMixin, View):
         monthly_orders_query = Order.objects.filter(date__date__gte=current_month_start).exclude(orderstatus="Cancelled").prefetch_related("orderitem_set__productview_id")
         current_month_orders_count = monthly_orders_query.count()
         current_month_sales = 0
+        # Yearly Sales
+        current_year = timezone.now().year
+        year_start = timezone.datetime(current_year, 1, 1, tzinfo=timezone.get_current_timezone())
+        # Yearly Sales 
+        year_orders = Order.objects.filter(date__gte=year_start)
+        year_sales = year_orders.aggregate(total=Sum('total'))['total'] or 0
+        year_orders_count = year_orders.count()
         for order in monthly_orders_query:
             order_subtotal = 0
             for item in order.orderitem_set.all():
@@ -2712,28 +2710,33 @@ class AdminDashboardView(LoginRequiredMixin, View):
             "today_orders_count": today_orders_count,
             "current_month_sales": current_month_sales,
             "current_month_orders_count": current_month_orders_count,
+            "current_year_sales": year_sales,
+            "current_year_orders_count": year_orders_count,
+            "current_year": current_year,
         }
         return render(request, "admin_dashboard.html", context)
 class AdminUsersView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request):
-        if not request.user.is_staff:
-            return redirect("login")
-        orders_queryset = Order.objects.prefetch_related("orderitem_set__productview_id").order_by("-date")
-        users = (User.objects.select_related("profile").prefetch_related(Prefetch("order_set", queryset=orders_queryset)).annotate(total_spent=Coalesce(Sum("order__total"), Value(0))).order_by("-date_joined"))
-        for user in users:
-            user.custom_user_id = f"{user.id:05d}"
-            for order in user.order_set.all():
-                if not getattr(order, "amazon_order_id", None):
-                    user_order_no = Order.objects.filter(user_id=order.user_id,orderid__lte=order.orderid).count()
-                    order.amazon_order_id = f"{user_order_no:05d}"
-                else:
-                    order.coupon_code_display = None
-                    order.coupon_discount_display = 0
-        paginator = Paginator(users, 20)
-        page_number = request.GET.get("page")
-        page_obj = paginator.get_page(page_number)
-        return render(request, "admin_users.html", {"users": page_obj})
+      if not request.user.is_staff:
+        return redirect("login")
+      orders_queryset = Order.objects.prefetch_related("orderitem_set__productview_id").order_by("-date")
+      users = (User.objects.select_related("profile").prefetch_related(Prefetch("order_set", queryset=orders_queryset)).annotate(total_spent=Coalesce(Sum("order__total"), Value(0))).order_by("-date_joined"))
+      for user in users:
+        user.custom_user_id = f"{user.id:05d}"
+        for order in user.order_set.all():
+          if not getattr(order, "amazon_order_id", None):
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+          else:
+            order.coupon_code_display = None
+            order.coupon_discount_display = 0
+      activities = UserActivityLog.objects.select_related("user").order_by("-timestamp")[:10]  
+      paginator = Paginator(users, 20)
+      page_number = request.GET.get("page")
+      page_obj = paginator.get_page(page_number)
+      context = {"users": page_obj, "activities": activities}
+      return render(request, "admin_users.html", context)
 class AdminCustomerDetailView(LoginRequiredMixin, View):
     login_url = "login"
     def get(self, request, user_id):
@@ -3685,6 +3688,83 @@ def admin_monthly_sales_view(request):
         'current_month_orders_count': valid_orders_count,
     }
     return render(request, 'admin_monthly_sales.html', context)
+class AdminYearlySalesView(LoginRequiredMixin, View):
+    login_url = "login"
+    def get(self, request):
+        if not request.user.is_staff:
+            return redirect("login")
+        current_year = timezone.now().year
+        year_start = timezone.datetime(current_year, 1, 1, tzinfo=timezone.get_current_timezone())
+        orders = (Order.objects.filter(date__gte=year_start).exclude(orderstatus="Cancelled").select_related("user_id").prefetch_related("orderitem_set__productview_id").order_by("-date"))
+        for order in orders:
+            user_order_no = Order.objects.filter(user_id=order.user_id, orderid__lte=order.orderid).count()
+            order.amazon_order_id = f"{user_order_no:05d}"
+            status = str(order.orderstatus).lower()
+            if status == "delivered":
+                order.display_status_date = order.delivered_at or order.date
+                order.status_label = "Delivered"
+            elif status == "shipped":
+                order.display_status_date = order.shipped_at or order.date
+                order.status_label = "Shipped"
+            elif status == "processing":
+                order.display_status_date = order.processing_at or order.date
+                order.status_label = "Processing"
+            else:
+                order.display_status_date = order.date
+                order.status_label = order.orderstatus
+            pm = str(order.paymentmethod).upper() if getattr(order, "paymentmethod", None) else ""
+            if order.orderstatus == "Cancelled":
+                order.payment_status_display = "Cancelled"
+            elif "COD" in pm or "CASH" in pm:
+                order.payment_status_display = "Paid" if order.orderstatus == "Delivered" else "Pending"
+            else:
+                order.payment_status_display = "Paid"
+            if hasattr(order, "coupon") and order.coupon:
+                order.coupon_code_display = order.coupon.code
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+            elif hasattr(order, "coupon_code") and order.coupon_code:
+                order.coupon_code_display = order.coupon_code
+                order.coupon_discount_display = getattr(order, "coupon_discount", 0)
+            else:
+                order.coupon_code_display = None
+                order.coupon_discount_display = 0
+            order_subtotal = 0
+            for item in order.orderitem_set.all():
+                prod = item.productview_id
+                if prod:
+                    unit_price = prod.productprice
+                    item_size = getattr(item, "selected_size", None) or getattr(item, "size", None)
+                    if item_size:
+                        s_clean = str(item_size).replace(" ", "").lower()
+                        s0 = (str(prod.productsize).replace(" ", "").lower() if prod.productsize else "")
+                        s1 = (str(prod.productsize1).replace(" ", "").lower() if prod.productsize1 else "")
+                        s2 = (str(prod.productsize2).replace(" ", "").lower() if prod.productsize2 else "")
+                        s3 = (str(prod.productsize3).replace(" ", "").lower() if prod.productsize3 else "")
+                        if s1 and s1 == s_clean:
+                            unit_price = prod.productprice1 or prod.productprice
+                        elif s2 and s2 == s_clean:
+                            unit_price = prod.productprice2 or prod.productprice
+                        elif s3 and s3 == s_clean:
+                            unit_price = prod.productprice3 or prod.productprice
+                        elif s0 and s0 == s_clean:
+                            unit_price = prod.productprice
+                    item.calculated_unit_price = unit_price
+                    item.calculated_subtotal = unit_price * item.quantity
+                    order_subtotal += item.calculated_subtotal
+            order.calculated_subtotal = order_subtotal
+            delivery_charge = getattr(order, "delivery_charge", 0) or 0
+            order.delivery_charge_display = delivery_charge
+            discount = order.coupon_discount_display or 0
+            order.calculated_total = (order_subtotal - discount + delivery_charge)
+        total_sales = sum(order.calculated_total for order in orders)
+        total_orders = orders.count()
+        context = {
+            "orders": orders,
+            "total_sales": total_sales,
+            "total_orders": total_orders,
+            "current_year": current_year,
+        }
+        return render(request, "admin_yearly_sales.html", context)
 class PickupLogoutView(View):
     def get(self, request):
         logout(request)
